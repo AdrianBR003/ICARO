@@ -1,0 +1,102 @@
+# ========================
+# Repository Root
+# ========================
+
+# Git directory
+/.git/
+
+# ========================
+# Spring Boot (Backend)
+# ========================
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Build output
+/icar-backend/target/
+/icar-backend/build/
+
+# IDEs: IntelliJ, Eclipse, NetBeans
+*.iml
+*.ipr
+*.iws
+/.idea/
+/.project
+.classpath
+.settings/
+
+# Maven
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+**/.mvn/timing.properties
+
+# Gradle (if ever used)
+/.graddle/
+/icar-backend/build/
+/out/
+
+# Spring Boot logs
+spring.log.*
+
+# ========================
+# Node / Astro (Frontend)
+# ========================
+
+# Dependencies in any subfolder
+**/node_modules/
+
+# npm cache
+.npm/
+
+# Yarn cache
+.yarn/
+
+# ESLint cache
+.eslintcache
+
+# Astro build output
+**/icar-frontend/dist/
+/public/
+
+# Local env files
+**/.env
+**/.env.local
+**/.env.*.local
+
+# VS Code workspace
+**/.vscode/
+
+# MacOS Finder
+.DS_Store
+
+# Windows thumbnail cache
+Thumbs.db
+ehthumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*~
+
+# ========================
+# Common
+# ========================
+
+# Coverage reports
+coverage/
+
+# Temporary/system files
+*.swp
+*.swo
