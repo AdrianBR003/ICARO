@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class OrcidService {
 
+    // Cuando usamos este RestTemplate, como hemos definido el Bean
     private final RestTemplate restTemplate;
 
     public OrcidService(RestTemplate restTemplate) {
@@ -15,6 +16,7 @@ public class OrcidService {
     }
 
     public Investigator fetchInvestigator(String orcid) {
+        // GET
         JsonNode root = restTemplate.getForObject("/{orcid}/record", JsonNode.class, orcid);
         return Investigator.builder()
                 .orcid(orcid)
@@ -24,8 +26,7 @@ public class OrcidService {
                 .email(root.at("/person/emails/email/0/email").asText(""))
                 .biography(root.at("/person/biography/content").asText(""))
                 .build();
-
-
     }
+
 
 }
