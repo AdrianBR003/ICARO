@@ -13,13 +13,31 @@ import org.springframework.web.bind.annotation.*;
 public class InvestigatorController {
 
     private final InvestigatorService investigatorService;
-    public InvestigatorController(InvestigatorService investigatorService ) {
+    private final OrcidService orcidService;
+    public InvestigatorController(InvestigatorService investigatorService, OrcidService orcidService) {
         this.investigatorService = investigatorService;
+        this.orcidService = orcidService;
     }
 
+    /**
+     * Endpoint intermediaria con API ORCID
+     * @param orcid
+     * @return
+     */
+    @GetMapping("/{orcid}")
+    public ResponseEntity<Investigator> getInvestigator(@PathVariable String orcid){
+        Investigator inv = this.orcidService.fetchInvestigator(orcid);
+        return ResponseEntity.ok(inv);
+    }
+
+    /**
+     * Endpoint que guarda el Investigator y sus trabajos asociados
+     * @param orcid
+     * @return
+     */
     @PostMapping("/{orcid}/save")
     public ResponseEntity<Investigator> saveInvestigator(@PathVariable String orcid){
-        Investigator inv = this.investigatorService.saveFetchInvestigator(orcid);
+        Investigator inv = this.investigatorService.syncAndMergeInvestigator(orcid);
         return ResponseEntity.ok(inv);
     }
 

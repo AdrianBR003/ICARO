@@ -12,10 +12,12 @@ import java.util.List;
 @Builder
 public class Work {
     @Id
-    private String putCode;
+    String putCode;             // Local Identificator
+    String orcidOwner;
     private String title;
     private String description;
     private String type;
-    private List<String> participants;
+    private List<String> participants; // Name Participants
     private List<String> externalIds;
+    private List<String> ownerOrcids; // OIDS Participants
 }
