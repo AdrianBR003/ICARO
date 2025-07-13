@@ -21,8 +21,13 @@ public class WorkController {
         this.orcidService = orcidService;
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<Work>> getAllWorks(@PathVariable("orcid") String orcid) {
+        return ResponseEntity.ok(workService.getWorksForInvestigator(orcid));
+    }
+
     @GetMapping("/{orcid}")
-    public ResponseEntity<List<Work>> getWork(@PathVariable("orcid") String orcid) {
+    public ResponseEntity<List<Work>> getWorkOrcid(@PathVariable("orcid") String orcid) {
          return ResponseEntity.ok(orcidService.fetchWorks(orcid));
     }
 }

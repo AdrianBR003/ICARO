@@ -28,6 +28,11 @@ public class InvestigatorService {
         this.workRepository = workRepository;
     }
 
+    public List<Investigator> getAllInvestigator(){
+        log.info("getAllInvestigator");
+        return investigatorRepository.findAll();
+    }
+
     /**
      * 1) Fetch Investigator from ORCID and save.
      * 2) Fetch the /record summary, use external-ids to detect duplicates.

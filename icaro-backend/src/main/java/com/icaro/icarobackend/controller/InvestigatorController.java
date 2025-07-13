@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/investigators")
 public class InvestigatorController {
@@ -25,9 +27,14 @@ public class InvestigatorController {
      * @return
      */
     @GetMapping("/{orcid}")
-    public ResponseEntity<Investigator> getInvestigator(@PathVariable String orcid){
+    public ResponseEntity<Investigator> getInvestigatorOrcid(@PathVariable String orcid){
         Investigator inv = this.orcidService.fetchInvestigator(orcid);
         return ResponseEntity.ok(inv);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Investigator>> getAllInvestigator(@PathVariable String orcid){
+        return ResponseEntity.ok(investigatorService.getAllInvestigator());
     }
 
     /**
