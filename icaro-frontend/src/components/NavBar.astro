@@ -1,0 +1,42 @@
+---
+// src/components/NavBar.astro
+const navItems = [
+  { title: 'Research', href: '/research', hasDropdown: true },
+  { title: 'About us', href: '/about',  hasDropdown: true },
+  { title: 'Career', href: '/career',   hasDropdown: true },
+  { title: 'Service', href: '/service', hasDropdown: true },
+  { title: 'Impact', href: '/impact',   hasDropdown: true },
+  { title: 'People', href: '/people',   hasDropdown: false },
+  { title: 'News', href: '/news',       hasDropdown: false },
+  { title: 'Events', href: '/events',   hasDropdown: false },
+];
+---
+<nav class="max-w-[1200px] mx-auto my-4 px-4">
+  <ul class="flex flex-wrap justify-center gap-x-8 gap-y-2 border border-gray-300 p-4">
+    {navItems.map(item => (
+      <li class="relative group">
+        <a
+          href={item.href}
+          class="text-[#231F20] hover:text-[#006D38] font-medium"
+        >
+          {item.title}
+        </a>
+        {item.hasDropdown && (
+          <ul
+            class="
+              absolute left-0 top-full
+              mt-2 w-48 bg-white border border-gray-200
+              rounded shadow-lg opacity-0 group-hover:opacity-100
+              invisible group-hover:visible transition-opacity
+            "
+          >
+            {/*enlaces*/}
+            <li><a href={item.href + '/sub1'} class="block px-4 py-2 hover:bg-gray-100">Sub-item 1</a></li>
+            <li><a href={item.href + '/sub2'} class="block px-4 py-2 hover:bg-gray-100">Sub-item 2</a></li>
+            <li><a href={item.href + '/sub3'} class="block px-4 py-2 hover:bg-gray-100">Sub-item 3</a></li>
+          </ul>
+        )}
+      </li>
+    ))}
+  </ul>
+</nav>

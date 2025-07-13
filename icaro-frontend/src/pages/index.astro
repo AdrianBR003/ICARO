@@ -1,10 +1,20 @@
 ---
+import BaseLayout from "@/layouts/BaseLayout.astro"
 import Layout from "@/layouts/Layout.astro"
+import Header from "@/components/Header.astro"
+
+import '@/styles/global.css';
+import NavBar from "@/components/NavBar.astro";
+
 
 const dataHeader = {
 	titulo: "Mi titulo del header",
 	descripcion: "Descripción del header"
 }
+
+
 --- 
-<Layout {...dataHeader}>
-</Layout>
+<BaseLayout>
+	<Header />
+	<NavBar />
+</BaseLayout>

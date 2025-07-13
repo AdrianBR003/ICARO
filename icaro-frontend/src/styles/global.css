@@ -1,1 +1,17 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* Aplica padding horizontal a todo lo que siga al header */
+body > *:not(header) {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+html {
+  font-family: 'Roboto', sans-serif;
+}
