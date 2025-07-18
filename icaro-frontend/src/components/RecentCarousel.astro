@@ -7,21 +7,21 @@ const investigations = [
     title: 'Investigación sobre el impacto del cambio climático',
     authors: 'Juan Pérez, Ana Gómez',
     description: 'Un estudio exhaustivo sobre cómo el cambio climático afecta a la biodiversidad.',
-    img: { src: imageExample },
+    img: imageExample,
     link: '#',
   },
   {
     title: 'Avances en la tecnología de energías renovables',
     authors: 'Carlos López, María Fernández',
     description: 'Exploración de las últimas innovaciones en energías limpias y sostenibles.',
-    img: { src: imageExample },
+    img: imageExample,
     link: '#',
   },
   {
     title: 'Estudio de caso sobre la conservación de especies en peligro',
     authors: 'Laura Martínez, Pedro Sánchez',
     description: 'Análisis detallado de estrategias efectivas para la conservación de especies amenazadas.',
-    img: { src: imageExample },
+    img: imageExample,
     link: '#',
   },
 ]
@@ -32,17 +32,17 @@ const investigations = [
   <div
     id="slider"
     class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory
-           max-w-[72rem] w-full"
+           max-w-[72rem] w-full p-4 bg-inherit"
   >
     {investigations.map((inv) => (
       <article
         class="shrink-0 w-full snap-center grid grid-cols-[1fr_2fr] gap-6
-               bg-white rounded-xl shadow-xl
+               bg-white rounded-xl
                ring-1 ring-gray-200 border-r-4 border-[#006D38]"
       >
         <div class="relative aspect-[3/2]">
           <img
-            src={inv.img.src}
+            src={inv.img.src ?? placeholder.src}
             alt={inv.title}
             class="absolute inset-0 w-full h-full object-contain p-2"
             onerror={`this.onerror=null;this.src='${placeholder.src}'`}
