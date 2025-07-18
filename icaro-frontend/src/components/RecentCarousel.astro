@@ -1,0 +1,103 @@
+---
+import placeholder from '@/assets/imagedefault.webp'
+import imageExample from '@/assets/imageexample.webp'
+
+const investigations = [
+  {
+    title: 'Investigación sobre el impacto del cambio climático',
+    authors: 'Juan Pérez, Ana Gómez',
+    description: 'Un estudio exhaustivo sobre cómo el cambio climático afecta a la biodiversidad.',
+    img: { src: imageExample },
+    link: '#',
+  },
+  {
+    title: 'Avances en la tecnología de energías renovables',
+    authors: 'Carlos López, María Fernández',
+    description: 'Exploración de las últimas innovaciones en energías limpias y sostenibles.',
+    img: { src: imageExample },
+    link: '#',
+  },
+  {
+    title: 'Estudio de caso sobre la conservación de especies en peligro',
+    authors: 'Laura Martínez, Pedro Sánchez',
+    description: 'Análisis detallado de estrategias efectivas para la conservación de especies amenazadas.',
+    img: { src: imageExample },
+    link: '#',
+  },
+]
+---
+
+<div class="relative flex justify-center px-4 py-6">
+  <!-- 𝗖𝗮𝗿𝗿𝘂𝘀𝗲𝗹 -->
+  <div
+    id="slider"
+    class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory
+           max-w-[72rem] w-full"
+  >
+    {investigations.map((inv) => (
+      <article
+        class="shrink-0 w-full snap-center grid grid-cols-[1fr_2fr] gap-6
+               bg-white rounded-xl shadow-xl
+               ring-1 ring-gray-200 border-r-4 border-[#006D38]"
+      >
+        <div class="relative aspect-[3/2]">
+          <img
+            src={inv.img.src}
+            alt={inv.title}
+            class="absolute inset-0 w-full h-full object-contain p-2"
+            onerror={`this.onerror=null;this.src='${placeholder.src}'`}
+          />
+        </div>
+        <div class="p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-xl font-semibold text-[#231F20]">{inv.title}</h3>
+            <p class="text-base text-gray-500">{inv.authors}</p>
+            <p class="text-sm text-gray-600 mt-2 truncate">{inv.description}</p>
+          </div>
+          <a href={inv.link} class="text-[#006D38] hover:text-[#004d29] underline text-base">
+            Ver publicación →
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <!-- 𝗙𝗹𝗲𝗰𝗵𝗮𝘀 -->
+  <button
+  class="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10
+         w-12 h-12 flex items-center justify-center text-3xl
+         bg-white/80 backdrop-blur rounded-full shadow
+         hover:bg-[#1D293D] hover:text-white"
+  onclick="scrollSlide(-1)"
+  aria-label="Anterior"
+>‹</button>
+
+<button
+  class="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10
+         w-12 h-12 flex items-center justify-center text-3xl
+         bg-white/80 backdrop-blur rounded-full shadow
+         hover:bg-[#1D293D] hover:text-white"
+  onclick="scrollSlide(1)"
+  aria-label="Siguiente"
+>›</button>
+
+  <script client:load>
+    const slider = document.getElementById('slider')
+    const GAP = 24                     
+    const CARD = () => slider.firstElementChild.getBoundingClientRect().width + GAP
+
+    function scrollSlide(dir) {
+      if (dir < 0 && slider.scrollLeft === 0) {
+        slider.scrollLeft = slider.scrollWidth - slider.clientWidth
+        return
+      }
+      if (dir > 0 && Math.ceil(slider.scrollLeft + slider.clientWidth) >= slider.scrollWidth) {
+        slider.scrollLeft = 0
+        return
+      }
+      slider.scrollBy({ left: dir * CARD(), behavior: 'smooth' })
+    }
+
+    window.scrollSlide = scrollSlide
+  </script>
+</div>

@@ -1,22 +1,28 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro"
-import Layout from "@/layouts/Layout.astro"
-import Header from "@/components/Header.astro"
-
-import '@/styles/global.css';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import RecentCarousel from "@/components/RecentCarousel.astro";
+import "@/styles/global.css";
 import NavBar from "@/components/NavBar.astro";
 import TopUtility from "@/components/TopUtility.astro";
 
-
 const dataHeader = {
 	titulo: "Mi titulo del header",
-	descripcion: "Descripción del header"
-}
+	descripcion: "Descripción del header",
+};
+---
 
-
---- 
 <BaseLayout>
 	<TopUtility />
 	<Header />
 	<NavBar />
+	<section
+		class="w-full py-12 content-wrap"
+	>
+		<h2 class="text-center text-2xl font-bold mb-6 text-[#231F20]">
+			Investigaciones recientes
+		</h2>
+		<RecentCarousel />
+	</section>
 </BaseLayout>

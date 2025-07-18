@@ -1,13 +1,8 @@
 ---
 const navItems = [
+  { title: "HOME", href: "/about", hasDropdown: true },
   { title: "RESEARCH", href: "/research", hasDropdown: true },
-  { title: "ABOUT US", href: "/about", hasDropdown: true },
-  { title: "CAREER", href: "/career", hasDropdown: true },
-  { title: "SERVICE", href: "/service", hasDropdown: true },
-  { title: "IMPACT", href: "/impact", hasDropdown: true },
-  { title: "PEOPLE", href: "/people", hasDropdown: false },
-  { title: "NEWS", href: "/news", hasDropdown: false },
-  { title: "EVENTS", href: "/events", hasDropdown: false },
+  { title: "PEOPLE", href: "/career", hasDropdown: true },
 ];
 ---
 
@@ -71,7 +66,7 @@ const navItems = [
 
     btn.addEventListener("click", () => {
       menu.classList.toggle("hidden");
-      menu.classList.toggle("flex"); 
+      menu.classList.toggle("flex");
     });
   });
 </script>
