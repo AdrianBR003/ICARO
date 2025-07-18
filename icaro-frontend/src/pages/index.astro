@@ -13,12 +13,19 @@ const dataHeader = {
 };
 ---
 
+
 <BaseLayout>
-	<TopUtility />
-	<Header />
-	<NavBar />
+	<section class="max-w-full bg-white shadow-md rounded-lg">
+		<TopUtility />
+		<Header />
+	</section>
+	<section class="mt-10 max-w-full bg-white shadow-md rounded-lg content-wrap">
+		<NavBar />
+	</section>
+
 	<section
-		class="w-full py-12 content-wrap"
+		class="w-full py-12 content-wrap bg-white shadow-md rounded-lg
+		       max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 "
 	>
 		<h2 class="text-center text-2xl font-bold mb-6 text-[#231F20]">
 			Investigaciones recientes

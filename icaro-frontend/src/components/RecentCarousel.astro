@@ -27,22 +27,36 @@ const investigations = [
 ]
 ---
 
-<div class="relative flex justify-center px-4 py-6">
-  <!-- 𝗖𝗮𝗿𝗿𝘂𝘀𝗲𝗹 -->
+<style>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+
+<div class="max-w-[72rem] mx-auto py-6
+            grid grid-cols-[auto_1fr_auto] gap-6 items-center">
+  <!-- Flecha izquierda -->
+  <button
+    id="prevBtn"
+    aria-label="Anterior"
+    class="hidden sm:flex w-12 h-12 items-center justify-center text-3xl
+           bg-white/80 backdrop-blur rounded-full shadow
+           hover:bg-[#1D293D] hover:text-white"
+  >‹</button>
+
+  <!-- Carrusel -->
   <div
     id="slider"
-    class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory
-           max-w-[72rem] w-full p-4 bg-inherit"
+    class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth
+           snap-x snap-mandatory w-full p-4"
   >
-    {investigations.map((inv) => (
+    {investigations.map(inv => (
       <article
         class="shrink-0 w-full snap-center grid grid-cols-[1fr_2fr] gap-6
                bg-white rounded-xl
-               ring-1 ring-gray-200 border-r-4 border-[#006D38]"
-      >
+               ring-1 ring-gray-200 border-r-4 border-[#006D38]">
         <div class="relative aspect-[3/2]">
           <img
-            src={inv.img.src ?? placeholder.src}
+            src={inv.img.src}
             alt={inv.title}
             class="absolute inset-0 w-full h-full object-contain p-2"
             onerror={`this.onerror=null;this.src='${placeholder.src}'`}
@@ -62,29 +76,19 @@ const investigations = [
     ))}
   </div>
 
-  <!-- 𝗙𝗹𝗲𝗰𝗵𝗮𝘀 -->
+  <!-- Flecha derecha -->
   <button
-  class="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10
-         w-12 h-12 flex items-center justify-center text-3xl
-         bg-white/80 backdrop-blur rounded-full shadow
-         hover:bg-[#1D293D] hover:text-white"
-  onclick="scrollSlide(-1)"
-  aria-label="Anterior"
->‹</button>
-
-<button
-  class="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10
-         w-12 h-12 flex items-center justify-center text-3xl
-         bg-white/80 backdrop-blur rounded-full shadow
-         hover:bg-[#1D293D] hover:text-white"
-  onclick="scrollSlide(1)"
-  aria-label="Siguiente"
->›</button>
+    id="nextBtn"
+    aria-label="Siguiente"
+    class="hidden sm:flex w-12 h-12 items-center justify-center text-3xl
+           bg-white/80 backdrop-blur rounded-full shadow
+           hover:bg-[#1D293D] hover:text-white"
+  >›</button>
 
   <script client:load>
     const slider = document.getElementById('slider')
-    const GAP = 24                     
-    const CARD = () => slider.firstElementChild.getBoundingClientRect().width + GAP
+    const GAP    = 24
+    const CARD   = () => slider.firstElementChild.getBoundingClientRect().width + GAP
 
     function scrollSlide(dir) {
       if (dir < 0 && slider.scrollLeft === 0) {
@@ -98,6 +102,7 @@ const investigations = [
       slider.scrollBy({ left: dir * CARD(), behavior: 'smooth' })
     }
 
-    window.scrollSlide = scrollSlide
+    document.getElementById('prevBtn')?.addEventListener('click', () => scrollSlide(-1))
+    document.getElementById('nextBtn')?.addEventListener('click', () => scrollSlide( 1))
   </script>
 </div>
