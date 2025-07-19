@@ -1,28 +1,28 @@
 ---
-import placeholder from '@/assets/imagedefault.webp'
-import imageExample from '@/assets/imageexample.webp'
+import placeholder   from '@/assets/imagedefault.webp'
+import imageExample  from '@/assets/imageexample.webp'
 
 const investigations = [
   {
-    title: 'Investigación sobre el impacto del cambio climático',
-    authors: 'Juan Pérez, Ana Gómez',
-    description: 'Un estudio exhaustivo sobre cómo el cambio climático afecta a la biodiversidad.',
-    img: imageExample,
-    link: '#',
+    title:       'Investigación sobre el impacto del cambio climático',
+    authors:     'Juan Pérez, Ana Gómez, Luis Rodríguez, María Torres, Marta López',
+    description: 'Un estudio exhaustivo sobre cómo el cambio climático afecta a la biodiversidad.Un estudio exhaustivo sobre cómo el cambio climático afecta a la biodiversidad.Un estudio exhaustivo sobre cómo el cambio climático afecta a la biodiversidad.Un estudio exhaustivo sobre cómo el cambio climático afecta a la biodiversidad.',
+    img:         imageExample,
+    link:        '#',
   },
   {
-    title: 'Avances en la tecnología de energías renovables',
-    authors: 'Carlos López, María Fernández',
+    title:       'Avances en la tecnología de energías renovables',
+    authors:     'Carlos López, María Fernández',
     description: 'Exploración de las últimas innovaciones en energías limpias y sostenibles.',
-    img: imageExample,
-    link: '#',
+    img:         imageExample,
+    link:        '#',
   },
   {
-    title: 'Estudio de caso sobre la conservación de especies en peligro',
-    authors: 'Laura Martínez, Pedro Sánchez',
+    title:       'Estudio de caso sobre la conservación de especies en peligro',
+    authors:     'Laura Martínez, Pedro Sánchez',
     description: 'Análisis detallado de estrategias efectivas para la conservación de especies amenazadas.',
-    img: imageExample,
-    link: '#',
+    img:         imageExample,
+    link:        '#',
   },
 ]
 ---
@@ -32,13 +32,12 @@ const investigations = [
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-<div class="max-w-[72rem] mx-auto py-6
-            grid grid-cols-[auto_1fr_auto] gap-6 items-center">
-  <!-- Flecha izquierda -->
+<div class="max-w-[72rem] mx-auto grid grid-cols-[auto_1fr_auto] gap-8 items-center">
+  <!-- Flecha anterior -->
   <button
     id="prevBtn"
     aria-label="Anterior"
-    class="hidden sm:flex w-12 h-12 items-center justify-center text-3xl
+    class="hidden sm:flex w-14 h-14 items-center justify-center text-4xl
            bg-white/80 backdrop-blur rounded-full shadow
            hover:bg-[#1D293D] hover:text-white"
   >‹</button>
@@ -46,29 +45,33 @@ const investigations = [
   <!-- Carrusel -->
   <div
     id="slider"
-    class="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth
-           snap-x snap-mandatory w-full p-4"
+    class="flex gap-8 overflow-x-auto no-scrollbar scroll-smooth
+           snap-x snap-mandatory w-full p-7"
   >
     {investigations.map(inv => (
       <article
-        class="shrink-0 w-full snap-center grid grid-cols-[1fr_2fr] gap-6
-               bg-white rounded-xl
-               ring-1 ring-gray-200 border-r-4 border-[#006D38]">
-        <div class="relative aspect-[3/2]">
+        class="shrink-0 snap-center flex w-full max-w-[200rem]
+               rounded-xl ring-1 ring-gray-200 border-r-4 border-[#006D38]"
+      >
+        <div class="basis-5/12 relative">
           <img
             src={inv.img.src}
             alt={inv.title}
-            class="absolute inset-0 w-full h-full object-contain p-2"
+            class="absolute inset-0 w-full h-full object-contain p-4"
             onerror={`this.onerror=null;this.src='${placeholder.src}'`}
           />
         </div>
-        <div class="p-6 flex flex-col justify-between">
+
+        <div class="basis-7/12 p-8 flex flex-col justify-between bg-[#EAF4EA]">
           <div>
-            <h3 class="text-xl font-semibold text-[#231F20]">{inv.title}</h3>
-            <p class="text-base text-gray-500">{inv.authors}</p>
-            <p class="text-sm text-gray-600 mt-2 truncate">{inv.description}</p>
+            <h3 class="text-2xl font-semibold text-[#231F20]">{inv.title}</h3>
+            <p class="text-lg text-gray-500 line-clamp-1">{inv.authors}</p>
+            <p class="text-base text-gray-600 mt-3 line-clamp-3">{inv.description}</p>
           </div>
-          <a href={inv.link} class="text-[#006D38] hover:text-[#004d29] underline text-base">
+          <a
+            href={inv.link}
+            class="mt-4 text-lg underline text-[#006D38] hover:text-[#004d29]"
+          >
             Ver publicación →
           </a>
         </div>
@@ -76,18 +79,19 @@ const investigations = [
     ))}
   </div>
 
-  <!-- Flecha derecha -->
+  <!-- Flecha siguiente -->
   <button
     id="nextBtn"
     aria-label="Siguiente"
-    class="hidden sm:flex w-12 h-12 items-center justify-center text-3xl
+    class="hidden sm:flex w-14 h-14 items-center justify-center text-4xl
            bg-white/80 backdrop-blur rounded-full shadow
            hover:bg-[#1D293D] hover:text-white"
   >›</button>
 
+  <!-- Lógica de desplazamiento -->
   <script client:load>
     const slider = document.getElementById('slider')
-    const GAP    = 24
+    const GAP    = 32                                 
     const CARD   = () => slider.firstElementChild.getBoundingClientRect().width + GAP
 
     function scrollSlide(dir) {

@@ -16,13 +16,20 @@ html {
 }
 
 .content-wrap {
-  max-width: 1800px;
+  max-width: 1500px;
   margin-inline: auto;
   padding-inline: 1rem; 
 }
 
 .border-gradient {
   border-image: linear-gradient(90deg,#006D38 0%,#79c199 100%) 1;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
