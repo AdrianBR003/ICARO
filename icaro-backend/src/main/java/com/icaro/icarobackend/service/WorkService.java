@@ -18,6 +18,10 @@ public class WorkService {
         this.orcidService = orcidService;
     }
 
+    public List<Work> getAllWorks(){
+        return workRepository.findAll();
+    }
+
     public List<Work> getWorksForInvestigator(String orcid){
         return workRepository.findAll().stream()
                 .filter(w -> w.getOwnerOrcids().contains(orcid))

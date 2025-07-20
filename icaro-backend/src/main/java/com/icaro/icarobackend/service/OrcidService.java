@@ -1,11 +1,12 @@
 package com.icaro.icarobackend.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.icaro.icarobackend.model.Investigator;
 import com.icaro.icarobackend.model.Work;
+import com.icaro.icarobackend.model.Investigator;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.JsonNode;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,21 +22,18 @@ public class OrcidService {
     }
 
     public Investigator fetchInvestigator(String orcid) {
-        // GET
         JsonNode root = restTemplate.getForObject("/{orcid}/record", JsonNode.class, orcid);
         return Investigator.builder()
                 .orcid(orcid)
                 .givenNames(root.at("/person/name/given-names/value").asText(""))
                 .familyName(root.at("/person/name/family-name/value").asText(""))
-                //TODO Preguntar a antonio si cogemos el email de los arrays 0, u otro!
                 .email(root.at("/person/emails/email/0/email").asText(""))
                 .biography(root.at("/person/biography/content").asText(""))
                 .build();
     }
 
     public List<Work> fetchWorks(String orcidInvestigator) {
-        JsonNode root   = restTemplate.getForObject(
-                "/{orcid}/works", JsonNode.class, orcidInvestigator);
+        JsonNode root   = restTemplate.getForObject("/{orcid}/works", JsonNode.class, orcidInvestigator);
         JsonNode groups = root.path("group");
         List<Work> works = new ArrayList<>();
 
@@ -57,16 +55,29 @@ public class OrcidService {
                         .asText("");
                 String type    = summary.path("type").asText("");
 
+                // extraer publication-date
+                JsonNode pd = summary.path("publication-date");
+                String y = pd.path("year").path("value").asText();
+                String m = pd.path("month").path("value").asText();
+                String d = pd.path("day").path("value").asText();
+                LocalDate projectDate = null;
+                if (!y.isEmpty()) {
+                    int year = Integer.parseInt(y);
+                    int month = m.isEmpty() ? 1 : Integer.parseInt(m);
+                    int day = d.isEmpty() ? 1 : Integer.parseInt(d);
+                    projectDate = LocalDate.of(year, month, day);
+                }
+
                 works.add(Work.builder()
                         .putCode(putCode)
                         .title(title)
                         .type(type)
                         .externalIds(extIds)
+                        .projectDate(projectDate)
                         .build());
             }
         }
         return works;
     }
-
 
 }

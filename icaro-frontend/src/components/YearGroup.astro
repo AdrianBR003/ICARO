@@ -29,11 +29,23 @@ const groupId = `year-${group.year}`;
                   hover:shadow-md transition ${idx >= threshold ? 'hidden' : ''}`}
         >
           <h3 class="text-lg font-bold text-gray-800 mb-2">{item.title}</h3>
-          <p class="text-sm text-gray-600 italic mb-4">{item.authors.join(", ")}</p>
-          <div class="flex flex-wrap gap-4 text-sm">
-            <a href={item.links.doi} class="underline">DOI</a>
-            <a href={item.links.scholar} class="underline">Google Scholar</a>
-            <a href={item.links.bibtex} class="underline">BibTeX</a>
+          <p class="text-sm text-gray-600 italic mb-1">
+            Participantes: {item.participants.join(", ")}
+          </p>
+          <p class="text-sm text-gray-600 mb-4">Tipo: {item.type}</p>
+          <div class="flex flex-wrap gap-3 text-sm">
+            {item.externalIds.map(id => {
+              const isDoi = /^\d+\.\d+/.test(id);
+              return (
+                <a
+                  href={isDoi ? `https://doi.org/${id}` : "#"}
+                  class="underline"
+                  target={isDoi ? "_blank" : "_self"}
+                >
+                  {isDoi ? "DOI" : id}
+                </a>
+              );
+            })}
           </div>
         </article>
       ))
@@ -58,3 +70,29 @@ const groupId = `year-${group.year}`;
 <style is:global>
   details > summary::-webkit-details-marker { display: none; }
 </style>
+
+<script type="module" client:load>
+  document.querySelectorAll('div[id^="year-"]').forEach(container => {
+    const threshold = parseInt(container.dataset.threshold, 10);
+    const items     = Array.from(container.querySelectorAll('.year-item'));
+    const btn       = document.getElementById(`load-more-${container.id}`);
+    let visible     = threshold;
+
+    if (btn) {
+      btn.addEventListener('click', () => {
+        items.slice(visible, visible + threshold).forEach(el => el.classList.remove('hidden'));
+        visible += threshold;
+        if (visible >= items.length) btn.remove();
+      });
+
+      const details = container.closest('details');
+      details.addEventListener('toggle', () => {
+        if (details.open) {
+          visible = threshold;
+          items.forEach((el, i) => el.classList.toggle('hidden', i >= threshold));
+          if (visible < items.length) btn.style.display = '';
+        }
+      });
+    }
+  });
+</script>

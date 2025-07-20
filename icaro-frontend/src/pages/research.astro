@@ -5,136 +5,28 @@ import NavBar from "@/components/NavBar.astro";
 import Header from "@/components/Header.astro";
 import YearGroup from "@/components/YearGroup.astro";
 
-const researchGroups = [
-  {
-    year: 2025,
-    items: [
-      {
-        title: "Trustworthy and explainable federated system for extracting descriptive rules in a data streaming environment",
-        authors: [
-          "María Asunción Padilla Rascón",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Extracting Knowledge from Machine Learning Models to Diagnose Breast Cancer",
-        authors: [
-          "José Martínez-Ramírez",
-          "Cristóbal J. Carmona",
-          "María Ramírez-Expósito",
-          "José Martínez-Martos"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-      {
-        title: "Application of Spiking Neural Networks and Traditional Artificial Neural Networks for Solar Radiation Forecasting in Photovoltaic Systems in Arab Countries",
-        authors: [
-          "Bahgat Ayasi",
-          "Iago Vázquez",
-          "Mohammed Saleh",
-          "Ángel Miguel García-Vico",
-          "Cristóbal J. Carmona"
-        ],
-        links: { doi: "#", scholar: "#", bibtex: "#" }
-      },
-    ]
-  },
-  {
-    year: 2024,
-    items: [
-    ]
-  }
-];
+const res = await fetch("http://localhost:8080/api/works/all");
+const works = await res.json();
+
+const groupsObj = {};
+works.forEach(work => {
+  const year = work.projectDate?.slice(0, 4) || "Sin fecha";
+  if (!groupsObj[year]) groupsObj[year] = [];
+  groupsObj[year].push(work);
+});
+
+const noDateItems = groupsObj["Sin fecha"] || [];
+delete groupsObj["Sin fecha"];
+
+const researchGroups = Object.entries(groupsObj)
+  .map(([year, items]) => ({ year, items }))
+  .sort((a, b) =>
+    b.year.localeCompare(a.year, undefined, { numeric: true })
+  );
+
+if (noDateItems.length) {
+  researchGroups.push({ year: "Sin fecha", items: noDateItems });
+}
 ---
 <BaseLayout>
   <section class="max-w-full bg-white shadow-md rounded-lg">
@@ -162,41 +54,3 @@ const researchGroups = [
     ))}
   </section>
 </BaseLayout>
-
-<script type="module" client:load>
-  document.querySelectorAll('div[id^="year-"]').forEach(container => {
-    const details   = container.closest('details');
-    const items     = Array.from(container.querySelectorAll('.year-item'));
-    const btn       = document.getElementById(`load-more-${container.id}`);
-    const threshold = parseInt(container.dataset.threshold || '0', 10);
-    let visible     = threshold;
-
-    function reset() {
-      visible = threshold;
-      items.forEach((el, i) => {
-        el.classList.toggle('hidden', i >= visible);
-      });
-      if (btn) {
-        btn.style.display = visible < items.length ? '' : 'none';
-      }
-    }
-
-    reset();
-
-    if (btn) {
-      btn.addEventListener('click', () => {
-        for (let i = visible; i < visible + threshold && i < items.length; i++) {
-          items[i].classList.remove('hidden');
-        }
-        visible += threshold;
-        if (visible >= items.length) btn.remove();
-      });
-    }
-
-    if (details) {
-      details.addEventListener('toggle', () => {
-        if (details.open) reset();
-      });
-    }
-  });
-</script>

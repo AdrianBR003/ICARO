@@ -1,18 +1,17 @@
 package com.icaro.icarobackend.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.icaro.icarobackend.model.Investigator;
 import com.icaro.icarobackend.model.Work;
-import com.icaro.icarobackend.repository.InvestigatorRepository;
+import com.icaro.icarobackend.model.Investigator;
 import com.icaro.icarobackend.repository.WorkRepository;
+import com.icaro.icarobackend.repository.InvestigatorRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,7 +21,9 @@ public class InvestigatorService {
     private final OrcidService orcidService;
     private final WorkRepository workRepository;
 
-    public InvestigatorService(InvestigatorRepository investigatorRepository, OrcidService orcidService, WorkRepository workRepository) {
+    public InvestigatorService(InvestigatorRepository investigatorRepository,
+                               OrcidService orcidService,
+                               WorkRepository workRepository) {
         this.investigatorRepository = investigatorRepository;
         this.orcidService = orcidService;
         this.workRepository = workRepository;
@@ -33,12 +34,6 @@ public class InvestigatorService {
         return investigatorRepository.findAll();
     }
 
-    /**
-     * 1) Fetch Investigator from ORCID and save.
-     * 2) Fetch the /record summary, use external-ids to detect duplicates.
-     * 3) Merge ownerOrcids and participants for existing works.
-     * 4) Insert truly new works with initial owner & participant.
-     */
     public Investigator syncAndMergeInvestigator(String orcid) {
         Investigator inv = orcidService.fetchInvestigator(orcid);
         investigatorRepository.save(inv);
@@ -68,12 +63,18 @@ public class InvestigatorService {
                     updated = true;
                 }
 
-                //  - externalIds
                 for (String ext : summary.getExternalIds()) {
                     if (!existing.getExternalIds().contains(ext)) {
                         existing.getExternalIds().add(ext);
                         updated = true;
                     }
+                }
+
+                // actualizar projectDate si cambia
+                LocalDate newDate = summary.getProjectDate();
+                if (newDate != null && !newDate.equals(existing.getProjectDate())) {
+                    existing.setProjectDate(newDate);
+                    updated = true;
                 }
 
                 if (updated) {
@@ -88,6 +89,7 @@ public class InvestigatorService {
                         .externalIds(new ArrayList<>(summary.getExternalIds()))
                         .ownerOrcids(new ArrayList<>(List.of(orcid)))
                         .participants(new ArrayList<>(List.of(fullName)))
+                        .projectDate(summary.getProjectDate()) // fecha del proyecto
                         .build();
 
                 workRepository.save(toSave);
@@ -100,12 +102,10 @@ public class InvestigatorService {
 
     private String normalize(String text) {
         if (text == null) return "";
-        String n = Normalizer.normalize(text, Normalizer.Form.NFD)
+        return Normalizer.normalize(text, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")
                 .replaceAll("[^\\p{Alnum} ]+", "")
                 .toLowerCase()
                 .trim();
-        return n;
     }
-
 }
