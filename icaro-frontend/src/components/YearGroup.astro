@@ -1,0 +1,60 @@
+---
+const { group } = Astro.props;
+const threshold = 5;
+const groupId = `year-${group.year}`;
+---
+<details open={group.year === new Date().getFullYear()} class="group border border-gray-300 rounded mb-6">
+  <summary
+    class="flex items-center justify-between px-8 py-4
+           bg-[#EAF4EA] hover:bg-[#D4EAD4]
+           cursor-pointer text-gray-900 font-bold text-2xl
+           transition-colors"
+  >
+    <span class="flex items-center space-x-3">
+      <svg
+        class="h-6 w-6 transform transition-transform group-open:rotate-90"
+        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+      >
+        <path d="M9 5l7 7-7 7" />
+      </svg>
+      <span>{group.year}</span>
+    </span>
+  </summary>
+
+  <div id={groupId} class="p-6 bg-gray-50 space-y-8" data-threshold={threshold}>
+    {group.items.length > 0 ? (
+      group.items.map((item, idx) => (
+        <article
+          class={`year-item border border-gray-200 p-6 bg-white rounded-lg shadow-sm
+                  hover:shadow-md transition ${idx >= threshold ? 'hidden' : ''}`}
+        >
+          <h3 class="text-lg font-bold text-gray-800 mb-2">{item.title}</h3>
+          <p class="text-sm text-gray-600 italic mb-4">{item.authors.join(", ")}</p>
+          <div class="flex flex-wrap gap-4 text-sm">
+            <a href={item.links.doi} class="underline">DOI</a>
+            <a href={item.links.scholar} class="underline">Google Scholar</a>
+            <a href={item.links.bibtex} class="underline">BibTeX</a>
+          </div>
+        </article>
+      ))
+    ) : (
+      <div class="p-6 bg-white rounded-lg border border-gray-200 text-center text-gray-600">
+        No hay proyectos registrados para {group.year}.
+      </div>
+    )}
+
+    {group.items.length > threshold && (
+      <button
+        id={`load-more-${groupId}`}
+        class="mt-4 block mx-auto px-4 py-2 bg-[#EAF4EA] hover:bg-[#D4EAD4]
+               text-gray-800 rounded-lg transition-colors"
+      >
+        Cargar más
+      </button>
+    )}
+  </div>
+</details>
+
+<style is:global>
+  details > summary::-webkit-details-marker { display: none; }
+</style>
