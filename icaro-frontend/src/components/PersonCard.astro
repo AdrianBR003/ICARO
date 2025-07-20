@@ -1,0 +1,18 @@
+---
+const { person } = Astro.props
+---
+<article class="flex gap-6 p-6 bg-white shadow rounded-lg">
+  <img src={person.img} alt={person.name} class="w-24 h-24 rounded-full object-cover" />
+  <div class="space-y-1">
+    <h3 class="text-xl font-semibold">{person.name}</h3>
+    <p class="text-sm text-gray-500">{person.role}</p>
+
+    <div class="text-sm leading-6">
+      <p><span class="font-medium">E</span> {person.email}</p>
+      <p><span class="font-medium">P</span> {person.phone}</p>
+      <p><span class="font-medium">O</span> {person.office}</p>
+    </div>
+
+    <p class="text-sm text-gray-700">{person.tags}</p>
+  </div>
+</article>
