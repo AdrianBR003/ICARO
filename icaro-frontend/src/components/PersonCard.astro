@@ -1,20 +1,20 @@
 ---
-const { person } = Astro.props
+const { person } = Astro.props;
 ---
-<article 
-  class="person-card flex gap-6 p-6 bg-white shadow rounded-lg
-         transition-shadow transition-colors
-         hover:shadow-lg hover:bg-[#EAF4EA]"
->
-  <img src={person.img} alt={person.name} class="w-24 h-24 rounded-full object-cover" />
+<article class="person-card flex gap-6 p-6 bg-white shadow rounded-lg transition-shadow transition-colors hover:shadow-lg hover:bg-[#EAF4EA]">
+  <img
+    src={person.img || "/assets/people/default.png"}
+    alt={person.name}
+    class="w-24 h-24 rounded-full object-cover"
+  />
   <div class="space-y-1">
-    <h3 class="text-xl font-semibold">{person.name}</h3>
-    <p class="text-sm text-gray-500">{person.role}</p>
+    <h3 class="text-xl font-semibold text-black">{person.name}</h3>
+    {person.role && <p class="text-sm text-gray-500">{person.role}</p>}
     <div class="text-sm leading-6">
-      <p><span class="font-medium">E</span> {person.email}</p>
-      <p><span class="font-medium">P</span> {person.phone}</p>
-      <p><span class="font-medium">O</span> {person.office}</p>
+      {person.email && <p><span class="font-medium">Email:</span> {person.email}</p>}
+      {person.phone && <p><span class="font-medium">Phone:</span> {person.phone}</p>}
+      {person.office && <p><span class="font-medium">Office:</span> {person.office}</p>}
     </div>
-    <p class="text-sm text-gray-700">{person.tags}</p>
+    {person.tags && <p class="text-sm text-gray-700">{person.tags}</p>}
   </div>
 </article>

@@ -33,7 +33,7 @@ public class InvestigatorController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Investigator>> getAllInvestigator(@PathVariable String orcid){
+    public ResponseEntity<List<Investigator>> getAllInvestigator(){
         return ResponseEntity.ok(investigatorService.getAllInvestigator());
     }
 

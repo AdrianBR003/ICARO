@@ -1,212 +1,23 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import NavBar from "@/components/NavBar.astro";
 import TopUtility from "@/components/TopUtility.astro";
-import PersonCard from "@/components/PersonCard.astro";
 import Header from "@/components/Header.astro";
+import NavBar from "@/components/NavBar.astro";
+import PersonCard from "@/components/PersonCard.astro";
 
-const people = [
-  {
-    name: "Hal Abelson",
-    role: "Professor",
-    email: "hal@mit.edu",
-    phone: "253-8586",
-    office: "32-G516",
-    tags: "Programming, privacy, App Inventor",
-    img: "/assets/people/abelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-  {
-    name: "Ted Adelson",
-    role: "Professor",
-    email: "adelson@csail.mit.edu",
-    phone: "253-0645",
-    office: "32-310",
-    tags: "Vision, touch sensing, robotics",
-    img: "/assets/people/adelson.webp",
-  },
-];
+const res = await fetch("http://localhost:8080/api/investigators/all");
+const invs = await res.json();
+
+const people = invs.map(inv => ({
+  name: `${inv.givenNames} ${inv.familyName}`,
+  email: inv.email || "",
+  role: "",        
+  phone: "",       
+  office: "",      
+  tags: "",        
+  img: `/assets/people/${inv.orcid}.jpg`
+}));
 ---
-
 <BaseLayout>
   <section class="max-w-full bg-white shadow-md rounded-lg">
     <TopUtility />
@@ -223,42 +34,14 @@ const people = [
     <div class="mb-8 relative inline-block w-full text-center py-2">
       <h2 class="text-2xl font-bold text-[#231F20]">People</h2>
       <span
-        class="absolute left-1/2 bottom-0 w-20 h-1 bg-[#006D38]
-               -translate-x-1/2"
+        class="absolute left-1/2 bottom-0 w-20 h-1 bg-[#006D38] -translate-x-1/2"
       ></span>
     </div>
 
     <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
-      {people.map((p) => <PersonCard person={p} />)}
+      {people.map(person => (
+        <PersonCard person={person} />
+      ))}
     </div>
-
-    <button
-      id="load-more"
-      class="hidden block mx-auto mt-6 px-4 py-2
-         bg-white text-black border border-gray-300 rounded-lg
-         transition-colors
-         hover:bg-[#1D293D] hover:text-white"
-    >
-      Cargar más
-    </button>
-
-    <script type="module">
-      const cards = Array.from(document.querySelectorAll(".person-card"));
-      const btn = document.getElementById("load-more");
-      let visible = 9;
-
-      const update = () => {
-        cards.forEach((c, i) => (c.style.display = i < visible ? "" : "none"));
-        btn.style.display = visible < cards.length ? "block" : "none";
-      };
-
-      document.addEventListener("DOMContentLoaded", () => {
-        btn.addEventListener("click", () => {
-          visible += 9;
-          update();
-        });
-        update();
-      });
-    </script>
   </section>
 </BaseLayout>
