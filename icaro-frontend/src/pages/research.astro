@@ -4,12 +4,22 @@ import TopUtility from "@/components/TopUtility.astro";
 import NavBar from "@/components/NavBar.astro";
 import Header from "@/components/Header.astro";
 import YearGroup from "@/components/YearGroup.astro";
+import "@/styles/index.css";
 
-const res = await fetch("http://localhost:8080/api/works/all");
-const works = await res.json();
+let works = [];
+try {
+  const res = await fetch("http://localhost:8080/api/works/all");
+  if (!res.ok) {
+    throw new Error(`Error HTTP: ${res.status}`);
+  }
+  works = await res.json();
+} catch (error) {
+  console.error("No se pudo obtener la lista de trabajos:", error);
+  works = []; 
+}
 const groupsObj = {};
 works.forEach(w => {
-  const year = w.projectDate?.slice(0,4) || "Sin fecha";
+  const year = w.projectDate?.slice(0, 4) || "Sin fecha";
   if (!groupsObj[year]) groupsObj[year] = [];
   groupsObj[year].push(w);
 });
@@ -17,9 +27,12 @@ const noDate = groupsObj["Sin fecha"] || [];
 delete groupsObj["Sin fecha"];
 const researchGroups = Object.entries(groupsObj)
   .map(([year, items]) => ({ year, items }))
-  .sort((a,b)=>b.year.localeCompare(a.year,{numeric:true}));
-if (noDate.length) researchGroups.push({ year:"Sin fecha", items:noDate });
+  .sort((a, b) => b.year.localeCompare(a.year, { numeric: true }));
+if (noDate.length) {
+  researchGroups.push({ year: "Sin fecha", items: noDate });
+}
 ---
+
 <BaseLayout>
   <section class="max-w-full bg-white shadow-md rounded-lg">
     <TopUtility />

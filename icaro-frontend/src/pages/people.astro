@@ -4,19 +4,32 @@ import TopUtility from "@/components/TopUtility.astro";
 import Header from "@/components/Header.astro";
 import NavBar from "@/components/NavBar.astro";
 import PersonCard from "@/components/PersonCard.astro";
+import "@/styles/index.css";
 
-const res = await fetch("http://localhost:8080/api/investigators/all");
-const invs = await res.json();
+let people = [];
 
-const people = invs.map(inv => ({
-  name: `${inv.givenNames} ${inv.familyName}`,
-  email: inv.email || "",
-  role: "",        
-  phone: "",       
-  office: "",      
-  tags: "",        
-  img: `/assets/people/${inv.orcid}.jpg`
-}));
+try {
+  const res = await fetch("http://localhost:8080/api/investigators/all");
+
+  if (!res.ok) {
+    throw new Error(`Error HTTP: ${res.status}`);
+  }
+
+  const invs = await res.json();
+
+  people = invs.map(inv => ({
+    name: `${inv.givenNames} ${inv.familyName}`,
+    email: inv.email || "",
+    role: "",
+    phone: "",
+    office: "",
+    tags: "",
+    img: `/assets/people/${inv.orcid}.jpg`
+  }));
+} catch (error) {
+  console.error("No se pudo obtener la lista de investigadores:", error);
+  people = []; 
+}
 ---
 <BaseLayout>
   <section class="max-w-full bg-white shadow-md rounded-lg">
