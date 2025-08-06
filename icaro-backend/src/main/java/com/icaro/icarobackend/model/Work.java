@@ -18,9 +18,9 @@ public class Work {
     String orcidOwner;
     private String title;
     private String description;
-    private String type;
     private List<String> participants; // Name Participants
     private List<String> externalIds;
+    private List<String> tags;
     private List<String> ownerOrcids; // OIDS Participants
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate projectDate;

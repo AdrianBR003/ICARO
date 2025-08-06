@@ -54,7 +54,7 @@ public class OrcidService {
                         .path("value")
                         .asText("");
                 String type    = summary.path("type").asText("");
-
+                List<String> typeList = new ArrayList<>();
                 // extraer publication-date
                 JsonNode pd = summary.path("publication-date");
                 String y = pd.path("year").path("value").asText();
@@ -71,7 +71,7 @@ public class OrcidService {
                 works.add(Work.builder()
                         .putCode(putCode)
                         .title(title)
-                        .type(type)
+                        .tags(typeList)
                         .externalIds(extIds)
                         .projectDate(projectDate)
                         .build());

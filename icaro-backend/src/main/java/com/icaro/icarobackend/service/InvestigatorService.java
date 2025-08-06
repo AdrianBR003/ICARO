@@ -85,7 +85,7 @@ public class InvestigatorService {
                 Work toSave = Work.builder()
                         .putCode(summary.getPutCode())
                         .title(summary.getTitle())
-                        .type(summary.getType())
+                        .tags(summary.getTags())
                         .externalIds(new ArrayList<>(summary.getExternalIds()))
                         .ownerOrcids(new ArrayList<>(List.of(orcid)))
                         .participants(new ArrayList<>(List.of(fullName)))
