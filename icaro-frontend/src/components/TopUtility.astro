@@ -1,4 +1,5 @@
-
+---
+---
 <div class="bg-slate-800 text-slate-200 text-xs">
   <div class="container mx-auto px-4 flex justify-end gap-4 py-1">
     <a href="/lang" class="hidden sm:inline">ES</a>
@@ -7,36 +8,63 @@
 </div>
 
 <script is:inline>
-  document.addEventListener('DOMContentLoaded', () => {
-    const adminToggle = document.getElementById('adminToggle');
-    const isAdmin = localStorage.getItem('adminMode') === 'true';
+document.addEventListener('DOMContentLoaded', () => {
+  const adminToggle = document.getElementById('adminToggle');
+  
+  // Función para verificar el estado admin
+  async function checkAdminStatus() {
+    try {
+      const response = await fetch('http://localhost:8080/api/session/check-admin', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const isAdmin = await response.json();
+        updateUI(isAdmin);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  }
+  
+  // Función para alternar el modo admin
+  async function toggleAdmin() {
+    try {
+      const response = await fetch('http://localhost:8080/api/session/toggle-admin', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const isAdmin = await response.json();
+        updateUI(isAdmin);
+      }
+    } catch (error) {
+      console.error('Error toggling admin mode:', error);
+    }
+  }
+  
+  // Función para actualizar la UI
+  function updateUI(isAdmin) {
+    adminToggle.textContent = isAdmin ? 'Close Admin' : 'Admin';
     
-    // Estado inicial
-    if (isAdmin) {
-      adminToggle.textContent = 'Exit Admin';
-      document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.classList.remove('hidden');
+    // Mostrar/ocultar elementos de edición
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.classList.toggle('hidden', !isAdmin);
+    });
+    
+    // Cerrar modales si salimos del modo admin
+    if (!isAdmin) {
+      document.querySelectorAll('.modal-container').forEach(modal => {
+        modal.classList.add('hidden');
       });
     }
-    
-    // Manejar clic en el botón Admin
-    adminToggle.addEventListener('click', () => {
-      const newState = localStorage.getItem('adminMode') !== 'true';
-      localStorage.setItem('adminMode', newState.toString());
-      
-      adminToggle.textContent = newState ? 'Exit Admin' : 'Admin';
-      
-      // Mostrar/ocultar todos los botones de edición
-      document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.classList.toggle('hidden', !newState);
-      });
-      
-      // Si estamos saliendo del modo admin, cerrar todos los modales
-      if (!newState) {
-        document.querySelectorAll('.modal-container').forEach(modal => {
-          modal.classList.add('hidden');
-        });
-      }
-    });
-  });
+  }
+  
+  // Event listeners
+  adminToggle.addEventListener('click', toggleAdmin);
+  
+  // Verificar estado al cargar
+  checkAdminStatus();
+});
 </script>
