@@ -1,4 +1,5 @@
 ---
+// pages/people.astro
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/TopUtility.astro";
 import Header from "@/components/Header.astro";
@@ -33,7 +34,7 @@ try {
 ---
 <BaseLayout>
   <section class="max-w-full bg-white shadow-md rounded-lg">
-    <TopUtility />
+    <TopUtility client:load />
     <Header />
   </section>
   <section class="mt-10 max-w-full bg-white shadow-md">
@@ -53,7 +54,7 @@ try {
 
     <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
       {people.map(person => (
-        <PersonCard person={person} />
+        <PersonCard person={person} client:load />
       ))}
     </div>
   </section>
