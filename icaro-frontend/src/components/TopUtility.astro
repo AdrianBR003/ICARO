@@ -1,6 +1,42 @@
+
 <div class="bg-slate-800 text-slate-200 text-xs">
   <div class="container mx-auto px-4 flex justify-end gap-4 py-1">
     <a href="/lang" class="hidden sm:inline">ES</a>
-    <a href="/admin">Admin</a>
+    <button id="adminToggle" class="cursor-pointer bg-transparent border-none text-inherit">Admin</button>
   </div>
 </div>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const adminToggle = document.getElementById('adminToggle');
+    const isAdmin = localStorage.getItem('adminMode') === 'true';
+    
+    // Estado inicial
+    if (isAdmin) {
+      adminToggle.textContent = 'Exit Admin';
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.classList.remove('hidden');
+      });
+    }
+    
+    // Manejar clic en el botón Admin
+    adminToggle.addEventListener('click', () => {
+      const newState = localStorage.getItem('adminMode') !== 'true';
+      localStorage.setItem('adminMode', newState.toString());
+      
+      adminToggle.textContent = newState ? 'Exit Admin' : 'Admin';
+      
+      // Mostrar/ocultar todos los botones de edición
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.classList.toggle('hidden', !newState);
+      });
+      
+      // Si estamos saliendo del modo admin, cerrar todos los modales
+      if (!newState) {
+        document.querySelectorAll('.modal-container').forEach(modal => {
+          modal.classList.add('hidden');
+        });
+      }
+    });
+  });
+</script>
