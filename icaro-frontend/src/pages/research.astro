@@ -1,3 +1,4 @@
+
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/TopUtility.astro";
@@ -70,178 +71,107 @@ const mostRecentYear = researchGroups[0]?.year || "all";
   <section class="max-w-4xl mx-auto px-4 py-8">
     <div class="mb-10">
       <div class="relative max-w-full">
-        <span
-          class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            class="w-5 h-5"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-              clip-rule="evenodd"></path>
+        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"></path>
           </svg>
         </span>
-        <input
-          id="search-input"
-          type="search"
-          placeholder="Buscar publicaciones por título o autor..."
-          class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
-        />
+        <input id="search-input" type="search" placeholder="Buscar publicaciones por título o autor..." class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition" />
       </div>
     </div>
 
     <div class="mb-10">
-      <div id="category-filters" class="flex flex-wrap gap-3 items-center">
-      </div>
+      <div id="category-filters" class="flex flex-wrap gap-3 items-center"></div>
     </div>
 
     <div class="mb-6 flex items-center gap-3 justify-end">
       <span class="text-sm text-gray-600">Año:</span>
       <div class="relative">
-        <select
-          id="year-filter"
-          class="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1 pr-7 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition cursor-pointer"
-        >
+        <select id="year-filter" class="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1 pr-7 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition cursor-pointer">
           <option value="all">Todos</option>
-          {
-            researchGroups.map(({ year }) => (
-              <option value={year} selected={year === mostRecentYear}>
-                {year}
-              </option>
-            ))
-          }
+          {researchGroups.map(({ year }) => (
+            <option value={year} selected={year === mostRecentYear}>{year}</option>
+          ))}
         </select>
-        <div
-          class="pointer-events-none absolute inset-y-0 right-1 flex items-center px-1 text-gray-500"
-        >
+        <div class="pointer-events-none absolute inset-y-0 right-1 flex items-center px-1 text-gray-500">
           <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fill-rule="evenodd"
-              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-              clip-rule="evenodd"></path>
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
           </svg>
         </div>
       </div>
     </div>
 
     <div class="space-y-8" id="publications">
-      {
-        researchGroups.map(({ year, items }) =>
-          items.slice(0, 10).map((work) => (
-            <article
-              class="publication-entry border rounded-lg p-6 shadow-sm bg-white transition-all duration-300 hover:shadow-md"
-              data-tags={work.tags.join(",")}
-              data-year={year}
-            >
-              {work.tags.length > 0 && (
-                <div class="flex flex-wrap gap-2 mb-3">
-                  {work.tags.map((tag) => (
-                    <span class="bg-gray-50 text-gray-800 text-xs px-2 py-1 rounded font-medium border border-gray-200 shadow-sm">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <h3 class="text-xl font-bold text-gray-900 leading-snug mb-2">
-                {work.title}
-              </h3>
-              {work.participants?.length > 0 && (
-                <p class="text-sm text-gray-700 mb-1">
-                  {work.participants.join(", ")}
-                </p>
-              )}
-              {work.externalIds?.length > 0 && (
-                <p class="text-sm italic text-gray-600">
-                  DOI: {work.externalIds[0]}
-                </p>
-              )}
-              <p class="text-sm italic text-gray-600">Publicado en: {year}</p>
-              <button
-                class="mt-4 bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded hover:bg-gray-200 transition"
-                type="button"
-              >
-                BibTeX
-              </button>
-            </article>
-          )),
-        )
-      }
+      {researchGroups.map(({ year, items }) => (
+        items.slice(0, 10).map((work) => (
+          <article class="publication-entry border rounded-lg p-6 shadow-sm bg-white transition-all duration-300 hover:shadow-md" data-tags={work.tags.join(",")} data-year={year}>
+            {work.tags.length > 0 && (
+              <div class="flex flex-wrap gap-2 mb-3">
+                {work.tags.map((tag) => (
+                  <span class="bg-gray-50 text-gray-800 text-xs px-2 py-1 rounded font-medium border border-gray-200 shadow-sm">{tag}</span>
+                ))}
+              </div>
+            )}
+            <h3 class="text-xl font-bold text-gray-900 leading-snug mb-2">{work.title}</h3>
+            {work.participants?.length > 0 && <p class="text-sm text-gray-700 mb-1">{work.participants.join(", ")}</p>}
+            {work.externalIds?.length > 0 && <p class="text-sm italic text-gray-600">DOI: {work.externalIds[0]}</p>}
+            <p class="text-sm italic text-gray-600">Publicado en: {year}</p>
+            <button class="mt-4 bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded hover:bg-gray-200 transition" type="button">BibTeX</button>
+          </article>
+        ))
+      ))}
     </div>
 
     <div class="text-center mt-8">
-      <button
-        id="load-more"
-        class="bg-[#1D293D] text-white px-4 py-2 rounded-md hover:bg-[#1D293D] transition"
-        >Mostrar más</button
-      >
+      <button id="load-more" class="bg-[#1D293D] text-white px-4 py-2 rounded-md hover:bg-[#1D293D] transition">Mostrar más</button>
     </div>
   </section>
 
   <script is:inline>
-    document.addEventListener("DOMContentLoaded", function () {
-      // Configuración inicial
+    document.addEventListener("DOMContentLoaded", function() {
       let visibleItems = 5;
-      const articles = Array.from(
-        document.querySelectorAll(".publication-entry"),
-      );
+      const articles = Array.from(document.querySelectorAll(".publication-entry"));
       const categoryFilters = document.getElementById("category-filters");
       let activeFilters = new Set();
 
-      // Crear botones de filtro
       const allCategories = new Set();
       articles.forEach((article) => {
         const tagsStr = article.getAttribute("data-tags") || "";
-        const tags = tagsStr
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
+        const tags = tagsStr.split(",").map((t) => t.trim()).filter(Boolean);
         tags.forEach((tag) => allCategories.add(tag));
       });
 
       allCategories.forEach((category) => {
         const btn = document.createElement("button");
         btn.type = "button";
-
-        // Configuración del botón
         btn.innerHTML = `
-      <span class="filter-content flex items-center gap-2">
-        <svg class="close-icon hidden w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-        <span>${category}</span>
-      </span>
-    `;
-
-        // Clases base del botón
+          <span class="filter-content flex items-center gap-2">
+            <svg class="close-icon hidden w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <span>${category}</span>
+          </span>
+        `;
+        
         btn.className = `category-btn bg-white text-gray-800 px-4 py-2 rounded-md font-medium border border-gray-200 shadow-sm hover:bg-[#1D293D] hover:text-white transition-all duration-300 flex items-center`;
         btn.dataset.category = category;
 
-        btn.addEventListener("click", function () {
+        btn.addEventListener("click", function() {
           const isActive = btn.classList.contains("active-filter");
 
           if (isActive) {
-            // Desactivar filtro - Volver a estado normal (blanco con texto gris)
             btn.classList.remove("active-filter", "pl-3", "pr-4");
-            // Restablecer estilos inline
             btn.style.backgroundColor = "";
             btn.style.color = "";
             btn.style.borderColor = "";
-            // Restaurar hover
             btn.classList.add("hover:bg-[#1D293D]", "hover:text-white");
             btn.querySelector(".close-icon").classList.add("hidden");
             activeFilters.delete(category);
           } else {
-            // Activar filtro - Color sólido #1D293D con texto blanco
             btn.classList.add("active-filter", "pl-3", "pr-4");
             btn.style.backgroundColor = "#1D293D";
             btn.style.color = "white";
             btn.style.borderColor = "#1D293D";
-            // Quitar hover (porque ya está en el color deseado)
             btn.classList.remove("hover:bg-[#1D293D]", "hover:text-white");
             btn.querySelector(".close-icon").classList.remove("hidden");
             activeFilters.add(category);
@@ -250,16 +180,12 @@ const mostRecentYear = researchGroups[0]?.year || "all";
           updateArticlesDisplay();
         });
 
-        if (categoryFilters) {
-          categoryFilters.appendChild(btn);
-        }
+        if (categoryFilters) categoryFilters.appendChild(btn);
       });
 
-      // Función para actualizar la visualización de artículos
       function updateArticlesDisplay() {
         const yearFilter = document.getElementById("year-filter");
         const selectedYear = yearFilter ? yearFilter.value : "all";
-
         let visibleCount = 0;
 
         articles.forEach((article) => {
@@ -267,33 +193,20 @@ const mostRecentYear = researchGroups[0]?.year || "all";
           const tags = tagsStr.split(",").map((t) => t.trim());
           const articleYear = article.getAttribute("data-year");
 
-          const categoryFilterPassed =
-            activeFilters.size === 0 ||
-            Array.from(activeFilters).some((filter) => tags.includes(filter));
-
-          const yearFilterPassed =
-            selectedYear === "all" || articleYear === selectedYear;
-
-          const shouldShow =
-            categoryFilterPassed &&
-            yearFilterPassed &&
-            visibleCount < visibleItems;
+          const categoryFilterPassed = activeFilters.size === 0 || Array.from(activeFilters).some((filter) => tags.includes(filter));
+          const yearFilterPassed = selectedYear === "all" || articleYear === selectedYear;
+          const shouldShow = categoryFilterPassed && yearFilterPassed && visibleCount < visibleItems;
 
           article.style.display = shouldShow ? "block" : "none";
           if (shouldShow) visibleCount++;
         });
 
         const loadMoreBtn = document.getElementById("load-more");
-        if (loadMoreBtn) {
-          loadMoreBtn.style.display =
-            visibleCount >= visibleItems ? "inline-block" : "none";
-        }
+        if (loadMoreBtn) loadMoreBtn.style.display = visibleCount >= visibleItems ? "inline-block" : "none";
       }
 
       const yearFilter = document.getElementById("year-filter");
-      if (yearFilter) {
-        yearFilter.addEventListener("change", updateArticlesDisplay);
-      }
+      if (yearFilter) yearFilter.addEventListener("change", updateArticlesDisplay);
 
       const searchInput = document.getElementById("search-input");
       if (searchInput) {
@@ -301,63 +214,31 @@ const mostRecentYear = researchGroups[0]?.year || "all";
           const searchTerm = searchInput.value.toLowerCase();
 
           articles.forEach((article) => {
-            const title =
-              article.querySelector("h3")?.textContent.toLowerCase() || "";
-            const authors =
-              article
-                .querySelector("p.text-sm.text-gray-700")
-                ?.textContent.toLowerCase() || "";
-
-            if (title.includes(searchTerm) || authors.includes(searchTerm)) {
-              article.style.display = "";
-            } else {
-              article.style.display = "none";
-            }
+            const title = article.querySelector("h3")?.textContent.toLowerCase() || "";
+            const authors = article.querySelector("p.text-sm.text-gray-700")?.textContent.toLowerCase() || "";
+            article.style.display = title.includes(searchTerm) || authors.includes(searchTerm) ? "" : "none";
           });
         });
       }
 
       const loadMoreBtn = document.getElementById("load-more");
-      if (loadMoreBtn) {
-        loadMoreBtn.addEventListener("click", () => {
-          visibleItems += 10;
-          updateArticlesDisplay();
-        });
-      }
+      if (loadMoreBtn) loadMoreBtn.addEventListener("click", () => {
+        visibleItems += 10;
+        updateArticlesDisplay();
+      });
 
-      // Inicialización
       updateArticlesDisplay();
     });
   </script>
 
   <style>
-    .category-btn {
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    .category-btn:hover:not(.active-filter) {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    .category-btn.active-filter {
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    }
-    .close-icon {
-      transition: opacity 0.2s ease;
-    }
-    .publication-entry {
-      transition: box-shadow 0.3s ease;
-    }
-    #year-filter {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      background-image: none;
-      padding-right: 1.75rem;
-    }
-    .filter-content {
-      transition: margin 0.2s ease;
-    }
-    .category-btn.active-filter .filter-content {
-      margin-left: 4px;
-    }
+    .category-btn { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .category-btn:hover:not(.active-filter) { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+    .category-btn.active-filter { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); }
+    .close-icon { transition: opacity 0.2s ease; }
+    .publication-entry { transition: box-shadow 0.3s ease; }
+    #year-filter { -webkit-appearance: none; -moz-appearance: none; background-image: none; padding-right: 1.75rem; }
+    .filter-content { transition: margin 0.2s ease; }
+    .category-btn.active-filter .filter-content { margin-left: 4px; }
   </style>
 </BaseLayout>
