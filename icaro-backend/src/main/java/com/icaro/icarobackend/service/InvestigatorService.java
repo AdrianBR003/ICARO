@@ -40,6 +40,9 @@ public class InvestigatorService {
             investigator.setGivenNames(inv.getGivenNames());
             investigator.setFamilyName(inv.getFamilyName());
             investigator.setEmail(inv.getEmail());
+            investigator.setRole(inv.getRole());
+            investigator.setPhone(inv.getPhone());
+            investigator.setOffice(inv.getOffice());
             investigatorRepository.save(investigator);
         });
     }

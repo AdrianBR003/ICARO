@@ -18,5 +18,8 @@ public class Investigator {
     private String givenNames;
     private String familyName;
     private String email;
+    private String role;
+    private String phone;
+    private String office;
     private String biography;
 }

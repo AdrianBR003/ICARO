@@ -17,41 +17,50 @@ const modalId = `modal-${person.orcid}`;
 
   
   <!-- Contenido principal -->
-  <div class="p-6 flex flex-col gap-4">
-    <div class="flex items-center gap-4">
-      <img
-        src={person.img || "/assets/people/default.jpg"}
-        alt={`Foto de ${person.name}`}
-        class="w-16 h-16 rounded-full object-cover border-2 border-gray-100"
-        loading="lazy"
-      />
-      <div>
-        <h3 class="text-lg font-semibold text-gray-800">{person.name}</h3>
-        {person.role && <p class="text-sm text-gray-500">{person.role}</p>}
-      </div>
-    </div>
-
-    <div class="space-y-2 text-sm">
-      {person.email && (
-        <p class="flex items-center gap-2 text-gray-600">
-          <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-          </svg>
-          {person.email}
-        </p>
-      )}
-
-      {person.phone && (
-        <p class="flex items-center gap-2 text-gray-600">
-          <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-          </svg>
-          {person.phone}
-        </p>
-      )}
+  <div class="p-6 flex flex-col gap-4" data-orcid={person.orcid}>
+  <div class="flex items-center gap-4">
+    <img
+      src={person.img || "/assets/people/default.jpg"}
+      alt={`Foto de ${person.name}`}
+      class="w-16 h-16 rounded-full object-cover border-2 border-gray-100"
+      loading="lazy"
+    />
+    <div>
+      <h3 class="person-name text-lg font-semibold text-gray-800">{person.name}</h3>
+      {person.role && <p class="person-role text-sm text-gray-500">{person.role}</p>}
     </div>
   </div>
+
+  <div class="space-y-2 text-sm">
+    {person.email && (
+      <p class="flex items-center gap-2 text-gray-600">
+        <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+        </svg>
+        <span class="person-email">{person.email}</span>
+      </p>
+    )}
+
+    {person.phone && (
+      <p class="flex items-center gap-2 text-gray-600">
+        <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+        </svg>
+        <span class="person-phone">{person.phone}</span>
+      </p>
+    )}
+
+    {person.office && (
+      <p class="flex items-center gap-2 text-gray-600">
+        <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" />
+        </svg>
+        <span class="person-office">{person.office}</span>
+      </p>
+    )}
+  </div>
+</div>
 
   <!-- Modal de edición -->
   <div id={modalId} class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">

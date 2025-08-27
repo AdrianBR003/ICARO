@@ -34,11 +34,14 @@ public class InvestigatorController {
             return ResponseEntity.status(403).build();
         }
 
-        String givenNames = (String) body.get("name");
+        String givenNames = (String) body.get("givenNames");
         String familyName = (String) body.get("familyName");
         String email = (String) body.get("email");
+        String role = (String) body.get("role");
+        String phone = (String) body.get("phone");
+        String office = (String) body.get("office");
 
-        this.investigatorService.saveInvestigatorbyId(new Investigator(orcid,givenNames,familyName,email,""));
+        this.investigatorService.saveInvestigatorbyId(new Investigator(orcid,givenNames,familyName,email,role,phone,office,""));
         return ResponseEntity.noContent().build();
     }
 
