@@ -34,6 +34,16 @@ public class InvestigatorService {
         return investigatorRepository.findAll();
     }
 
+    public void saveInvestigatorbyId(Investigator inv){
+        log.info("saveInvestigatorById");
+        investigatorRepository.findById(inv.getOrcid()).ifPresent(investigator -> {
+            investigator.setGivenNames(inv.getGivenNames());
+            investigator.setFamilyName(inv.getFamilyName());
+            investigator.setEmail(inv.getEmail());
+            investigatorRepository.save(investigator);
+        });
+    }
+
     public Investigator syncAndMergeInvestigator(String orcid) {
         Investigator inv = orcidService.fetchInvestigator(orcid);
         investigatorRepository.save(inv);

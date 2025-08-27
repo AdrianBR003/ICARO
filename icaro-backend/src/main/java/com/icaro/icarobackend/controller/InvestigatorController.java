@@ -4,11 +4,14 @@ import com.icaro.icarobackend.model.Investigator;
 import com.icaro.icarobackend.repository.InvestigatorRepository;
 import com.icaro.icarobackend.service.InvestigatorService;
 import com.icaro.icarobackend.service.OrcidService;
+import com.mongodb.internal.bulk.UpdateRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/investigators")
@@ -19,6 +22,24 @@ public class InvestigatorController {
     public InvestigatorController(InvestigatorService investigatorService, OrcidService orcidService) {
         this.investigatorService = investigatorService;
         this.orcidService = orcidService;
+    }
+
+    @PutMapping("/{orcid}")
+    public ResponseEntity<Void> updateInvestigator(
+            @PathVariable String orcid,
+            @RequestBody Map<String, Object> body,
+            HttpSession session) {
+
+        if (!Boolean.TRUE.equals(session.getAttribute("admin"))) {
+            return ResponseEntity.status(403).build();
+        }
+
+        String givenNames = (String) body.get("name");
+        String familyName = (String) body.get("familyName");
+        String email = (String) body.get("email");
+
+        this.investigatorService.saveInvestigatorbyId(new Investigator(orcid,givenNames,familyName,email,""));
+        return ResponseEntity.noContent().build();
     }
 
     /**

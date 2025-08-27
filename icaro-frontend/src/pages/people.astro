@@ -1,5 +1,4 @@
 ---
-// pages/people.astro
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/TopUtility.astro";
 import Header from "@/components/Header.astro";
@@ -19,12 +18,12 @@ try {
   const invs = await res.json();
 
   people = invs.map(inv => ({
-    name: `${inv.givenNames} ${inv.familyName}`,
+    name: `${inv.givenNames}`,
     email: inv.email || "",
-    role: "",
-    phone: "",
-    office: "",
-    tags: "",
+    role: "asda",
+    phone: "bbb",
+    office: "ccc",
+    tags: "xxx",
     img: `/assets/people/${inv.orcid}.jpg`,
     orcid: inv.orcid
   }));
@@ -133,7 +132,6 @@ try {
       const email = document.getElementById('editEmail').value;
       
       try {
-        // Aquí iría tu llamada a la API para actualizar los datos
         const response = await fetch(`http://localhost:8080/api/investigators/${orcid}`, {
           method: 'PUT',
           headers: {
