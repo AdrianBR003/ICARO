@@ -25,11 +25,11 @@ const modalId = `modal-${person.orcid}`;
 
   <div class="p-6 flex flex-col gap-4" data-orcid={person.orcid}>
     <div class="flex items-center gap-4">
-      <div class="relative">
+      <div class="relative max-w-23 flex-shrink-0">
         <img
           src="/assets/people/default.jpg"
           alt={`Foto de ${person.name}`}
-          class="w-16 h-16 rounded-full object-cover border-2 border-gray-100"
+          class="w-21 h-21 rounded-full object-cover border-2 border-gray-100"
           loading="lazy"
           data-orcid-image
         />

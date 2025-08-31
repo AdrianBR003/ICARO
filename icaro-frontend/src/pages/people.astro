@@ -17,11 +17,11 @@ const fetchInvestigadores = async () => {
     const invs = await res.json();
 
     return invs.map((inv) => ({
-      name: `${inv.givenNames}`,
+      name: inv.givenNames || "",
       email: inv.email || "",
-      role: "asda",
-      phone: "bbb",
-      office: "ccc",
+      role: inv.role || "",
+      phone: inv.phone || "",
+      office: inv.office || "",
       img: `/assets/${inv.orcid}.jpg`,
       orcid: inv.orcid,
     }));
@@ -62,19 +62,14 @@ let people = await fetchInvestigadores();
   <!-- Modal de edición global -->
   <div
     id="editModal"
-    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+    onclick="if (event.target === this) hideEditModal()"
   >
-    <div
-      class="modal-overlay absolute inset-0 bg-black/50"
-      onclick="hideEditModal()"
-    >
-    </div>
-
     <div
       class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
     >
       <div class="p-6">
-        <h3 id="modalTitle" class="text-xl font-bold mb-4">Editar</h3>
+        <h3 id="modalTitle" class="text-xl font-bold mb-4">Editar Investigador</h3>
 
         <form id="editForm" class="space-y-4">
           <input type="hidden" id="editOrcid" />
@@ -84,6 +79,7 @@ let people = await fetchInvestigadores();
             <input
               type="text"
               id="editName"
+              required
               class="w-full px-3 py-2 border rounded-md"
             />
           </div>
@@ -93,6 +89,7 @@ let people = await fetchInvestigadores();
             <input
               type="email"
               id="editEmail"
+              required
               class="w-full px-3 py-2 border rounded-md"
             />
           </div>
@@ -102,12 +99,13 @@ let people = await fetchInvestigadores();
             <input
               type="text"
               id="editRole"
+              required
               class="w-full px-3 py-2 border rounded-md"
             />
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Phone</label>
+            <label class="block mb-1 text-sm font-medium">Teléfono</label>
             <input
               type="text"
               id="editPhone"
@@ -116,7 +114,7 @@ let people = await fetchInvestigadores();
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Office</label>
+            <label class="block mb-1 text-sm font-medium">Oficina</label>
             <input
               type="text"
               id="editOffice"
@@ -144,9 +142,8 @@ let people = await fetchInvestigadores();
     </div>
   </div>
 
-  <script is:inline>
-
-    // Enhanced modal with image upload
+<script is:inline>
+    // Función para mostrar el modal de edición
     function showEditModal(person) {
       document.getElementById("editOrcid").value = person.orcid;
       document.getElementById("editName").value = person.name || "";
@@ -155,141 +152,75 @@ let people = await fetchInvestigadores();
       document.getElementById("editPhone").value = person.phone || "";
       document.getElementById("editOffice").value = person.office || "";
 
-      // Set current image in modal
-      const modalImage = document.getElementById("modalImage");
-      if (modalImage) {
-        modalImage.src = person.img || "/assets/people/default.jpg";
-      }
-
-      document.getElementById("modalTitle").textContent =
-        `Editar ${person.name}`;
+      document.getElementById("modalTitle").textContent = `Editar ${person.name}`;
       document.getElementById("editModal").classList.remove("hidden");
     }
 
-    const imageUploadStyles = `
-.uploading {
-  opacity: 0.6;
-  filter: brightness(0.8);
-  position: relative;
-}
-
-.uploading::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  border: 2px solid #ffffff;
-  border-top: 2px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.image-updated {
-  animation: imageFlash 2s ease-in-out;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes imageFlash {
-  0% { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3); }
-  50% { border-color: #16a34a; box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.2); }
-  100% { border-color: #e5e7eb; box-shadow: none; }
-}
-
-.image-upload-btn {
-  position: absolute;
-  bottom: -5px;
-  right: -5px;
-  background: #3b82f6;
-  color: white;
-  border: 2px solid white;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.image-upload-btn:hover {
-  background: #2563eb;
-  transform: scale(1.1);
-}
-`;
-
-    // Add styles to page
-    const styleSheet = document.createElement("style");
-    styleSheet.textContent = imageUploadStyles;
-    document.head.appendChild(styleSheet);
-
-    // Ocultar modal de edición
+    // Función para ocultar el modal de edición
     function hideEditModal() {
       document.getElementById("editModal").classList.add("hidden");
     }
 
-    // Manejar el envío del formulario
-    document
-      .getElementById("editForm")
-      ?.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    // Manejar el envío del formulario de edición
+    document.getElementById("editForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-        const orcid = document.getElementById("editOrcid").value;
-        const name = document.getElementById("editName").value;
-        const email = document.getElementById("editEmail").value;
-        const role = document.getElementById("editRole").value;
-        const phone = document.getElementById("editPhone").value;
-        const office = document.getElementById("editOffice").value;
+      const orcid = document.getElementById("editOrcid").value;
+      const name = document.getElementById("editName").value;
+      const email = document.getElementById("editEmail").value;
+      const role = document.getElementById("editRole").value;
+      const phone = document.getElementById("editPhone").value;
+      const office = document.getElementById("editOffice").value;
 
-        try {
-          const response = await fetch(
-            `http://localhost:8080/api/investigators/${orcid}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                givenNames: name,
-                email,
-                role,
-                phone,
-                office,
-              }),
-              credentials: "include",
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/investigators/${orcid}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
             },
-          );
-
-          if (response.ok) {
-            alert("Cambios guardados correctamente");
-            hideEditModal();
-          } else {
-            throw new Error("Error al guardar los cambios");
+            body: JSON.stringify({
+              givenNames: name,
+              email: email,
+              role: role,
+              phone: phone,
+              office: office
+            }),
+            credentials: "include",
           }
-        } catch (error) {
-          console.error("Error:", error);
-          alert("Error al guardar los cambios");
-        }
-      });
+        );
 
+        if (response.ok) {
+          alert("Cambios guardados correctamente");
+          hideEditModal();
+          location.reload();
+        } else if (response.status === 401 || response.status === 403) {
+          throw new Error("No tiene permisos para realizar esta acción");
+        } else {
+          const errorText = await response.text();
+          console.error("Error del servidor:", errorText);
+          throw new Error("Error al guardar los cambios: " + response.status);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert(error.message || "Error al guardar los cambios");
+      }
+    });
+
+    // Escuchar el evento personalizado para editar una persona
     document.addEventListener("editPerson", (e) => {
       showEditModal(e.detail);
     });
 
-    setInterval(async () => {
+    // Verificar estado de administrador
+    async function checkAdminStatus() {
       try {
         const response = await fetch(
           "http://localhost:8080/api/session/check-admin",
           {
             credentials: "include",
-          },
+          }
         );
 
         if (response.ok) {
@@ -299,30 +230,18 @@ let people = await fetchInvestigadores();
           });
         }
       } catch (error) {
-        console.error("Error checking admin status:", error);
+        console.error("Error verificando estado de administrador:", error);
       }
-    }, 1000);
+    }
+
+    // Verificar al cargar la página
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', checkAdminStatus);
+    } else {
+      checkAdminStatus();
+    }
+    
+    // Verificar periódicamente
+    setInterval(checkAdminStatus, 30000);
   </script>
-
-  <style is:global>
-    #editModal {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-
-    #editModal:not(.hidden) {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal-content {
-      transform: translateY(20px);
-      transition: transform 0.2s ease;
-    }
-
-    #editModal:not(.hidden) .modal-content {
-      transform: translateY(0);
-    }
-  </style>
 </BaseLayout>
