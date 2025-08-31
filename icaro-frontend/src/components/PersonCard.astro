@@ -27,11 +27,13 @@ const modalId = `modal-${person.orcid}`;
     <div class="flex items-center gap-4">
       <div class="relative max-w-23 flex-shrink-0">
         <img
-          src="/assets/people/default.jpg"
+          src="http://localhost:8080/assets/people/default.jpg"
           alt={`Foto de ${person.name}`}
           class="w-21 h-21 rounded-full object-cover border-2 border-gray-100"
           loading="lazy"
           data-orcid-image
+          data-orcid={person.orcid}
+          onerror="this.src='http://localhost:8080/assets/people/default.jpg'"
         />
       </div>
       <div>
@@ -160,27 +162,31 @@ const modalId = `modal-${person.orcid}`;
 </div>
 
 <script>
+  // Función para cargar imágenes de las personas
   function loadPersonImages() {
     const images = document.querySelectorAll("img[data-orcid-image]");
 
     images.forEach((img) => {
-      const card = img.closest("[data-orcid]");
-      if (!card) return;
+      const orcid = img.getAttribute("data-orcid");
+      if (!orcid) return;
 
-      const orcid = card.getAttribute("data-orcid");
-      if (!orcid || !img.src.includes("default.jpg")) return;
+      if (!img.src.includes("default.jpg")) return;
 
       const extensions = ["png", "jpg", "webp"];
       let currentIndex = 0;
 
       function tryExtension() {
-        if (currentIndex >= extensions.length) return;
+        if (currentIndex >= extensions.length) {
+          return;
+        }
 
         const imageUrl = `http://localhost:8080/assets/people/${orcid}.${extensions[currentIndex]}`;
         const testImg = new Image();
 
         testImg.onload = function () {
-          img.src = imageUrl;
+          if (img.src.includes("default.jpg")) {
+            img.src = imageUrl;
+          }
         };
         testImg.onerror = function () {
           currentIndex++;
@@ -193,6 +199,7 @@ const modalId = `modal-${person.orcid}`;
     });
   }
 
+  // Función para verificar y mostrar botones de administrador
   async function checkAndToggleAdminButtons() {
     try {
       const response = await fetch(
@@ -215,6 +222,7 @@ const modalId = `modal-${person.orcid}`;
     }
   }
 
+  // Funciones para mostrar/ocultar modales
   function showModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
@@ -238,6 +246,7 @@ const modalId = `modal-${person.orcid}`;
     }
   }
 
+  // Event listeners
   document.addEventListener("DOMContentLoaded", function () {
     loadPersonImages();
     checkAndToggleAdminButtons();
@@ -248,28 +257,6 @@ const modalId = `modal-${person.orcid}`;
   setTimeout(loadPersonImages, 100);
   setTimeout(loadPersonImages, 500);
 </script>
-
-<style is:global>
-  .modal {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-
-  .modal:not(.hidden) {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .modal-content {
-    transform: translateY(20px);
-    transition: transform 0.2s ease;
-  }
-
-  .modal:not(.hidden) .modal-content {
-    transform: translateY(0);
-  }
-</style>
 
 <style is:global>
   .modal {
