@@ -22,7 +22,7 @@ const fetchInvestigadores = async () => {
       role: "asda",
       phone: "bbb",
       office: "ccc",
-      img: `/assets/people/${inv.orcid}.jpg`,
+      img: `/assets/${inv.orcid}.jpg`,
       orcid: inv.orcid,
     }));
   } catch (error) {
@@ -145,18 +145,90 @@ let people = await fetchInvestigadores();
   </div>
 
   <script is:inline>
-    // Mostrar modal de edición
+
+    // Enhanced modal with image upload
     function showEditModal(person) {
       document.getElementById("editOrcid").value = person.orcid;
-      document.getElementById("editName").value = person.name;
+      document.getElementById("editName").value = person.name || "";
       document.getElementById("editEmail").value = person.email || "";
       document.getElementById("editRole").value = person.role || "";
       document.getElementById("editPhone").value = person.phone || "";
       document.getElementById("editOffice").value = person.office || "";
+
+      // Set current image in modal
+      const modalImage = document.getElementById("modalImage");
+      if (modalImage) {
+        modalImage.src = person.img || "/assets/people/default.jpg";
+      }
+
       document.getElementById("modalTitle").textContent =
         `Editar ${person.name}`;
       document.getElementById("editModal").classList.remove("hidden");
     }
+
+    const imageUploadStyles = `
+.uploading {
+  opacity: 0.6;
+  filter: brightness(0.8);
+  position: relative;
+}
+
+.uploading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.image-updated {
+  animation: imageFlash 2s ease-in-out;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes imageFlash {
+  0% { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3); }
+  50% { border-color: #16a34a; box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.2); }
+  100% { border-color: #e5e7eb; box-shadow: none; }
+}
+
+.image-upload-btn {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: #3b82f6;
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.image-upload-btn:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+`;
+
+    // Add styles to page
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = imageUploadStyles;
+    document.head.appendChild(styleSheet);
 
     // Ocultar modal de edición
     function hideEditModal() {
@@ -176,7 +248,7 @@ let people = await fetchInvestigadores();
         const phone = document.getElementById("editPhone").value;
         const office = document.getElementById("editOffice").value;
 
-        try { 
+        try {
           const response = await fetch(
             `http://localhost:8080/api/investigators/${orcid}`,
             {
