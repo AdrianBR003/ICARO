@@ -34,17 +34,21 @@ public class InvestigatorService {
         return investigatorRepository.findAll();
     }
 
-    public void saveInvestigatorbyId(Investigator inv){
+    public void saveInvestigatorbyId(Investigator inv) {
         log.info("saveInvestigatorById");
-        investigatorRepository.findById(inv.getOrcid()).ifPresent(investigator -> {
-            investigator.setGivenNames(inv.getGivenNames());
-            investigator.setFamilyName(inv.getFamilyName());
-            investigator.setEmail(inv.getEmail());
-            investigator.setRole(inv.getRole());
-            investigator.setPhone(inv.getPhone());
-            investigator.setOffice(inv.getOffice());
-            investigatorRepository.save(investigator);
-        });
+        // Buscar el investigador o crear uno nuevo si no existe
+        Investigator investigator = investigatorRepository.findById(inv.getOrcid())
+                .orElse(inv);
+
+        // Actualizar campos
+        investigator.setGivenNames(inv.getGivenNames());
+        investigator.setFamilyName(inv.getFamilyName());
+        investigator.setEmail(inv.getEmail());
+        investigator.setRole(inv.getRole());
+        investigator.setPhone(inv.getPhone());
+        investigator.setOffice(inv.getOffice());
+
+        investigatorRepository.save(investigator);
     }
 
     public Investigator syncAndMergeInvestigator(String orcid) {

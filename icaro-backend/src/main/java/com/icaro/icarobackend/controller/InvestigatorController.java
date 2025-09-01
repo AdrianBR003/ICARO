@@ -35,6 +35,26 @@ public class InvestigatorController {
         this.orcidService = orcidService;
     }
 
+    @PostMapping("/add")
+    public ResponseEntity <Void> addInvestigator(
+            @RequestBody Map<String, Object> body,
+            HttpSession session) {
+
+        if (!Boolean.TRUE.equals(session.getAttribute("admin"))) {
+            return ResponseEntity.status(403).build();
+        }
+        String orcid = (String) body.get("orcid");
+        String givenNames = (String) body.get("givenNames");
+        String familyName = (String) body.get("familyName");
+        String email = (String) body.get("email");
+        String role = (String) body.get("role");
+        String phone = (String) body.get("phone");
+        String office = (String) body.get("office");
+
+        this.investigatorService.saveInvestigatorbyId(new Investigator(orcid, givenNames, familyName, email, role, phone, office, ""));
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{orcid}")
     public ResponseEntity   <Void> updateInvestigator(
             @PathVariable String orcid,
@@ -84,6 +104,14 @@ public class InvestigatorController {
         Investigator inv = this.investigatorService.syncAndMergeInvestigator(orcid);
         return ResponseEntity.ok(inv);
     }
+
+    /**
+     * Endpoint que sube la imagen a partir de la url uploaDir
+     *
+     * @param image
+     * @param orcid
+     * @return
+     */
     @PostMapping("/upload-image")
     public ResponseEntity<?> uploadImage(
             @RequestParam("image") MultipartFile image,

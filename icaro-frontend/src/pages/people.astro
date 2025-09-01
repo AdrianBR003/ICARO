@@ -98,7 +98,7 @@ let people = await fetchInvestigadores();
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Nombre</label>
+            <label class="block mb-1 text-sm font-medium">Nombre y Apellidos</label>
             <input
               id="addName"
               type="text"
@@ -106,7 +106,7 @@ let people = await fetchInvestigadores();
               required
             />
           </div>
-
+          
           <div>
             <label class="block mb-1 text-sm font-medium">Email</label>
             <input
@@ -379,14 +379,14 @@ let people = await fetchInvestigadores();
         }
       });
 
-    // Manejar el envío del formulario de añadir
+    // Manejar el envío del formulario de añadir (MODIFICADO)
     document
       .getElementById("addForm")
       ?.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const orcid = document.getElementById("addOrcid").value;
-        const name = document.getElementById("addName").value;
+        const givenNames = document.getElementById("addName").value;
         const email = document.getElementById("addEmail").value;
         const role = document.getElementById("addRole").value;
         const phone = document.getElementById("addPhone").value;
@@ -394,7 +394,7 @@ let people = await fetchInvestigadores();
 
         try {
           const response = await fetch(
-            "http://localhost:8080/api/investigators",
+            "http://localhost:8080/api/investigators/add", // ENDPOINT ACTUALIZADO
             {
               method: "POST",
               headers: {
@@ -402,7 +402,7 @@ let people = await fetchInvestigadores();
               },
               body: JSON.stringify({
                 orcid: orcid,
-                givenNames: name,
+                givenNames: givenNames, // Nombre y apellidos juntos
                 email: email,
                 role: role,
                 phone: phone,
@@ -412,7 +412,8 @@ let people = await fetchInvestigadores();
             },
           );
 
-          if (response.ok) {
+          // Verificar respuesta 204 No Content
+          if (response.status === 204) {
             alert("Investigador añadido correctamente");
             hideModal("addModal");
             location.reload();
