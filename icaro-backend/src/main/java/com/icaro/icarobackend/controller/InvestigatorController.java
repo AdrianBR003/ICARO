@@ -5,6 +5,7 @@ import com.icaro.icarobackend.service.InvestigatorService;
 import com.icaro.icarobackend.service.OrcidService;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -53,6 +55,30 @@ public class InvestigatorController {
 
         this.investigatorService.saveInvestigatorbyId(new Investigator(orcid, givenNames, familyName, email, role, phone, office, ""));
         return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/delete/{orcid}")
+    public ResponseEntity<Void> deleteInvestigator(@PathVariable String orcid, HttpSession session) {
+        // Verificar permisos de administrador
+        if (!Boolean.TRUE.equals(session.getAttribute("admin"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        try {
+            // Verificar si el investigador existe
+            Optional<Investigator> investigator = investigatorService.findInvestigatorbyOID(orcid);
+
+            if (investigator.isPresent()) {
+                log.info("eliminando investigator: " + investigator.get().getOrcid());
+                investigatorService.deleteInvestigatorbyOID(orcid);
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            log.error("Error al eliminar investigador con ORCID: " + orcid, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/{orcid}")

@@ -117,6 +117,16 @@ public class InvestigatorService {
         return inv;
     }
 
+    public Optional<Investigator> findInvestigatorbyOID(String oid){
+        log.info("findInvestigatorbyOID");
+        return this.investigatorRepository.findById(oid);
+    }
+
+    public void deleteInvestigatorbyOID(String oid){
+        log.info("findInvestigatorbyOID");
+        this.investigatorRepository.deleteById(oid);
+    }
+
     private String normalize(String text) {
         if (text == null) return "";
         return Normalizer.normalize(text, Normalizer.Form.NFD)
