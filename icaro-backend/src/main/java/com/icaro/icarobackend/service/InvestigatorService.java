@@ -34,6 +34,23 @@ public class InvestigatorService {
         return investigatorRepository.findAll();
     }
 
+    public void saveInvestigatorbyId(Investigator inv) {
+        log.info("saveInvestigatorById");
+        // Buscar el investigador o crear uno nuevo si no existe
+        Investigator investigator = investigatorRepository.findById(inv.getOrcid())
+                .orElse(inv);
+
+        // Actualizar campos
+        investigator.setGivenNames(inv.getGivenNames());
+        investigator.setFamilyName(inv.getFamilyName());
+        investigator.setEmail(inv.getEmail());
+        investigator.setRole(inv.getRole());
+        investigator.setPhone(inv.getPhone());
+        investigator.setOffice(inv.getOffice());
+
+        investigatorRepository.save(investigator);
+    }
+
     public Investigator syncAndMergeInvestigator(String orcid) {
         Investigator inv = orcidService.fetchInvestigator(orcid);
         investigatorRepository.save(inv);
@@ -98,6 +115,16 @@ public class InvestigatorService {
         }
 
         return inv;
+    }
+
+    public Optional<Investigator> findInvestigatorbyOID(String oid){
+        log.info("findInvestigatorbyOID");
+        return this.investigatorRepository.findById(oid);
+    }
+
+    public void deleteInvestigatorbyOID(String oid){
+        log.info("findInvestigatorbyOID");
+        this.investigatorRepository.deleteById(oid);
     }
 
     private String normalize(String text) {

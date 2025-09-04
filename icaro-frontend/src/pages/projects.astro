@@ -1,0 +1,344 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TopUtility from "@/components/TopUtility.astro";
+import NavBar from "@/components/NavBar.astro";
+import Header from "@/components/Header.astro";
+import "@/styles/index.css";
+
+const projects = [
+    {
+        id: 1,
+        title: "Inteligencia Artificial para Diagnóstico Médico",
+        description:
+            "Desarrollo de algoritmos de IA para el diagnóstico temprano de enfermedades mediante el análisis de imágenes médicas.",
+        colaborators: [
+            "Dr. Ana Pérez",
+            "Dr. Luis Gómez",
+            "Dra. Marta Fernández",
+        ],
+        startDate: "2023",
+        endDate: "2024",
+        relatedWorks: [
+            {
+                type: "Artículo",
+                title: "Deep Learning for Early Detection of Lung Cancer in CT Scans",
+                year: "2023",
+            },
+            {
+                type: "Conferencia",
+                title: "Medical Image Analysis with Transformers",
+                year: "2023",
+            },
+            {
+                type: "Journal",
+                title: "Advances in AI-assisted Medical Diagnosis",
+                year: "2024",
+            },
+        ],
+    },
+    {
+        id: 2,
+        title: "Sistema de Gestión Energética Sostenible",
+        description:
+            "Desarrollo de un sistema inteligente para optimizar el consumo energético en edificios comerciales mediante IoT y machine learning.",
+        colaborators: [
+            "Ing. Juan Fernández",
+            "Ing. Clara Díaz",
+            "Ing. Sergio Martín",
+        ],
+        startDate: "2022",
+        endDate: "2023",
+        relatedWorks: [
+            {
+                type: "Artículo",
+                title: "Optimizing Energy Consumption in Commercial Buildings Using IoT",
+                year: "2023",
+                link: "https://example.com/energy-optimization",
+            },
+            {
+                type: "Journal",
+                title: "Sustainable Energy Management Systems Review",
+                year: "2022",
+            },
+        ],
+    },
+    {
+        id: 3,
+        title: "Plataforma de Realidad Aumentada para Educación",
+        description:
+            "Creación de una plataforma educativa que utiliza realidad aumentada para mejorar la experiencia de aprendizaje en ciencias.",
+        colaborators: [
+            "Dra. Sara Vargas",
+            "Dr. Pablo Jiménez",
+            "Dr. Manuel Ruiz",
+        ],
+        startDate: "2023",
+        endDate: "2024",
+        relatedWorks: [
+            {
+                type: "Conferencia",
+                title: "AR in STEM Education: A Case Study",
+                year: "2023",
+            },
+            {
+                type: "Artículo",
+                title: "Evaluating Learning Outcomes with Augmented Reality Tools",
+                year: "2024",
+            },
+        ],
+    },
+    {
+        id: 4,
+        title: "Análisis de Sentimientos en Redes Sociales",
+        description:
+            "Investigación sobre técnicas de procesamiento de lenguaje natural para análisis de sentimientos en plataformas sociales.",
+        colaborators: [
+            "Dr. Luis Gutiérrez",
+            "Dra. Ana Ortega",
+            "Dr. Raúl Silva",
+        ],
+        startDate: "2022",
+        endDate: "2023",
+        relatedWorks: [
+            {
+                type: "Journal",
+                title: "Advanced Sentiment Analysis Techniques for Social Media",
+                year: "2023",
+                link: "https://google.es",
+            },
+            {
+                type: "Artículo",
+                title: "Comparative Study of NLP Models for Sentiment Classification",
+                year: "2023",
+            },
+            {
+                type: "Artículo",
+                title: "Comparative Study of NLP Models for Sentiment Classification",
+                year: "2023",
+            },
+            {
+                type: "Artículo",
+                title: "Comparative Study of NLP Models for Sentiment Classification",
+                year: "2023",
+            },
+            {
+                type: "Artículo",
+                title: "Comparative Study of NLP Models for Sentiment Classification",
+                year: "2023",
+            },
+            {
+                type: "Artículo",
+                title: "Comparative Study of NLP Models for Sentiment Classification",
+                year: "2023",
+            },
+            {
+                type: "Artículo",
+                title: "Comparative Study of NLP Models for Sentiment Classification",
+                year: "2023",
+            },
+            {
+                type: "Artículo",
+                title: "Comparative Study of NLP Models for Sentiment Classification",
+                year: "2023",
+            },
+        ],
+    },
+];
+---
+
+<BaseLayout>
+    <section class="max-w-full bg-white shadow-md rounded-lg">
+        <TopUtility />
+        <Header />
+    </section>
+    <section class="mt-10 max-w-full bg-white shadow-md">
+        <NavBar />
+    </section>
+
+    <section class="max-w-4xl mx-auto px-4 py-8">
+        <div class="mb-10">
+            <div class="relative max-w-full">
+                <span
+                    class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        class="w-5 h-5"
+                    >
+                        <path
+                            fill-rule="evenodd"
+                            d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </span>
+                <input
+                    id="search-input"
+                    type="search"
+                    placeholder="Buscar proyectos por nombre..."
+                    class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
+                />
+            </div>
+        </div>
+
+        <!-- Lista de proyectos -->
+        <div class="space-y-6" id="projects-list">
+            {
+                projects.map((project) => (
+                    <div
+                        class="project-card bg-white border rounded-lg p-6 shadow-sm transition-all duration-300"
+                        data-project-id={project.id}
+                    >
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-4">
+                                    <span class="bg-[#1D293D] text-white text-xs px-3 py-1 rounded-full font-medium mr-3">
+                                        {project.startDate.slice(0, 4)} /{" "}
+                                        {project.endDate.slice(0, 4)}
+                                    </span>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900 mb-2">
+                                    {project.title}
+                                </h3>
+                                <p class="text-gray-600 mb-4">
+                                    {project.description}
+                                </p>
+                                <div class="mb-4">
+                                    <h4 class="text-sm font-semibold text-gray-700 mb-1">
+                                        Colaboradores:
+                                    </h4>
+                                    <p class="text-gray-600">
+                                        {project.colaborators.join(", ")}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                class="expand-btn ml-4 text-gray-500 hover:text-[#1D293D] transition"
+                                data-project-id={project.id}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="expand-icon h-6 w-6"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M19 9l-7 7-7-7"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="related-works mt-4 pt-4 border-t border-gray-100">
+                            <h4 class="font-semibold text-gray-700 mb-3">
+                                Publicaciones relacionadas:
+                            </h4>
+                            <div class="space-y-3">
+                                {project.relatedWorks.map((work) => (
+                                    <div class="flex items-start">
+                                        <div class="flex-1">
+                                            <p class="text-sm text-gray-800">
+                                                {work.link ? (
+                                                    <a
+                                                        href={work.link}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="text-blue-600 hover:text-blue-800 hover:underline"
+                                                    >
+                                                        {work.type}
+                                                        — {work.title}  | {work.year}
+                                                    </a>
+                                                ) : (
+                                                    <span>
+                                                        {work.type}
+                                                        — {work.title} | {work.year}
+                                                    </span>
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+    </section>
+
+    <script is:inline>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchInput = document.getElementById("search-input");
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    const searchTerm = this.value.toLowerCase();
+                    const projects = document.querySelectorAll(".project-card");
+
+                    projects.forEach((project) => {
+                        const title = project
+                            .querySelector("h3")
+                            .textContent.toLowerCase();
+                        const description = project
+                            .querySelector("p")
+                            .textContent.toLowerCase();
+                        const matches =
+                            title.includes(searchTerm) ||
+                            description.includes(searchTerm);
+                        project.style.display = matches ? "block" : "none";
+                    });
+                });
+            }
+
+            const expandButtons = document.querySelectorAll(".expand-btn");
+            expandButtons.forEach((button) => {
+                button.addEventListener("click", function () {
+                    const projectId = this.getAttribute("data-project-id");
+                    const projectCard = document.querySelector(
+                        `.project-card[data-project-id="${projectId}"]`,
+                    );
+                    projectCard.classList.toggle("expanded");
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .project-card {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .project-card.expanded {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        .expand-icon {
+            transition: transform 0.3s ease;
+        }
+        .project-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        .related-works {
+            max-height: 0;
+            opacity: 0;
+            transition:
+                max-height 0.5s ease,
+                opacity 0.3s ease;
+            overflow: hidden;
+        }
+        .project-card.expanded .related-works {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        .tag {
+            transition: all 0.2s ease;
+        }
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</BaseLayout>
