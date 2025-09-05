@@ -12,9 +12,8 @@ const researchProjects = [
   {
     id: 1,
     title: "Procesamiento de Señales 5G",
-    collaborators: ["Dr. Juan Pérez", "Dra. María López", "Dr. Carlos Ruiz"],
     description:
-      "Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias.",
+      "Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias.",
     publicationDate: "2023-01-15",
     image: imagedefault.src,
     link: "/research/5g-signal-processing",
@@ -22,11 +21,6 @@ const researchProjects = [
   {
     id: 2,
     title: "Machine Learning en Telecomunicaciones",
-    collaborators: [
-      "Dra. Ana García",
-      "Dr. Luis Martínez",
-      "Dr. Roberto Sánchez",
-    ],
     description:
       "Aplicación de algoritmos de aprendizaje automático para optimizar el rendimiento de redes de telecomunicaciones y predecir fallos en el sistema.",
     publicationDate: "2023-02-10",
@@ -36,11 +30,6 @@ const researchProjects = [
   {
     id: 3,
     title: "Comunicaciones Cuánticas",
-    collaborators: [
-      "Dr. Fernando Díaz",
-      "Dra. Elena Torres",
-      "Dr. Javier Jiménez",
-    ],
     description:
       "Desarrollo de sistemas de comunicación seguros basados en principios de la mecánica cuántica para proteger la información contra interceptaciones.",
     publicationDate: "2023-03-05",
@@ -50,11 +39,6 @@ const researchProjects = [
   {
     id: 4,
     title: "IoT para Smart Cities",
-    collaborators: [
-      "Dra. Carmen Vargas",
-      "Dr. Antonio Mora",
-      "Dr. Miguel Ángel Reyes",
-    ],
     description:
       "Implementación de redes de sensores interconectados para optimizar servicios urbanos como transporte, energía y gestión de residuos.",
     publicationDate: "2023-04-20",
@@ -118,19 +102,7 @@ const researchProjects = [
             <span class="absolute left-0 -bottom-2 w-0 h-1 bg-[#006D38] transition-all duration-300 group-hover:w-full" />
           </h2>
 
-          <div class="mb-5">
-            <h3 class="text-base font-semibold text-[#1D293D] mb-2">
-              Colaboradores:
-            </h3>
-            <p class="text-gray-700">
-              {project.collaborators.join(", ")}
-            </p>
-          </div>
-
-          <div class="mb-5">
-            <h3 class="text-base font-semibold text-[#1D293D] mb-2">
-              Descripción:
-            </h3>
+          <div class="my-5">
             <p class="text-gray-600 mb-6 leading-relaxed text-justify flex-grow">
               {project.description}
             </p>
