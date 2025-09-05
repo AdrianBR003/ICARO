@@ -5,9 +5,11 @@ import NavBar from "@/components/NavBar.astro";
 import Header from "@/components/Header.astro";
 import "@/styles/index.css";
 
+const API_BASE_URL = "http://localhost:8080";
 let works = [];
+
 try {
-  const res = await fetch("http://localhost:8080/api/works/all");
+  const res = await fetch(`${API_BASE_URL}/api/works/all`);
   if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
   works = await res.json();
 
@@ -41,8 +43,40 @@ try {
   works = [];
 }
 
+const projectIds = [
+  ...new Set(works.map((work) => work.projectId).filter(Boolean)),
+];
+
+const projectNamesMap = new Map();
+for (const projectId of projectIds) {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/project-work/name/${projectId}`,
+    );
+
+    if (response.ok) {
+      const projectName = await response.text();
+      projectNamesMap.set(projectId, projectName);
+    } else {
+      projectNamesMap.set(projectId, "");
+    }
+  } catch (error) {
+    projectNamesMap.set(projectId, "");
+  }
+}
+
+const worksWithProjectNames = works.map((work) => {
+  const projectName = work.projectId
+    ? projectNamesMap.get(work.projectId) || ""
+    : "";
+  return {
+    ...work,
+    projectName: projectName,
+  };
+});
+
 const groupsObj = {};
-works.forEach((w) => {
+worksWithProjectNames.forEach((w) => {
   const year = w.projectDate?.slice(0, 4) || "Sin fecha";
   if (!groupsObj[year]) groupsObj[year] = [];
   groupsObj[year].push(w);
@@ -56,6 +90,16 @@ const researchGroups = Object.entries(groupsObj)
 if (noDate.length) researchGroups.push({ year: "Sin fecha", items: noDate });
 
 const mostRecentYear = researchGroups[0]?.year || "all";
+
+const tagCategories = new Set();
+const projectCategories = new Set();
+
+worksWithProjectNames.forEach((work) => {
+  work.tags.forEach((tag) => tagCategories.add(tag));
+  if (work.projectName && work.projectName.trim() !== "") {
+    projectCategories.add(work.projectName);
+  }
+});
 ---
 
 <BaseLayout>
@@ -95,7 +139,68 @@ const mostRecentYear = researchGroups[0]?.year || "all";
     </div>
 
     <div class="mb-10">
-      <div id="category-filters" class="flex flex-wrap gap-3 items-center">
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Etiquetas</h3>
+        <div class="flex flex-wrap gap-3 items-center">
+          {Array.from(tagCategories).map((category) => (
+            <button
+              type="button"
+              class="category-btn bg-white text-gray-800 px-4 py-2 rounded-md font-medium border border-gray-200 shadow-sm hover:bg-[#1D293D] hover:text-white transition-all duration-300 flex items-center"
+              data-category={category}
+              data-type="tag"
+            >
+              <span class="filter-content flex items-center gap-2">
+                <svg
+                  class="close-icon hidden w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                <span>{category}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-200 pt-4">
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">Proyectos</h3>
+        <div class="flex flex-wrap gap-3 items-center">
+          {Array.from(projectCategories).map((category) => (
+            <button
+              type="button"
+              class="category-btn project-btn bg-blue-50 text-blue-800 px-4 py-2 rounded-md font-medium border border-blue-200 shadow-sm hover:bg-blue-100 transition-all duration-300 flex items-center"
+              data-category={category}
+              data-type="project"
+            >
+              <span class="filter-content flex items-center gap-2">
+                <svg
+                  class="close-icon hidden w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                <span>{category}</span>
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
 
@@ -131,21 +236,25 @@ const mostRecentYear = researchGroups[0]?.year || "all";
     <div class="space-y-8" id="publications">
       {
         researchGroups.map(({ year, items }) =>
-          items.slice(0, 10).map((work) => (
+          items.map((work) => (
             <article
               class="publication-entry border rounded-lg p-6 shadow-sm bg-white transition-all duration-300 hover:shadow-md"
               data-tags={work.tags.join(",")}
+              data-project-name={work.projectName || ""}
               data-year={year}
             >
-              {work.tags.length > 0 && (
-                <div class="flex flex-wrap gap-2 mb-3">
-                  {work.tags.map((tag) => (
-                    <span class="bg-gray-50 text-gray-800 text-xs px-2 py-1 rounded font-medium border border-gray-200 shadow-sm">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div class="flex flex-wrap gap-2 mb-3">
+                {work.tags.map((tag) => (
+                  <span class="bg-gray-50 text-gray-800 text-xs px-2 py-1 rounded font-medium border border-gray-200 shadow-sm">
+                    {tag}
+                  </span>
+                ))}
+                {work.projectName && work.projectName.trim() !== "" && (
+                  <span class="bg-[#effdf5] text-[#1D293D] text-xs px-2 py-1 rounded font-medium border border-[#BFE5D1] shadow-sm">
+                    {work.projectName}
+                  </span>
+                )}
+              </div>
               <h3 class="text-xl font-bold text-gray-900 leading-snug mb-2">
                 {work.title}
               </h3>
@@ -175,72 +284,101 @@ const mostRecentYear = researchGroups[0]?.year || "all";
     <div class="text-center mt-8">
       <button
         id="load-more"
-        class="bg-[#1D293D] text-white px-4 py-2 rounded-md  hover:shadow-[0_2px_10px_-2px_rgba(0,0,0,0.7)] transition-shadow"
+        class="bg-[#1D293D] text-white px-4 py-2 rounded-md hover:shadow-[0_2px_10px_-2px_rgba(0,0,0,0.7)] transition-shadow"
+        >Mostrar más</button
       >
-        Mostrar más
-      </button>
     </div>
   </section>
 
   <script is:inline>
     document.addEventListener("DOMContentLoaded", function () {
-      let visibleItems = 5;
+      let visibleItems = 10;
       const articles = Array.from(
         document.querySelectorAll(".publication-entry"),
       );
-      const categoryFilters = document.getElementById("category-filters");
+      const categoryButtons = document.querySelectorAll(".category-btn");
       let activeFilters = new Set();
 
-      const allCategories = new Set();
-      articles.forEach((article) => {
-        const tagsStr = article.getAttribute("data-tags") || "";
-        const tags = tagsStr
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-        tags.forEach((tag) => allCategories.add(tag));
-      });
-
-      allCategories.forEach((category) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.innerHTML = `
-          <span class="filter-content flex items-center gap-2">
-            <svg class="close-icon hidden w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>${category}</span>
-          </span>
-        `;
-
-        btn.className = `category-btn bg-white text-gray-800 px-4 py-2 rounded-md font-medium border border-gray-200 shadow-sm hover:bg-[#1D293D] hover:text-white transition-all duration-300 flex items-center`;
-        btn.dataset.category = category;
-
+      categoryButtons.forEach((btn) => {
         btn.addEventListener("click", function () {
-          const isActive = btn.classList.contains("active-filter");
+          const category = this.dataset.category;
+          const type = this.dataset.type;
+          const isActive = this.classList.contains("active-filter");
 
           if (isActive) {
-            btn.classList.remove("active-filter", "pl-3", "pr-4");
-            btn.style.backgroundColor = "";
-            btn.style.color = "";
-            btn.style.borderColor = "";
-            btn.classList.add("hover:bg-[#1D293D]", "hover:text-white");
-            btn.querySelector(".close-icon").classList.add("hidden");
+            if (type === "project") {
+              this.classList.remove(
+                "active-filter",
+                "pl-3",
+                "pr-4",
+                "bg-blue-600",
+                "text-white",
+                "border-blue-600",
+              );
+              this.classList.add(
+                "bg-blue-50",
+                "text-blue-800",
+                "border-blue-200",
+                "hover:bg-blue-100",
+              );
+            } else {
+              this.classList.remove(
+                "active-filter",
+                "pl-3",
+                "pr-4",
+                "bg-[#1D293D]",
+                "text-white",
+                "border-[#1D293D]",
+              );
+              this.classList.add(
+                "bg-white",
+                "text-gray-800",
+                "border-gray-200",
+                "hover:bg-[#1D293D]",
+                "hover:text-white",
+              );
+            }
+            this.querySelector(".close-icon").classList.add("hidden");
             activeFilters.delete(category);
           } else {
-            btn.classList.add("active-filter", "pl-3", "pr-4");
-            btn.style.backgroundColor = "#1D293D";
-            btn.style.color = "white";
-            btn.style.borderColor = "#1D293D";
-            btn.classList.remove("hover:bg-[#1D293D]", "hover:text-white");
-            btn.querySelector(".close-icon").classList.remove("hidden");
+            if (type === "project") {
+              this.classList.add(
+                "active-filter",
+                "pl-3",
+                "pr-4",
+                "bg-blue-600",
+                "text-white",
+                "border-blue-600",
+              );
+              this.classList.remove(
+                "bg-blue-50",
+                "text-blue-800",
+                "border-blue-200",
+                "hover:bg-blue-100",
+              );
+            } else {
+              this.classList.add(
+                "active-filter",
+                "pl-3",
+                "pr-4",
+                "bg-[#1D293D]",
+                "text-white",
+                "border-[#1D293D]",
+              );
+              this.classList.remove(
+                "bg-white",
+                "text-gray-800",
+                "border-gray-200",
+                "hover:bg-[#1D293D]",
+                "hover:text-white",
+              );
+            }
+            this.querySelector(".close-icon").classList.remove("hidden");
             activeFilters.add(category);
           }
 
           updateArticlesDisplay();
         });
-
-        if (categoryFilters) categoryFilters.appendChild(btn);
       });
 
       function updateArticlesDisplay() {
@@ -251,13 +389,23 @@ const mostRecentYear = researchGroups[0]?.year || "all";
         articles.forEach((article) => {
           const tagsStr = article.getAttribute("data-tags") || "";
           const tags = tagsStr.split(",").map((t) => t.trim());
+          const projectName = article.getAttribute("data-project-name") || "";
           const articleYear = article.getAttribute("data-year");
+
+          const allArticleCategories = [...tags];
+          if (projectName && projectName.trim() !== "") {
+            allArticleCategories.push(projectName);
+          }
 
           const categoryFilterPassed =
             activeFilters.size === 0 ||
-            Array.from(activeFilters).some((filter) => tags.includes(filter));
+            Array.from(activeFilters).some((filter) =>
+              allArticleCategories.includes(filter),
+            );
+
           const yearFilterPassed =
             selectedYear === "all" || articleYear === selectedYear;
+
           const shouldShow =
             categoryFilterPassed &&
             yearFilterPassed &&
@@ -268,9 +416,10 @@ const mostRecentYear = researchGroups[0]?.year || "all";
         });
 
         const loadMoreBtn = document.getElementById("load-more");
-        if (loadMoreBtn)
+        if (loadMoreBtn) {
           loadMoreBtn.style.display =
             visibleCount >= visibleItems ? "inline-block" : "none";
+        }
       }
 
       const yearFilter = document.getElementById("year-filter");
@@ -289,20 +438,20 @@ const mostRecentYear = researchGroups[0]?.year || "all";
               article
                 .querySelector("p.text-sm.text-gray-700")
                 ?.textContent.toLowerCase() || "";
-            article.style.display =
-              title.includes(searchTerm) || authors.includes(searchTerm)
-                ? ""
-                : "none";
+            const shouldShow =
+              title.includes(searchTerm) || authors.includes(searchTerm);
+            article.style.display = shouldShow ? "block" : "none";
           });
         });
       }
 
       const loadMoreBtn = document.getElementById("load-more");
-      if (loadMoreBtn)
+      if (loadMoreBtn) {
         loadMoreBtn.addEventListener("click", () => {
           visibleItems += 10;
           updateArticlesDisplay();
         });
+      }
 
       updateArticlesDisplay();
     });
@@ -336,6 +485,20 @@ const mostRecentYear = researchGroups[0]?.year || "all";
     }
     .category-btn.active-filter .filter-content {
       margin-left: 4px;
+    }
+
+    .project-btn {
+      background-color: #effdf5;
+      color: #1D293D;
+      border: 1px solid #BFE5D1;
+    }
+    .project-btn:hover {
+      background-color: #d9fbe5;
+    }
+    .project-btn.active-filter {
+      background-color: #006D38;
+      color: white;
+      border-color: white;
     }
   </style>
 </BaseLayout>

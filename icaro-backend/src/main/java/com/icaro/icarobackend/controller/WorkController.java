@@ -35,4 +35,5 @@ public class WorkController {
     public ResponseEntity<List<Work>> getWorkOrcid(@PathVariable("orcid") String orcid) {
          return ResponseEntity.ok(orcidService.fetchWorks(orcid));
     }
+
 }
