@@ -5,47 +5,47 @@ import NavBar from "@/components/NavBar.astro";
 import TopUtility from "@/components/TopUtility.astro";
 import "@/styles/index.css";
 import imagedefault from "@/assets/imagedefault.webp";
-import imagedefault2 from "@/assets/epslportada.webp";
-import imagedefault3 from "@/assets/imageexample.webp";
 
-const researchProjects = [
-  {
-    id: 1,
-    title: "Procesamiento de Señales 5G",
-    description:
-      "Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias. Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación, mejorando la eficiencia espectral y reduciendo interferencias.",
-    publicationDate: "2023-01-15",
-    image: imagedefault.src,
-    link: "/research/5g-signal-processing",
-  },
-  {
-    id: 2,
-    title: "Machine Learning en Telecomunicaciones",
-    description:
-      "Aplicación de algoritmos de aprendizaje automático para optimizar el rendimiento de redes de telecomunicaciones y predecir fallos en el sistema.",
-    publicationDate: "2023-02-10",
-    image: imagedefault2.src,
-    link: "/research/ml-telecom",
-  },
-  {
-    id: 3,
-    title: "Comunicaciones Cuánticas",
-    description:
-      "Desarrollo de sistemas de comunicación seguros basados en principios de la mecánica cuántica para proteger la información contra interceptaciones.",
-    publicationDate: "2023-03-05",
-    image: imagedefault3.src,
-    link: "/research/quantum-comms",
-  },
-  {
-    id: 4,
-    title: "IoT para Smart Cities",
-    description:
-      "Implementación de redes de sensores interconectados para optimizar servicios urbanos como transporte, energía y gestión de residuos.",
-    publicationDate: "2023-04-20",
-    image: "/images/iot-smart-city.jpg",
-    link: "/research/iot-smart-cities",
-  },
-];
+// Fetch de datos desde la API
+let researchProjects = [];
+try {
+  const response = await fetch(`${import.meta.env.API_URL || 'http://localhost:8080'}/api/news/all`);
+  if (response.ok) {
+    researchProjects = await response.json();
+    console.log('Fetched news:', researchProjects);
+  } else {
+    throw new Error('Error al cargar las noticias');
+  }
+} catch (error) {
+  console.error('Error fetching news:', error);
+  researchProjects = [
+    {
+      id: 1,
+      title: "Prueba prueba",
+      description: "Investigación avanzada en técnicas de procesamiento de señal para redes de quinta generación...",
+      projectDate: "2023-01-15",
+      image: imagedefault.src,
+      link: "/research/5g-signal-processing",
+    }
+  ];
+}
+
+const getImageSrc = (imageFromDb) => {
+  if (!imageFromDb) {
+    return imagedefault.src;
+  }
+  
+  if (imageFromDb.startsWith('http') || imageFromDb.startsWith('/')) {
+    return imageFromDb;
+  }
+  
+  return `/images/${imageFromDb}`;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'Fecha no disponible';
+  return dateString; 
+};
 ---
 
 <BaseLayout>
@@ -71,69 +71,73 @@ const researchProjects = [
       </p>
     </div>
 
-<div class="grid gap-10">
-  {researchProjects.map((project) => (
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 research-card group relative">
-      <div class="absolute top-0 right-0 z-10 bg-[#1D293D] text-white text-xs px-3 py-2 rounded-bl-lg flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <span>{project.publicationDate}</span>
-      </div>
-      
-      <div class="flex flex-col lg:flex-row">
-        <!-- Contenedor de imagen modificado para centrado vertical -->
-        <div class="lg:w-2/5 flex-shrink-0 flex items-center justify-center bg-white p-4">
-          <div class="w-full h-64 lg:h-72 overflow-hidden flex items-center justify-center">
-            <img
-              src={project.image}
-              alt={project.title}
-              class="max-w-full max-h-full object-contain rounded-lg"
-            />
-          </div>
-        </div>
+    <div class="grid gap-10">
+      {researchProjects.map((project) => {
+        const imageSrc = getImageSrc(project.image);
+        const publicationDate = formatDate(project.projectDate); 
 
-        <div
-          class="lg:w-3/5 p-8 lg:p-10 relative flex flex-col"
-          style="min-height: 288px;"
-        >
-          <h2 class="text-2xl font-bold text-[#1D293D] mb-4 relative inline-block">
-            {project.title}
-            <span class="absolute left-0 -bottom-2 w-0 h-1 bg-[#006D38] transition-all duration-300 group-hover:w-full" />
-          </h2>
-
-          <div class="my-5">
-            <p class="text-gray-600 mb-6 leading-relaxed text-justify flex-grow">
-              {project.description}
-            </p>
-          </div>
-
-          <div class="mt-auto flex justify-end">
-            <a
-              href={project.link}
-              class="px-6 py-3 bg-white text-[#006D38] border border-[#006D38] rounded-lg font-medium flex items-center 
-      transition-all duration-300 transform hover:bg-[#006D38] hover:text-white hover:scale-105"
-            >
-              Leer más
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 ml-2"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                />
+        return (
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 research-card group relative">
+            <div class="absolute top-0 right-0 z-10 bg-[#1D293D] text-white text-xs px-3 py-2 rounded-bl-lg flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-            </a>
+              <span>{publicationDate}</span>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row mt-4">
+              <div class="lg:w-2/5 flex-shrink-0 flex items-center justify-center bg-white p-4">
+                <div class="w-full h-64 lg:h-72 overflow-hidden flex items-center justify-center">
+                  <img
+                    src={imageSrc}
+                    alt={project.title}
+                    class="max-w-full max-h-full object-contain rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div
+                class="lg:w-3/5 p-8 lg:p-10 relative flex flex-col"
+                style="min-height: 288px;"
+              >
+                <h2 class="text-2xl font-bold text-[#1D293D] mb-4 relative inline-block">
+                  {project.title}
+                  <span class="absolute left-0 -bottom-2 w-0 h-1 bg-[#006D38] transition-all duration-300 group-hover:w-full" />
+                </h2>
+
+                <div class="my-5">
+                  <p class="text-gray-600 mb-6 leading-relaxed text-justify flex-grow">
+                    {project.description}
+                  </p>
+                </div>
+
+                <div class="mt-auto flex justify-end">
+                  <a
+                    href={project.link || `/news/${project.id}`}
+                    class="px-6 py-3 bg-white text-[#006D38] border border-[#006D38] rounded-lg font-medium flex items-center 
+                    transition-all duration-300 transform hover:bg-[#006D38] hover:text-white hover:scale-105"
+                  >
+                    Leer más
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5 ml-2"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
-  ))}
-</div>
   </section>
 </BaseLayout>
 

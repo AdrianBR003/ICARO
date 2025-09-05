@@ -149,6 +149,9 @@ worksWithProjectNames.forEach((work) => {
 
     <div class="mb-10">
       <div class="mb-4">
+        <div class="flex items-center mb-2">
+          <span class="text-sm text-gray-600 mr-2">Filtros activos (se aplican todos):</span>
+        </div>
         <div class="flex flex-wrap gap-3 items-center">
           {
             Array.from(tagCategories).map((category) => (
@@ -408,11 +411,15 @@ worksWithProjectNames.forEach((work) => {
             allArticleCategories.push(projectName);
           }
 
-          const categoryFilterPassed =
-            activeFilters.size === 0 ||
-            Array.from(activeFilters).some((filter) =>
-              allArticleCategories.includes(filter),
+          let categoryFilterPassed = false;
+          
+          if (activeFilters.size === 0) {
+            categoryFilterPassed = true;
+          } else {
+            categoryFilterPassed = Array.from(activeFilters).every(filter => 
+              allArticleCategories.includes(filter)
             );
+          }
 
           const yearFilterPassed =
             selectedYear === "all" || articleYear === selectedYear;
