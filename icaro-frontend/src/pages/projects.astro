@@ -5,145 +5,60 @@ import NavBar from "@/components/NavBar.astro";
 import Header from "@/components/Header.astro";
 import "@/styles/index.css";
 
-const projects = [
-    {
-        id: 1,
-        title: "Inteligencia Artificial para Diagnóstico Médico",
-        description:
-            "Desarrollo de algoritmos de IA para el diagnóstico temprano de enfermedades mediante el análisis de imágenes médicas.",
-        colaborators: [
-            "Dr. Ana Pérez",
-            "Dr. Luis Gómez",
-            "Dra. Marta Fernández",
-        ],
-        startDate: "2023",
-        endDate: "2024",
-        relatedWorks: [
-            {
-                type: "Artículo",
-                title: "Deep Learning for Early Detection of Lung Cancer in CT Scans",
-                year: "2023",
-            },
-            {
-                type: "Conferencia",
-                title: "Medical Image Analysis with Transformers",
-                year: "2023",
-            },
-            {
-                type: "Journal",
-                title: "Advances in AI-assisted Medical Diagnosis",
-                year: "2024",
-            },
-        ],
-    },
-    {
-        id: 2,
-        title: "Sistema de Gestión Energética Sostenible",
-        description:
-            "Desarrollo de un sistema inteligente para optimizar el consumo energético en edificios comerciales mediante IoT y machine learning.",
-        colaborators: [
-            "Ing. Juan Fernández",
-            "Ing. Clara Díaz",
-            "Ing. Sergio Martín",
-        ],
-        startDate: "2022",
-        endDate: "2023",
-        relatedWorks: [
-            {
-                type: "Artículo",
-                title: "Optimizing Energy Consumption in Commercial Buildings Using IoT",
-                year: "2023",
-                link: "https://example.com/energy-optimization",
-            },
-            {
-                type: "Journal",
-                title: "Sustainable Energy Management Systems Review",
-                year: "2022",
-            },
-        ],
-    },
-    {
-        id: 3,
-        title: "Plataforma de Realidad Aumentada para Educación",
-        description:
-            "Creación de una plataforma educativa que utiliza realidad aumentada para mejorar la experiencia de aprendizaje en ciencias.",
-        colaborators: [
-            "Dra. Sara Vargas",
-            "Dr. Pablo Jiménez",
-            "Dr. Manuel Ruiz",
-        ],
-        startDate: "2023",
-        endDate: "2024",
-        relatedWorks: [
-            {
-                type: "Conferencia",
-                title: "AR in STEM Education: A Case Study",
-                year: "2023",
-            },
-            {
-                type: "Artículo",
-                title: "Evaluating Learning Outcomes with Augmented Reality Tools",
-                year: "2024",
-            },
-        ],
-    },
-    {
-        id: 4,
-        title: "Análisis de Sentimientos en Redes Sociales",
-        description:
-            "Investigación sobre técnicas de procesamiento de lenguaje natural para análisis de sentimientos en plataformas sociales.",
-        colaborators: [
-            "Dr. Luis Gutiérrez",
-            "Dra. Ana Ortega",
-            "Dr. Raúl Silva",
-        ],
-        startDate: "2022",
-        endDate: "2023",
-        relatedWorks: [
-            {
-                type: "Journal",
-                title: "Advanced Sentiment Analysis Techniques for Social Media",
-                year: "2023",
-                link: "https://google.es",
-            },
-            {
-                type: "Artículo",
-                title: "Comparative Study of NLP Models for Sentiment Classification",
-                year: "2023",
-            },
-            {
-                type: "Artículo",
-                title: "Comparative Study of NLP Models for Sentiment Classification",
-                year: "2023",
-            },
-            {
-                type: "Artículo",
-                title: "Comparative Study of NLP Models for Sentiment Classification",
-                year: "2023",
-            },
-            {
-                type: "Artículo",
-                title: "Comparative Study of NLP Models for Sentiment Classification",
-                year: "2023",
-            },
-            {
-                type: "Artículo",
-                title: "Comparative Study of NLP Models for Sentiment Classification",
-                year: "2023",
-            },
-            {
-                type: "Artículo",
-                title: "Comparative Study of NLP Models for Sentiment Classification",
-                year: "2023",
-            },
-            {
-                type: "Artículo",
-                title: "Comparative Study of NLP Models for Sentiment Classification",
-                year: "2023",
-            },
-        ],
-    },
-];
+const API_BASE_URL = 'http://localhost:8080';
+
+// Función para obtener proyectos desde la API
+async function fetchProjects() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/project/all`);
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return [];
+  }
+}
+
+// Función para obtener trabajos relacionados para cada proyecto
+async function fetchRelatedWorks(projectId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/project-work/project/${projectId}/works`);
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching works for project ${projectId}:`, error);
+    return [];
+  }
+}
+
+// Obtener todos los proyectos
+const projectsData = await fetchProjects();
+
+const projectsWithWorks = await Promise.all(
+  projectsData.map(async (project) => {
+    const relatedWorks = await fetchRelatedWorks(project.id);
+    
+    // Transformar los datos al formato esperado por la interfaz
+    return {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      colaborators: project.participants || [],
+      startDate: project.projectDate ? new Date(project.projectDate).getFullYear().toString() : "N/A",
+      endDate: project.projectDate ? new Date(project.projectDate).getFullYear().toString() : "N/A",
+      relatedWorks: relatedWorks.map(work => ({
+        type: work.tags && work.tags.length > 0 ? work.tags[0] : "Publicación",
+        title: work.title,
+        year: work.projectDate ? new Date(work.projectDate).getFullYear().toString() : "N/A",
+        link: work.externalIds && work.externalIds.length > 0 ? work.externalIds[0] : null
+      }))
+    };
+  })
+);
 ---
 
 <BaseLayout>
@@ -155,7 +70,16 @@ const projects = [
         <NavBar />
     </section>
 
-    <section class="max-w-4xl mx-auto px-4 py-8">
+    <div class="text-center my-10">
+      <div class="relative inline-block w-full text-center py-2">
+        <h2 class="text-2xl font-bold text-[#231F20]">Projects</h2>
+        <span
+          class="absolute left-1/2 bottom-0 w-20 h-1 bg-[#006D38] -translate-x-1/2"
+        ></span>
+      </div>
+    </div>
+
+    <section class="max-w-4xl mx-auto px-4">
         <div class="mb-10">
             <div class="relative max-w-full">
                 <span
@@ -185,7 +109,7 @@ const projects = [
         <!-- Lista de proyectos -->
         <div class="space-y-6" id="projects-list">
             {
-                projects.map((project) => (
+                projectsWithWorks.map((project) => (
                     <div
                         class="project-card bg-white border rounded-lg p-6 shadow-sm transition-all duration-300"
                         data-project-id={project.id}
@@ -194,8 +118,7 @@ const projects = [
                             <div class="flex-1">
                                 <div class="flex items-center mb-4">
                                     <span class="bg-[#1D293D] text-white text-xs px-3 py-1 rounded-full font-medium mr-3">
-                                        {project.startDate.slice(0, 4)} /{" "}
-                                        {project.endDate.slice(0, 4)}
+                                        {project.startDate} / {project.endDate}
                                     </span>
                                 </div>
                                 <h3 class="text-xl font-bold text-gray-900 mb-2">
@@ -250,13 +173,11 @@ const projects = [
                                                         rel="noopener noreferrer"
                                                         class="text-blue-600 hover:text-blue-800 hover:underline"
                                                     >
-                                                        {work.type}
-                                                        — {work.title}  | {work.year}
+                                                        {work.type} — {work.title} | {work.year}
                                                     </a>
                                                 ) : (
                                                     <span>
-                                                        {work.type}
-                                                        — {work.title} | {work.year}
+                                                        {work.type} — {work.title} | {work.year}
                                                     </span>
                                                 )}
                                             </p>
