@@ -247,16 +247,31 @@ worksWithProjectNames.forEach((work) => {
       </div>
     </div>
 
-    <div class="space-y-8" id="publications">
+     <div class="space-y-8" id="publications">
       {
         researchGroups.map(({ year, items }) =>
           items.map((work) => (
             <article
-              class="publication-entry border rounded-lg p-6 shadow-sm bg-white transition-all duration-300 hover:shadow-md"
+              class="publication-entry border rounded-lg p-6 shadow-sm bg-white transition-all duration-300 hover:shadow-md relative"
               data-tags={work.tags.join(",")}
               data-project-name={work.projectName || ""}
               data-year={year}
             >
+              <button 
+                class="edit-btn hidden absolute top-4 right-4 p-2 bg-white rounded-full hover:bg-gray-300 transition-colors shadow-sm"
+                data-id={work.id}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-gray-600"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                  ></path>
+                </svg>
+              </button>
               <div class="flex flex-wrap gap-2 mb-3">
                 {work.tags.map((tag) => (
                   <span class="bg-gray-50 text-gray-800 text-xs px-2 py-1 rounded font-medium border border-gray-200 shadow-sm">
@@ -306,6 +321,37 @@ worksWithProjectNames.forEach((work) => {
 
   <script is:inline>
     document.addEventListener("DOMContentLoaded", function () {
+
+      // Función para verificar el estado admin
+      async function checkAdminStatus() {
+        try {
+          const response = await fetch('http://localhost:8080/api/session/check-admin', {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const isAdmin = await response.json();
+            updateUI(isAdmin);
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+        }
+      }
+      
+      // Función para actualizar la UI basada en el estado admin
+      function updateUI(isAdmin) {
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.classList.toggle('hidden', !isAdmin);
+        });
+      }
+      document.addEventListener('adminStatusChanged', (event) => {
+        updateUI(event.detail.isAdmin);
+      });
+      
+      // Verificar estado al cargar
+      checkAdminStatus();
+    });
+
       let visibleItems = 10;
       const articles = Array.from(
         document.querySelectorAll(".publication-entry"),
