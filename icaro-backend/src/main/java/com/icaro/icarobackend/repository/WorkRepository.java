@@ -9,6 +9,8 @@ public interface WorkRepository extends MongoRepository<Work,String> {
 
     List<Work> findByProjectId(String projectId);
 
+    Work findWorkByTitle(String title);
+
 
     // Activar si se desea la relación N:N
 

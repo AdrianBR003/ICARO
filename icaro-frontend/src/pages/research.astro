@@ -3,6 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/TopUtility.astro";
 import NavBar from "@/components/NavBar.astro";
 import Header from "@/components/Header.astro";
+import EditModal from "@/components/EditResearchModal.astro";
 import "@/styles/index.css";
 
 const API_BASE_URL = "http://localhost:8080";
@@ -100,6 +101,8 @@ worksWithProjectNames.forEach((work) => {
     projectCategories.add(work.projectName);
   }
 });
+
+let currentWorkData = null;
 ---
 
 <BaseLayout>
@@ -256,6 +259,7 @@ worksWithProjectNames.forEach((work) => {
               data-tags={work.tags.join(",")}
               data-project-name={work.projectName || ""}
               data-year={year}
+              data-work={JSON.stringify(work)}
             >
               <button 
                 class="edit-btn hidden absolute top-4 right-4 p-2 bg-white rounded-full hover:bg-gray-300 transition-colors shadow-sm"
@@ -319,6 +323,9 @@ worksWithProjectNames.forEach((work) => {
     </div>
   </section>
 
+  <!-- Modal de Edición como componente -->
+  <EditModal workData={currentWorkData} />
+
   <script is:inline>
     document.addEventListener("DOMContentLoaded", function () {
 
@@ -350,8 +357,98 @@ worksWithProjectNames.forEach((work) => {
       
       // Verificar estado al cargar
       checkAdminStatus();
-    });
 
+      // Funciones globales para mostrar/ocultar modales
+      window.showModal = function(modalId) {
+        document.getElementById(modalId)?.classList.remove('hidden');
+      }
+      
+      window.hideModal = function(modalId) {
+        document.getElementById(modalId)?.classList.add('hidden');
+      }
+
+      // Manejar el modal de edición
+      const editForm = document.getElementById('edit-form');
+      
+      // Abrir modal al hacer clic en editar
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.edit-btn')) {
+          const article = e.target.closest('.publication-entry');
+          const workData = JSON.parse(article.getAttribute('data-work'));
+          window.currentWorkData = workData;
+          
+          // Llenar el formulario con los datos actuales
+          fillForm(workData);
+          showModal('edit-modal');
+        }
+      });
+
+      // Función para llenar el formulario
+      function fillForm(workData) {
+        document.getElementById('putCode').value = workData.putCode || '';
+        document.getElementById('title').value = workData.title || '';
+        document.getElementById('description').value = workData.description || '';
+        document.getElementById('participants').value = workData.participants ? workData.participants.join(', ') : '';
+        document.getElementById('externalIds').value = workData.externalIds ? workData.externalIds.join(', ') : '';
+        document.getElementById('ownerOrcids').value = workData.ownerOrcids ? workData.ownerOrcids.join(', ') : '';
+        document.getElementById('projectDate').value = workData.projectDate || '';
+        // ProjectId -> ProjectName (para que el usuario pueda interactuar mejor con el nombre que con el ID)
+        document.getElementById('projectId').value = workData.projectName || '';
+        document.getElementById('tags').value = workData.tags ? workData.tags.join(', ') : '';
+      }
+
+      // Manejar envío del formulario
+      editForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!window.currentWorkData) return;
+
+        // Recopilar datos del formulario
+        const formData = new FormData(editForm);
+        const updatedWork = {
+          ...window.currentWorkData,
+          putCode: formData.get('putCode') || null,
+          title: formData.get('title'),
+          description: formData.get('description') || null,
+          participants: formData.get('participants') ? 
+            formData.get('participants').split(',').map(p => p.trim()).filter(p => p) : [],
+          externalIds: formData.get('externalIds') ? 
+            formData.get('externalIds').split(',').map(id => id.trim()).filter(id => id) : [],
+          ownerOrcids: formData.get('ownerOrcids') ? 
+            formData.get('ownerOrcids').split(',').map(orcid => orcid.trim()).filter(orcid => orcid) : [],
+          projectDate: formData.get('projectDate'),
+          projectId: formData.get('projectId') || null,
+          tags: formData.get('tags') ? 
+            formData.get('tags').split(',').map(tag => tag.trim()).filter(tag => tag) : []
+        };
+
+        try {
+          const response = await fetch('http://localhost:8080/api/works/save', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(updatedWork)
+          });
+
+          if (response.ok) {
+            // Mostrar mensaje de éxito
+            alert('Publicación actualizada correctamente');
+            hideModal('edit-modal');
+            // Recargar la página para mostrar los cambios
+            window.location.reload();
+          } else {
+            const errorText = await response.text();
+            throw new Error(`Error ${response.status}: ${errorText}`);
+          }
+        } catch (error) {
+          console.error('Error al guardar:', error);
+          alert('Error al guardar los cambios: ' + error.message);
+        }
+      });
+
+      // Resto del código existente...
       let visibleItems = 10;
       const articles = Array.from(
         document.querySelectorAll(".publication-entry"),
@@ -563,6 +660,31 @@ worksWithProjectNames.forEach((work) => {
       background-color: #006d38;
       color: white;
       border-color: white;
+    }
+
+    /* Animación para el modal */
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      animation: modalSlideIn 0.3s ease-out;
+    }
+    
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
   </style>
 </BaseLayout>

@@ -36,4 +36,10 @@ public class WorkController {
          return ResponseEntity.ok(orcidService.fetchWorks(orcid));
     }
 
+    @PostMapping("/save")
+    public ResponseEntity<?>  saveWork(@RequestBody Work work) {
+        this.workService.saveWork(work);
+        return  ResponseEntity.ok().build();
+    }
+
 }

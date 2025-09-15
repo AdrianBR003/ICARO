@@ -1,6 +1,7 @@
 package com.icaro.icarobackend.repository;
 
 import com.icaro.icarobackend.model.Project;
+import com.icaro.icarobackend.model.Work;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,5 @@ public interface ProjectRepository extends MongoRepository<Project,String> {
 
     List<Project> findByTitleContainingIgnoreCase(String title);
 
-    @Query("{ 'workIds': { '$in': ?0 } }")
-    List<Project> findByWorkIdsIn(List<String> workIds);
-
+    Project findByTitle(String title);
 }
