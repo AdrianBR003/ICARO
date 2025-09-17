@@ -42,4 +42,10 @@ public class WorkController {
         return  ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/delete/{orcid}")
+    public ResponseEntity<?> deleteWork(@PathVariable("orcid") String orcid) {
+        this.workService.deleteWork(orcid);
+        return ResponseEntity.ok().build();
+    }
+
 }

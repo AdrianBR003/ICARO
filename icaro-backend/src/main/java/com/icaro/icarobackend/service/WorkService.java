@@ -52,4 +52,9 @@ public class WorkService {
         }
     }
 
+    public void deleteWork(String id){
+        log.info("Deleting work: {}", id);
+        this.workRepository.deleteById(id);
+    }
+
 }

@@ -18,11 +18,6 @@ const { workData } = Astro.props;
     <div class="p-6">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-xl font-bold">Editar Publicación</h3>
-        <button onclick="hideModal('edit-modal')" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
       </div>
 
       <form id="edit-form" class="space-y-4">
@@ -142,7 +137,7 @@ const { workData } = Astro.props;
             type="submit"
             class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
           >
-            Guardar Cambios
+            Guardar
           </button>
         </div>
       </form>
