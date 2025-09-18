@@ -139,7 +139,7 @@ const modalId = `modal-${person.orcid}`;
     </div>
 
     <div
-      class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+      class="relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
     >
       <div class="p-6">
         <h3 class="text-xl font-bold mb-4">Editar {person.name}</h3>
@@ -309,32 +309,7 @@ const modalId = `modal-${person.orcid}`;
         console.error("Error checking admin status");
       }
     }
-
-    // Funciones para mostrar/ocultar modales
-    function showModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.classList.remove("hidden");
-        setTimeout(() => {
-          modal.style.opacity = "1";
-          modal.querySelector(".modal-content").style.transform =
-            "translateY(0)";
-        }, 10);
-      }
-    }
-
-    function hideModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.style.opacity = "0";
-        modal.querySelector(".modal-content").style.transform =
-          "translateY(20px)";
-        setTimeout(() => {
-          modal.classList.add("hidden");
-        }, 200);
-      }
-    }
-
+    
     // Event listeners
     document.addEventListener("DOMContentLoaded", function () {
       loadPersonImages();
@@ -351,7 +326,6 @@ const modalId = `modal-${person.orcid}`;
     .modal {
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s ease;
     }
 
     .modal:not(.hidden) {
@@ -359,13 +333,5 @@ const modalId = `modal-${person.orcid}`;
       pointer-events: auto;
     }
 
-    .modal-content {
-      transform: translateY(20px);
-      transition: transform 0.2s ease;
-    }
-
-    .modal:not(.hidden) .modal-content {
-      transform: translateY(0);
-    }
   </style>
 </div>
