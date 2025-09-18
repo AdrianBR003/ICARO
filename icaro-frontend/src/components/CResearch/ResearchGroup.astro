@@ -34,7 +34,7 @@ let currentWorkData = null;
               data-putcode={work.putCode}
               data-title={work.title}
               aria-label="Eliminar"
-              onclick={`window.deleteResearchPublication(${work.putCode}, ${JSON.stringify(work.title)})`}
+              onclick={`window.deleteResearchPublication('${work.putCode}', '${work.title.replace(/'/g, "\\'")}')`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

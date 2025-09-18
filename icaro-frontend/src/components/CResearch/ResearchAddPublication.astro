@@ -1,0 +1,413 @@
+---
+interface Props {
+  isAdmin: boolean;
+}
+
+const { isAdmin } = Astro.props;
+---
+
+<div id="add-publication-container" class="mb-6 flex justify-center">
+  <button
+    id="addButton"
+    class:list={[
+      isAdmin ? "block" : "hidden",
+      "bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded flex items-center edit-btn transition-colors",
+    ]}
+    onclick="showAddPublicationModal()"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+    </svg>
+    Añadir Publicación
+  </button>
+
+  <div
+    id="add-publication-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
+  >
+    <div
+      class="modal-overlay absolute inset-0 bg-black/50"
+      onclick="hideAddPublicationModal()"
+    ></div>
+
+    <div
+      class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+    >
+      <div class="p-6">   
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Añadir Nueva Publicación</h3>
+          <button
+            type="button"
+            onclick="hideAddPublicationModal()"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form id="add-publication-form" class="space-y-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium">PutCode (Identificador Local)</label>
+            <input
+              type="text"
+              id="putCode"
+              name="putCode"
+              readonly
+              class="w-full px-3 py-2 border rounded-md bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Título *</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              required
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Descripción/Resumen</label>
+            <textarea
+              id="description"
+              name="description"
+              rows="3"
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Autores *</label>
+            <textarea
+              id="participants"
+              name="participants"
+              required
+              rows="2"
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+              placeholder="Autor1, Autor2, Autor3"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">ORCIDs de los Participantes</label>
+            <textarea
+              id="ownerOrcids"
+              name="ownerOrcids"
+              rows="2"
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+              placeholder="0000-0000-0000-0000, 0000-0000-0000-0000, ..."
+            ></textarea>
+            <p class="text-xs text-gray-500 mt-1">Ingrese los ORCIDs en el mismo orden que los autores, separados por comas</p>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Identificadores Externos</label>
+            <div class="flex flex-wrap py-2 px-3 border rounded-md" id="externalIdsContainer"></div>
+            <div class="flex mt-2">
+              <input
+                type="text"
+                id="externalIdInput"
+                class="flex-grow px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+                placeholder="DOI, ISBN, etc."
+              />
+              <button
+                type="button"
+                onclick="addExternalId()"
+                class="px-3 bg-[#006D38] text-white rounded-r-md hover:bg-[#005229] transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Presione Enter o el botón '+' para añadir identificadores</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block mb-1 text-sm font-medium">Fecha de Publicación *</label>
+              <input
+                type="date"
+                id="projectDate"
+                name="projectDate"
+                required
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label class="block mb-1 text-sm font-medium">ID del Proyecto</label>
+              <input
+                type="text"
+                id="projectId"
+                name="projectId"
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+                placeholder="PRJ-001"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Tipo de Publicación *</label>
+            <input
+              type="text"
+              id="workType"
+              name="workType"
+              required
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+              placeholder="Journal-Article, Conference-Paper, etc."
+            />
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Etiquetas Adicionales</label>
+            <div class="flex flex-wrap py-2 px-3 border rounded-md" id="tagsContainer"></div>
+            <div class="flex mt-2">
+              <input
+                type="text"
+                id="tagInput"
+                class="flex-grow px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+                placeholder="Nueva etiqueta"
+              />
+              <button
+                type="button"
+                onclick="addTag()"
+                class="px-3 bg-[#006D38] text-white rounded-r-md hover:bg-[#005229] transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Presione Enter o el botón '+' para añadir etiquetas</p>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Enlace</label>
+            <input
+              type="url"
+              id="link"
+              name="link"
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+              placeholder="https://ejemplo.com"
+            />
+          </div>
+
+          <div class="flex gap-4 pt-4 border-t">
+            <button
+              type="button"
+              onclick="hideAddPublicationModal()"
+              class="px-4 py-2 border rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229] transition-colors"
+            >
+              Guardar Publicación
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+let tagsList = [];
+let externalIdsList = [];
+
+function generatePutCode() {
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
+}
+
+function showAddPublicationModal() {
+  document.getElementById('putCode').value = generatePutCode();
+  document.getElementById('add-publication-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden'; 
+}
+
+function hideAddPublicationModal() {
+  document.getElementById('add-publication-modal').classList.add('hidden');
+  document.body.style.overflow = ''; 
+}
+
+function addTag() {
+  const tagInput = document.getElementById('tagInput');
+  const tag = tagInput.value.trim();
+  
+  if (tag && !tagsList.includes(tag)) {
+    tagsList.push(tag);
+    renderTags();
+    tagInput.value = '';
+  }
+}
+
+function removeTag(tag) {
+  tagsList = tagsList.filter(t => t !== tag);
+  renderTags();
+}
+
+function renderTags() {
+  const container = document.getElementById('tagsContainer');
+  container.innerHTML = '';
+  
+  tagsList.forEach(tag => {
+    const tagElement = document.createElement('div');
+    tagElement.className = 'inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2';
+    tagElement.innerHTML = `
+      ${tag}
+      <button type="button" onclick="removeTag('${tag}')" class="ml-1 text-gray-500 hover:text-gray-700">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    `;
+    container.appendChild(tagElement);
+  });
+}
+
+function addExternalId() {
+  const idInput = document.getElementById('externalIdInput');
+  const id = idInput.value.trim();
+  
+  if (id && !externalIdsList.includes(id)) {
+    externalIdsList.push(id);
+    renderExternalIds();
+    idInput.value = '';
+  }
+}
+
+function removeExternalId(id) {
+  externalIdsList = externalIdsList.filter(i => i !== id);
+  renderExternalIds();
+}
+
+function renderExternalIds() {
+  const container = document.getElementById('externalIdsContainer');
+  container.innerHTML = '';
+  
+  externalIdsList.forEach(id => {
+    const idElement = document.createElement('div');
+    idElement.className = 'inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2';
+    idElement.innerHTML = `
+      ${id}
+      <button type="button" onclick="removeExternalId('${id}')" class="ml-1 text-gray-500 hover:text-gray-700">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    `;
+    container.appendChild(idElement);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('add-publication-form');
+  const tagInput = document.getElementById('tagInput');
+  const externalIdInput = document.getElementById('externalIdInput');
+  
+  tagInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
+    }
+  });
+  
+  externalIdInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addExternalId();
+    }
+  });
+  
+  if (form) {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const title = document.getElementById('title').value.trim();
+      const participantsInput = document.getElementById('participants').value.trim();
+      const projectDate = document.getElementById('projectDate').value;
+      const workType = document.getElementById('workType').value.trim();
+      
+      if (!title || !participantsInput || !projectDate || !workType) {
+        alert('Por favor, complete todos los campos obligatorios');
+        return;
+      }
+      
+      const participantsArray = participantsInput
+        .split(',')
+        .map(participant => participant.trim())
+        .filter(participant => participant !== '');
+      
+      const orcidsInput = document.getElementById('ownerOrcids').value.trim();
+      const orcidsArray = orcidsInput ? 
+        orcidsInput.split(',')
+          .map(orcid => orcid.trim())
+          .filter(orcid => orcid !== '') : [];
+      
+      const publicationData = {
+        putCode: document.getElementById('putCode').value.trim(),
+        title: title,
+        description: document.getElementById('description').value.trim(),
+        participants: participantsArray,
+        ownerOrcids: orcidsArray,
+        externalIds: externalIdsList,
+        projectDate: projectDate,
+        projectId: document.getElementById('projectId').value.trim() || null,
+        tags: [workType, ...tagsList],
+        link: document.getElementById('link').value.trim() || ''
+      };
+      
+      try {
+        console.log('Datos a enviar:', publicationData);
+        
+        const response = await fetch('http://localhost:8080/api/works/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(publicationData)
+        });
+        
+        if (response.ok) {
+          alert('Publicación añadida con éxito');
+          form.reset();
+          tagsList = [];
+          externalIdsList = [];
+          renderTags();
+          renderExternalIds();
+          hideAddPublicationModal();
+          window.location.reload();
+        } else {
+          let errorMessage = 'Error desconocido';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || JSON.stringify(errorData);
+          } catch {
+            errorMessage = await response.text();
+          }
+          
+          console.error('Error del backend:', errorMessage);
+          alert('Error al añadir la publicación: ' + errorMessage);
+        }
+      } catch (error) {
+        console.error('Error de conexión:', error);
+        alert('Error de conexión al intentar añadir la publicación: ' + error.message);
+      }
+    });
+  }
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      hideAddPublicationModal();
+    }
+  });
+});
+</script>

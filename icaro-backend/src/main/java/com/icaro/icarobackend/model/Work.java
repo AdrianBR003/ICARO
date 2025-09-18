@@ -21,7 +21,7 @@ public class Work {
     private String description;
     private List<String> participants; // Name Participants
     private List<String> externalIds;
-    private List<String> ownerOrcids; // OIDS Participants
+    private List<String> ownerOrcids; // OIDS Participants, para en un futuro enlazar a un perfil con las publicaciones
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate projectDate;
 
