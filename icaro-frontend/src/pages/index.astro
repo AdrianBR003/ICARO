@@ -1,11 +1,10 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import Layout from "@/layouts/Layout.astro";
-import Header from "@/components/Header.astro";
-import RecentCarousel from "@/components/RecentCarousel.astro";
-import NavBar from "@/components/NavBar.astro";
-import TopUtility from "@/components/TopUtility.astro";
-import ResearchGroup from "@/components/ResearchGroup.astro";
+import Header from "@/components/CCommon/Header.astro";
+import RecentCarousel from "@/components/CIndex/RecentCarousel.astro";
+import NavBar from "@/components/CCommon/NavBar.astro";
+import TopUtility from "@/components/CCommon/TopUtility.astro";
+import IndexInfo from "@/components/CIndex/IndexInfo.astro";
 import "@/styles/index.css";
 import epslimage from "@/assets/epslportada.webp";
 
@@ -47,7 +46,7 @@ const dataHeader = {
              -translate-x-1/2"
 			></span>
 		</div>
-		<ResearchGroup />
+		<IndexInfo />
 	</section>
 
 	<section
