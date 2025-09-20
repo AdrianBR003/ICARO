@@ -1,0 +1,132 @@
+---
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  colaborators: string[];
+  startDate: string;
+  endDate: string;
+  relatedWorks: {
+    type: string;
+    title: string;
+    year: string;
+    link: string | null;
+  }[];
+}
+
+const { project } = Astro.props;
+---
+
+<div
+  class="project-card bg-white border rounded-lg p-6 shadow-sm transition-all duration-300 cursor-pointer"
+  data-project-id={project.id}
+  data-expandable="true"
+>
+  <div class="flex justify-between items-start">
+    <div class="flex-1">
+      <div class="flex items-center mb-4">
+        <span class="bg-[#1D293D] text-white text-xs px-3 py-1 rounded-full font-medium mr-3">
+          {project.startDate} / {project.endDate}
+        </span>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">
+        {project.title}
+      </h3>
+      <p class="text-gray-600 mb-4">
+        {project.description}
+      </p>
+      <div class="mb-4">
+        <h4 class="text-sm font-semibold text-gray-700 mb-1">
+          Colaboradores:
+        </h4>
+        <p class="text-gray-600">
+          {project.colaborators.join(", ")}
+        </p>
+      </div>
+    </div>
+    <button
+      class="expand-btn ml-4 text-gray-500 hover:text-[#1D293D] transition"
+      data-project-id={project.id}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="expand-icon h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 9l-7 7-7-7"
+        />
+      </svg>
+    </button>
+  </div>
+
+  <div class="related-works mt-4 pt-4 border-t border-gray-100">
+    <h4 class="font-semibold text-gray-700 mb-3">
+      Publicaciones relacionadas:
+    </h4>
+    <div class="space-y-3">
+      {project.relatedWorks.map((work) => (
+        <div class="flex items-start">
+          <div class="flex-1">
+            <p class="text-sm text-gray-800">
+              {work.link ? (
+                <a
+                  href={work.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  {work.type} — {work.title} | {work.year}
+                </a>
+              ) : (
+                <span>
+                  {work.type} — {work.title} | {work.year}
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .project-card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .project-card.expanded {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+  .expand-icon {
+    transition: transform 0.3s ease;
+  }
+  .project-card.expanded .expand-icon {
+    transform: rotate(180deg);
+  }
+  .related-works {
+    max-height: 0;
+    opacity: 0;
+    transition:
+      max-height 0.5s ease,
+      opacity 0.3s ease;
+    overflow: hidden;
+  }
+  .project-card.expanded .related-works {
+    max-height: 1000px;
+    opacity: 1;
+  }
+  .tag {
+    transition: all 0.2s ease;
+  }
+  .tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+</style>

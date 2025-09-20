@@ -1,0 +1,82 @@
+---
+import ProjectCard from "./ProjectCard.astro";
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  colaborators: string[];
+  startDate: string;
+  endDate: string;
+  relatedWorks: {
+    type: string;
+    title: string;
+    year: string;
+    link: string | null;
+  }[];
+}
+
+interface Props {
+  projects: Project[];
+}
+
+const { projects } = Astro.props;
+---
+
+<div class="space-y-6" id="projects-list">
+  {projects.map((project) => (
+    <ProjectCard project={project} />
+  ))}
+</div>
+
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("search-input");
+    if (searchInput) {
+      searchInput.addEventListener("input", function () {
+        const searchTerm = this.value.toLowerCase();
+        const projects = document.querySelectorAll(".project-card");
+
+        projects.forEach((project) => {
+          const title = project
+            .querySelector("h3")
+            .textContent.toLowerCase();
+          const description = project
+            .querySelector("p")
+            .textContent.toLowerCase();
+          const matches =
+            title.includes(searchTerm) ||
+            description.includes(searchTerm);
+          project.style.display = matches ? "block" : "none";
+        });
+      });
+    }
+
+    const projectCards = document.querySelectorAll('.project-card[data-expandable="true"]');
+    projectCards.forEach((card) => {
+      card.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A' || e.target.closest('a')) {
+          return;
+        }
+        
+        const projectId = this.getAttribute('data-project-id');
+        const projectCard = document.querySelector(
+          `.project-card[data-project-id="${projectId}"]`,
+        );
+        projectCard.classList.toggle('expanded');
+      });
+    });
+
+    const expandButtons = document.querySelectorAll(".expand-btn");
+    expandButtons.forEach((button) => {
+      button.addEventListener("click", function (e) {
+        e.stopPropagation(); 
+        const projectId = this.getAttribute("data-project-id");
+        const projectCard = document.querySelector(
+          `.project-card[data-project-id="${projectId}"]`,
+        );
+        projectCard.classList.toggle("expanded");
+      });
+    });
+  });
+</script>

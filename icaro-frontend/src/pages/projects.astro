@@ -4,10 +4,12 @@ import TopUtility from "@/components/CCommon/TopUtility.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import Header from "@/components/CCommon/Header.astro";
 import "@/styles/index.css";
+import CTitle from "@/components/CCommon/TitlePages.astro";
+import SearchInput from "@/components/CProjects/SearchProject.astro";
+import ProjectsList from "@/components/CProjects/ProjectList.astro";
 
 const API_BASE_URL = 'http://localhost:8080';
 
-// Función para obtener proyectos desde la API
 async function fetchProjects() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/project/all`);
@@ -21,7 +23,6 @@ async function fetchProjects() {
   }
 }
 
-// Función para obtener trabajos relacionados para cada proyecto
 async function fetchRelatedWorks(projectId) {
   try {
     const response = await fetch(`${API_BASE_URL}/api/project-work/project/${projectId}/works`);
@@ -35,14 +36,12 @@ async function fetchRelatedWorks(projectId) {
   }
 }
 
-// Obtener todos los proyectos
 const projectsData = await fetchProjects();
 
 const projectsWithWorks = await Promise.all(
   projectsData.map(async (project) => {
     const relatedWorks = await fetchRelatedWorks(project.id);
     
-    // Transformar los datos al formato esperado por la interfaz
     return {
       id: project.id,
       title: project.title,
@@ -70,196 +69,10 @@ const projectsWithWorks = await Promise.all(
         <NavBar />
     </section>
 
-    <div class="text-center my-10">
-      <div class="relative inline-block w-full text-center py-2">
-        <h2 class="text-2xl font-bold text-[#231F20]">Projects</h2>
-        <span
-          class="absolute left-1/2 bottom-0 w-20 h-1 bg-[#006D38] -translate-x-1/2"
-        ></span>
-      </div>
-    </div>
+    <CTitle Title="Projects" />
 
     <section class="max-w-4xl mx-auto px-4">
-        <div class="mb-10">
-            <div class="relative max-w-full">
-                <span
-                    class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="w-5 h-5"
-                    >
-                        <path
-                            fill-rule="evenodd"
-                            d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </span>
-                <input
-                    id="search-input"
-                    type="search"
-                    placeholder="Buscar proyectos por nombre..."
-                    class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
-                />
-            </div>
-        </div>
-
-        <!-- Lista de proyectos -->
-        <div class="space-y-6" id="projects-list">
-            {
-                projectsWithWorks.map((project) => (
-                    <div
-                        class="project-card bg-white border rounded-lg p-6 shadow-sm transition-all duration-300"
-                        data-project-id={project.id}
-                    >
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <div class="flex items-center mb-4">
-                                    <span class="bg-[#1D293D] text-white text-xs px-3 py-1 rounded-full font-medium mr-3">
-                                        {project.startDate} / {project.endDate}
-                                    </span>
-                                </div>
-                                <h3 class="text-xl font-bold text-gray-900 mb-2">
-                                    {project.title}
-                                </h3>
-                                <p class="text-gray-600 mb-4">
-                                    {project.description}
-                                </p>
-                                <div class="mb-4">
-                                    <h4 class="text-sm font-semibold text-gray-700 mb-1">
-                                        Colaboradores:
-                                    </h4>
-                                    <p class="text-gray-600">
-                                        {project.colaborators.join(", ")}
-                                    </p>
-                                </div>
-                            </div>
-                            <button
-                                class="expand-btn ml-4 text-gray-500 hover:text-[#1D293D] transition"
-                                data-project-id={project.id}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="expand-icon h-6 w-6"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M19 9l-7 7-7-7"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div class="related-works mt-4 pt-4 border-t border-gray-100">
-                            <h4 class="font-semibold text-gray-700 mb-3">
-                                Publicaciones relacionadas:
-                            </h4>
-                            <div class="space-y-3">
-                                {project.relatedWorks.map((work) => (
-                                    <div class="flex items-start">
-                                        <div class="flex-1">
-                                            <p class="text-sm text-gray-800">
-                                                {work.link ? (
-                                                    <a
-                                                        href={work.link}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        class="text-blue-600 hover:text-blue-800 hover:underline"
-                                                    >
-                                                        {work.type} — {work.title} | {work.year}
-                                                    </a>
-                                                ) : (
-                                                    <span>
-                                                        {work.type} — {work.title} | {work.year}
-                                                    </span>
-                                                )}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                ))
-            }
-        </div>
+        <SearchInput placeholder="Buscar proyectos por nombre..." />
+        <ProjectsList projects={projectsWithWorks} />
     </section>
-
-    <script is:inline>
-        document.addEventListener("DOMContentLoaded", function () {
-            const searchInput = document.getElementById("search-input");
-            if (searchInput) {
-                searchInput.addEventListener("input", function () {
-                    const searchTerm = this.value.toLowerCase();
-                    const projects = document.querySelectorAll(".project-card");
-
-                    projects.forEach((project) => {
-                        const title = project
-                            .querySelector("h3")
-                            .textContent.toLowerCase();
-                        const description = project
-                            .querySelector("p")
-                            .textContent.toLowerCase();
-                        const matches =
-                            title.includes(searchTerm) ||
-                            description.includes(searchTerm);
-                        project.style.display = matches ? "block" : "none";
-                    });
-                });
-            }
-
-            const expandButtons = document.querySelectorAll(".expand-btn");
-            expandButtons.forEach((button) => {
-                button.addEventListener("click", function () {
-                    const projectId = this.getAttribute("data-project-id");
-                    const projectCard = document.querySelector(
-                        `.project-card[data-project-id="${projectId}"]`,
-                    );
-                    projectCard.classList.toggle("expanded");
-                });
-            });
-        });
-    </script>
-
-    <style>
-        .project-card {
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        .project-card.expanded {
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-        .expand-icon {
-            transition: transform 0.3s ease;
-        }
-        .project-card.expanded .expand-icon {
-            transform: rotate(180deg);
-        }
-        .related-works {
-            max-height: 0;
-            opacity: 0;
-            transition:
-                max-height 0.5s ease,
-                opacity 0.3s ease;
-            overflow: hidden;
-        }
-        .project-card.expanded .related-works {
-            max-height: 1000px;
-            opacity: 1;
-        }
-        .tag {
-            transition: all 0.2s ease;
-        }
-        .tag:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
 </BaseLayout>
