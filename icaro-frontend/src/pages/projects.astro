@@ -7,8 +7,25 @@ import "@/styles/index.css";
 import CTitle from "@/components/CCommon/TitlePages.astro";
 import SearchInput from "@/components/CProjects/SearchProject.astro";
 import ProjectsList from "@/components/CProjects/ProjectList.astro";
+import AddProject from "@/components/CProjects/AddProject.astro";
 
 const API_BASE_URL = 'http://localhost:8080';
+let isAdmin = false;
+
+try {
+  const response = await fetch(
+    "http://localhost:8080/api/session/check-admin",
+    {
+      credentials: "include",
+    },
+  );
+
+  if (response.ok) {
+    isAdmin = await response.json();
+  }
+} catch (error) {
+  console.error("Error checking admin status:", error);
+}
 
 async function fetchProjects() {
   try {
@@ -70,6 +87,7 @@ const projectsWithWorks = await Promise.all(
     </section>
 
     <CTitle Title="Projects" />
+    <AddProject isAdmin={isAdmin} /> 
 
     <section class="max-w-4xl mx-auto px-4">
         <SearchInput placeholder="Buscar proyectos por nombre..." />
