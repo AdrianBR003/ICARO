@@ -31,7 +31,6 @@ const cardId = `card-${work.id || work.putCode}`;
   data-project-name={work.projectName || ""}
   data-year={year}
 >
-  <!-- Botones de acción en la esquina superior derecha -->
   <div class="absolute top-3 right-3 flex flex-col gap-2">
    <ResearchEdit work={work} cardId={cardId} isAdmin={isAdmin} />
    <ResearchDelete work={work} cardId={cardId} isAdmin={isAdmin} />

@@ -38,16 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (response.ok) {
         const isAdmin = await response.json();
         
-        // 1. Actualizar UI inmediatamente para feedback visual rápido
         updateUI(isAdmin);
         
-        // 2. Disparar evento personalizado para que otros componentes se actualicen
         window.dispatchEvent(new CustomEvent('adminStatusChanged', {
           detail: { isAdmin: isAdmin }
         }));
         
-        // 3. Recargar después de un pequeño delay para que Astro 
-        //    regenere todos los componentes con el estado correcto
         setTimeout(() => {
           window.location.reload();
         }, 100);
@@ -74,10 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  // Event listeners
   adminToggle.addEventListener('click', toggleAdmin);
   
-  // Verificar estado al cargar
   checkAdminStatus();
 });
 </script>
