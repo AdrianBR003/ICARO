@@ -1,0 +1,163 @@
+---
+export interface Props {}
+---
+<div
+  id="research-modal"
+  class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+>
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-6">   
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Editar Publicación</h3>
+        <button
+          type="button"
+          onclick="closeResearchModal()"
+          class="text-gray-500 hover:text-gray-700"
+        >
+          ✕
+        </button>
+      </div>
+
+      <form id="research-form" class="space-y-4">
+        <input type="hidden" id="putCode" name="putCode" />
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Título *</label>
+          <input type="text" id="title" name="title" required class="w-full px-3 py-2 border rounded-md" />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Descripción</label>
+          <textarea id="description" name="description" rows="3" class="w-full px-3 py-2 border rounded-md"></textarea>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Participantes</label>
+          <textarea id="participants" name="participants" rows="2" class="w-full px-3 py-2 border rounded-md"></textarea>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">IDs Externos (DOI)</label>
+          <input type="text" id="externalIds" name="externalIds" class="w-full px-3 py-2 border rounded-md" />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">ORCID Propietarios</label>
+          <input type="text" id="ownerOrcids" name="ownerOrcids" class="w-full px-3 py-2 border rounded-md" />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Fecha del Proyecto *</label>
+          <input type="date" id="projectDate" name="projectDate" required class="w-full px-3 py-2 border rounded-md" />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Título del Proyecto</label>
+          <input type="text" id="projectName" name="projectName" class="w-full px-3 py-2 border rounded-md" />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Etiquetas</label>
+          <input type="text" id="tags" name="tags" class="w-full px-3 py-2 border rounded-md" />
+        </div>
+
+        <div class="flex gap-4 pt-4 border-t">
+          <button
+            type="button"
+            onclick="closeResearchModal()"
+            class="px-4 py-2 border rounded-md hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
+          >
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  function closeResearchModal() {
+    document.getElementById('research-modal').classList.add('hidden');
+  }
+
+  window.showResearchModal = function (workData) {
+    const modal = document.getElementById("research-modal");
+    const form = document.getElementById("research-form");
+
+    if (!modal || !form) return;
+
+    form.putCode.value = workData.putCode || "";
+    form.title.value = workData.title || "";
+    form.description.value = workData.description || "";
+    form.participants.value = (workData.participants || []).join(", ");
+    form.externalIds.value = (workData.externalIds || []).join(", ");
+    form.ownerOrcids.value = (workData.ownerOrcids || []).join(", ");
+    form.projectDate.value = workData.projectDate || "";
+    form.projectName.value = workData.projectName || "";
+    form.tags.value = (workData.tags || []).join(", ");
+
+    modal.classList.remove("hidden");
+  };
+
+  document.getElementById("research-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    if (!confirm("¿Estás seguro de que deseas guardar los cambios?")) {
+      return;
+    }
+    
+    const formData = new FormData(this);
+    const work = {
+      putCode: formData.get("putCode"),
+      title: formData.get("title"),
+      description: formData.get("description"),
+      participants: formData.get("participants").split(",").map(item => item.trim()).filter(Boolean),
+      externalIds: formData.get("externalIds").split(",").map(item => item.trim()).filter(Boolean),
+      ownerOrcids: formData.get("ownerOrcids").split(",").map(item => item.trim()).filter(Boolean),
+      projectDate: formData.get("projectDate"),
+      projectId: formData.get("projectName"),
+      tags: formData.get("tags").split(",").map(item => item.trim()).filter(Boolean)
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/api/works/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(work)
+      });
+
+      if (response.ok) {
+        alert("Los cambios se guardaron correctamente.");
+        document.getElementById("research-modal").classList.add("hidden");
+        window.location.reload();
+      } else {
+        alert("Error al guardar los cambios. Por favor, intenta nuevamente.");
+      }
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      alert("Error al guardar los cambios. Por favor, intenta nuevamente.");
+    }
+  });
+</script>
+
+<style>
+.modal {
+  transition: opacity 0.3s ease;
+}
+.modal.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.modal:not(.hidden) {
+  opacity: 1;
+  pointer-events: all;
+}
+</style>

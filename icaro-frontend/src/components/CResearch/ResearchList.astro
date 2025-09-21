@@ -1,0 +1,60 @@
+---
+import ResearchCard from './CCResearchList/ResearchCard.astro';
+import ResearchEdit from './CCResearchList/ResearchEdit.astro';
+import ResearchDelete from './CCResearchList/ResearchDelete.astro';
+
+export interface Props {
+  researchGroups: Array<{
+    year: string;
+    items: Array<{
+      id: string;
+      putCode: string;
+      title: string;
+      description?: string;
+      participants?: string[];
+      externalIds?: string[];
+      ownerOrcids?: string[];
+      projectDate: string;
+      projectName?: string;
+      tags: string[];
+    }>;
+  }>;
+  isAdmin?: boolean;
+}
+
+const { researchGroups, isAdmin = false } = Astro.props;
+---
+
+<div class="space-y-8" id="publications">
+  {
+    researchGroups.map(({ year, items }) =>
+      items.map((work) => (
+        <ResearchCard 
+          work={work} 
+          year={year} 
+          isAdmin={isAdmin} 
+        />
+      ))
+    )
+  }
+</div>
+
+<!-- Incluir el modal de edición -->
+<ResearchEdit />
+
+<!-- Incluir la funcionalidad de eliminación -->
+<ResearchDelete />
+
+<script>
+// Asegurar que las funciones estén disponibles globalmente
+if (typeof window !== 'undefined') {
+  // Esto asegura que si el modal se carga después, las funciones estén definidas
+  window.showResearchModal = window.showResearchModal || function() {
+    console.warn('showResearchModal no está implementado aún');
+  };
+  
+  window.hideResearchModal = window.hideResearchModal || function() {
+    console.warn('hideResearchModal no está implementado aún');
+  };
+}
+</script>

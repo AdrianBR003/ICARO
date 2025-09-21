@@ -5,7 +5,7 @@ import NavBar from "@/components/CCommon/NavBar.astro";
 import Header from "@/components/CCommon/Header.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
 import ResearchFilters from "@/components/CResearch/ResearchFilters.astro";
-import ResearchGroup from "@/components/CResearch/ResearchGroup.astro";
+import ResearchList from "@/components/CResearch/ResearchList.astro";
 import ResearchAddPublication from "@/components/CResearch/ResearchAddPublication.astro";
 import "@/styles/index.css";
 
@@ -145,7 +145,7 @@ try {
       mostRecentYear={mostRecentYear}
     />
 
-    <ResearchGroup researchGroups={researchGroups} />
+    <ResearchList researchGroups={researchGroups} />
 
     <div class="text-center mt-8">
       <button
