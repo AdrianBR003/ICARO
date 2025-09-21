@@ -1,8 +1,45 @@
 ---
-export interface Props {}
+export interface Props {
+  work: {
+    id: string;
+    putCode: string;
+    title: string;
+    description?: string;
+    participants?: string[];
+    externalIds?: string[];
+    ownerOrcids?: string[];
+    projectDate: string;
+    projectName?: string;
+    tags: string[];
+  };
+  isAdmin?: boolean;
+}
+
+const { work, isAdmin = false } = Astro.props;
+const cardId = `card-${work.id || work.putCode}`;
+const modalId = `modal-${work.id || work.putCode}`;
 ---
+
+<!-- Botón de editar -->
+<button
+  class={`edit-btn ${isAdmin ? '' : 'hidden'} z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm`}
+  data-card-id={cardId}
+  aria-label="Editar"
+  type="button"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    class="h-5 w-5 text-gray-600"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+  >
+    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+  </svg>
+</button>
+
+<!-- Modal de edición -->
 <div
-  id="research-modal"
+  id={modalId}
   class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
 >
   <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -11,61 +48,59 @@ export interface Props {}
         <h3 class="text-xl font-bold">Editar Publicación</h3>
         <button
           type="button"
-          onclick="closeResearchModal()"
-          class="text-gray-500 hover:text-gray-700"
+          class="close-modal text-gray-500 hover:text-gray-700"
         >
           ✕
         </button>
       </div>
 
-      <form id="research-form" class="space-y-4">
-        <input type="hidden" id="putCode" name="putCode" />
+      <form class="research-form space-y-4">
+        <input type="hidden" name="putCode" value={work.putCode} />
 
         <div>
           <label class="block mb-1 text-sm font-medium">Título *</label>
-          <input type="text" id="title" name="title" required class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="title" value={work.title} required class="w-full px-3 py-2 border rounded-md" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Descripción</label>
-          <textarea id="description" name="description" rows="3" class="w-full px-3 py-2 border rounded-md"></textarea>
+          <textarea name="description" rows="3" class="w-full px-3 py-2 border rounded-md">{work.description || ""}</textarea>
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Participantes</label>
-          <textarea id="participants" name="participants" rows="2" class="w-full px-3 py-2 border rounded-md"></textarea>
+          <textarea name="participants" rows="2" class="w-full px-3 py-2 border rounded-md">{work.participants?.join(", ") || ""}</textarea>
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">IDs Externos (DOI)</label>
-          <input type="text" id="externalIds" name="externalIds" class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="externalIds" value={work.externalIds?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">ORCID Propietarios</label>
-          <input type="text" id="ownerOrcids" name="ownerOrcids" class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="ownerOrcids" value={work.ownerOrcids?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Fecha del Proyecto *</label>
-          <input type="date" id="projectDate" name="projectDate" required class="w-full px-3 py-2 border rounded-md" />
+          <input type="date" name="projectDate" value={work.projectDate} required class="w-full px-3 py-2 border rounded-md" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Título del Proyecto</label>
-          <input type="text" id="projectName" name="projectName" class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="projectName" value={work.projectName || ""} class="w-full px-3 py-2 border rounded-md" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Etiquetas</label>
-          <input type="text" id="tags" name="tags" class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="tags" value={work.tags?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md" />
         </div>
 
         <div class="flex gap-4 pt-4 border-t">
           <button
             type="button"
-            onclick="closeResearchModal()"
-            class="px-4 py-2 border rounded-md hover:bg-gray-50"
+            class="cancel-btn px-4 py-2 border rounded-md hover:bg-gray-50"
           >
             Cancelar
           </button>
@@ -81,83 +116,107 @@ export interface Props {}
   </div>
 </div>
 
-<script is:inline>
-  function closeResearchModal() {
-    document.getElementById('research-modal').classList.add('hidden');
-  }
+<script is:inline define:vars={{ modalId, cardId, work, isAdmin }}>
 
-  window.showResearchModal = function (workData) {
-    const modal = document.getElementById("research-modal");
-    const form = document.getElementById("research-form");
+  console.log('ResearchEdit', { isAdmin });
 
-    if (!modal || !form) return;
 
-    form.putCode.value = workData.putCode || "";
-    form.title.value = workData.title || "";
-    form.description.value = workData.description || "";
-    form.participants.value = (workData.participants || []).join(", ");
-    form.externalIds.value = (workData.externalIds || []).join(", ");
-    form.ownerOrcids.value = (workData.ownerOrcids || []).join(", ");
-    form.projectDate.value = workData.projectDate || "";
-    form.projectName.value = workData.projectName || "";
-    form.tags.value = (workData.tags || []).join(", ");
+  function initializeEditComponent() {
+    const editBtn = document.querySelector(`#${cardId} .edit-btn`);
+    const modal = document.getElementById(modalId);
+    const form = modal.querySelector('.research-form');
+    const closeBtn = modal.querySelector('.close-modal');
+    const cancelBtn = modal.querySelector('.cancel-btn');
 
-    modal.classList.remove("hidden");
-  };
-
-  document.getElementById("research-form").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    
-    if (!confirm("¿Estás seguro de que deseas guardar los cambios?")) {
-      return;
+    // Función para abrir el modal
+    function openModal() {
+      modal.classList.remove('hidden');
     }
-    
-    const formData = new FormData(this);
-    const work = {
-      putCode: formData.get("putCode"),
-      title: formData.get("title"),
-      description: formData.get("description"),
-      participants: formData.get("participants").split(",").map(item => item.trim()).filter(Boolean),
-      externalIds: formData.get("externalIds").split(",").map(item => item.trim()).filter(Boolean),
-      ownerOrcids: formData.get("ownerOrcids").split(",").map(item => item.trim()).filter(Boolean),
-      projectDate: formData.get("projectDate"),
-      projectId: formData.get("projectName"),
-      tags: formData.get("tags").split(",").map(item => item.trim()).filter(Boolean)
-    };
 
-    try {
-      const response = await fetch("http://localhost:8080/api/works/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(work)
-      });
+    // Función para cerrar el modal
+    function closeModal() {
+      modal.classList.add('hidden');
+    }
 
-      if (response.ok) {
-        alert("Los cambios se guardaron correctamente.");
-        document.getElementById("research-modal").classList.add("hidden");
-        window.location.reload();
-      } else {
+    // Event listeners
+    editBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openModal();
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Cerrar modal al hacer click fuera
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Manejar envío del formulario
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!confirm("¿Estás seguro de que deseas guardar los cambios?")) {
+        return;
+      }
+      
+      const formData = new FormData(form);
+      const workData = {
+        putCode: formData.get("putCode"),
+        title: formData.get("title"),
+        description: formData.get("description"),
+        participants: formData.get("participants").split(",").map(item => item.trim()).filter(Boolean),
+        externalIds: formData.get("externalIds").split(",").map(item => item.trim()).filter(Boolean),
+        ownerOrcids: formData.get("ownerOrcids").split(",").map(item => item.trim()).filter(Boolean),
+        projectDate: formData.get("projectDate"),
+        projectId: formData.get("projectName"),
+        tags: formData.get("tags").split(",").map(item => item.trim()).filter(Boolean)
+      };
+
+      try {
+        const response = await fetch("http://localhost:8080/api/works/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(workData)
+        });
+
+        if (response.ok) {
+          alert("Los cambios se guardaron correctamente.");
+          closeModal();
+          window.location.reload();
+        } else {
+          alert("Error al guardar los cambios. Por favor, intenta nuevamente.");
+        }
+      } catch (error) {
         alert("Error al guardar los cambios. Por favor, intenta nuevamente.");
       }
-    } catch (error) {
-      console.error("Error al guardar:", error);
-      alert("Error al guardar los cambios. Por favor, intenta nuevamente.");
-    }
-  });
+    });
+
+  }
+
+  // Inicializar cuando el DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeEditComponent);
+  } else {
+    setTimeout(initializeEditComponent, 10);
+  }
 </script>
 
 <style>
-.modal {
-  transition: opacity 0.3s ease;
-}
-.modal.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-.modal:not(.hidden) {
-  opacity: 1;
-  pointer-events: all;
-}
+  .modal {
+    transition: opacity 0.3s ease;
+  }
+  .modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .modal:not(.hidden) {
+    opacity: 1;
+    pointer-events: all;
+  }
 </style>

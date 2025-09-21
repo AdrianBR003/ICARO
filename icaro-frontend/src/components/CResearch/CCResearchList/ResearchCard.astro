@@ -1,4 +1,7 @@
 ---
+import ResearchEdit from './ResearchEdit.astro';
+import ResearchDelete from './ResearchDelete.astro';
+
 export interface Props {
   work: {
     id: string;
@@ -16,8 +19,7 @@ export interface Props {
   isAdmin?: boolean;
 }
 
-const { work, year, isAdmin = false } = Astro.props;
-
+const { work, year, isAdmin } = Astro.props;
 // Generar un ID único para esta card
 const cardId = `card-${work.id || work.putCode}`;
 ---
@@ -29,45 +31,13 @@ const cardId = `card-${work.id || work.putCode}`;
   data-project-name={work.projectName || ""}
   data-year={year}
 >
-  <div class="absolute top-3 right-3 mr-2 flex flex-col gap-2">
-    <button
-      class={`edit-btn ${isAdmin ? '' : 'hidden'} z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm`}
-      data-card-id={cardId}
-      aria-label="Editar"
-      type="button"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-600"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-      </svg>
-    </button>
-    <button
-      class={`delete-btn ${isAdmin ? '' : 'hidden'} z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm`}
-      data-putcode={work.putCode}
-      data-title={work.title}
-      data-card-id={cardId}
-      aria-label="Eliminar"
-      type="button"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-600"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-          clip-rule="evenodd"
-        />
-      </svg>
-    </button>
+  <!-- Botones de acción en la esquina superior derecha -->
+  <div class="absolute top-3 right-3 flex flex-col gap-2">
+   <ResearchEdit work={work} cardId={cardId} isAdmin={isAdmin} />
+   <ResearchDelete work={work} cardId={cardId} isAdmin={isAdmin} />
   </div>
 
+  <!-- Tags y proyecto -->
   <div class="flex flex-wrap gap-2 mb-3">
     {work.tags.map((tag) => (
       <span class="bg-gray-50 text-gray-800 text-xs px-2 py-1 rounded font-medium border border-gray-200 shadow-sm">
@@ -81,24 +51,29 @@ const cardId = `card-${work.id || work.putCode}`;
     )}
   </div>
 
+  <!-- Título -->
   <h3 class="text-xl font-bold text-gray-900 leading-snug mb-2">
     {work.title}
   </h3>
 
+  <!-- Participantes -->
   {work.participants?.length > 0 && (
     <p class="text-sm text-gray-700 mb-1">
       {work.participants.join(", ")}
     </p>
   )}
 
+  <!-- DOI -->
   {work.externalIds?.length > 0 && (
     <p class="text-sm italic text-gray-600">
       DOI: {work.externalIds[0]}
     </p>
   )}
 
+  <!-- Año de publicación -->
   <p class="text-sm italic text-gray-600">Publicado en: {year}</p>
 
+  <!-- Botón BibTeX -->
   <button
     class="mt-4 bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded hover:bg-gray-200 transition"
     type="button"
@@ -106,139 +81,6 @@ const cardId = `card-${work.id || work.putCode}`;
     BibTeX
   </button>
 </article>
-
-<script is:inline define:vars={{ work, cardId }}>
-  console.log('🔄 ResearchCard script ejecutado para:', cardId);
-  console.log('📋 Work data:', work);
-  
-  // Crear un almacén global de datos si no existe
-  if (!window.researchData) {
-    window.researchData = new Map();
-    console.log('📦 Almacén global de datos creado');
-  }
-  
-  // Almacenar los datos de este work
-  window.researchData.set(cardId, work);
-  console.log('💾 Datos almacenados para', cardId);
-  
-  // Función para manejar el click del botón editar
-  function handleEditClick(cardId) {
-    console.log('🎯 Manejando click de editar para:', cardId);
-    
-    const workData = window.researchData.get(cardId);
-    console.log('📤 Datos recuperados del almacén:', workData);
-    
-    if (!workData) {
-      console.error('❌ No se encontraron datos para la card:', cardId);
-      alert('Error: No se encontraron datos para editar');
-      return;
-    }
-    
-    // Verificar si la función existe
-    if (typeof window.showResearchModal === 'function') {
-      console.log('✅ showResearchModal encontrado, llamando...');
-      console.log('📋 Enviando datos:', workData);
-      
-      try {
-        window.showResearchModal(workData);
-        console.log('✅ showResearchModal ejecutado correctamente');
-      } catch (error) {
-        console.error('❌ Error al ejecutar showResearchModal:', error);
-        alert('Error al abrir el modal: ' + error.message);
-      }
-    } else {
-      console.error('❌ window.showResearchModal no está definido');
-      console.log('🔍 Funciones disponibles que incluyen "Research":', 
-        Object.keys(window).filter(key => key.toLowerCase().includes('research')));
-      alert('Error: Función de modal no disponible');
-    }
-  }
-  
-  // Función para manejar el click del botón eliminar
-  function handleDeleteClick(putCode, title) {
-    console.log('🗑️ Manejando click de eliminar:', putCode, title);
-    
-    if (typeof window.deleteResearchPublication === 'function') {
-      window.deleteResearchPublication(putCode, title);
-    } else {
-      console.error('❌ window.deleteResearchPublication no está definido');
-      alert('Error: Función de eliminación no disponible');
-    }
-  }
-  
-  // Inicializar la card
-  function initializeCard() {
-    console.log('🚀 Inicializando card:', cardId);
-    
-    // Buscar específicamente dentro de esta card
-    const cardElement = document.getElementById(cardId);
-    if (!cardElement) {
-      console.error('❌ No se encontró el elemento de la card:', cardId);
-      return;
-    }
-    
-    // Buscar el botón de editar dentro de esta card específica
-    const editBtn = cardElement.querySelector('.edit-btn');
-    if (editBtn) {
-      // Remover event listeners anteriores si existen
-      editBtn.removeEventListener('click', editBtn._editHandler);
-      
-      // Crear nuevo handler
-      editBtn._editHandler = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        console.log('👆 Click detectado en botón editar de:', cardId);
-        handleEditClick(cardId);
-      };
-      
-      editBtn.addEventListener('click', editBtn._editHandler);
-      console.log('✅ Event listener de editar agregado para:', cardId);
-      
-      // Test del botón
-      console.log('🧪 Botón editar:', {
-        cardId: editBtn.getAttribute('data-card-id'),
-        classes: editBtn.className,
-        visible: !editBtn.classList.contains('hidden')
-      });
-    } else {
-      console.error('❌ No se encontró el botón editar en:', cardId);
-    }
-    
-    // Buscar el botón de eliminar dentro de esta card específica
-    const deleteBtn = cardElement.querySelector('.delete-btn');
-    if (deleteBtn) {
-      // Remover event listeners anteriores si existen
-      deleteBtn.removeEventListener('click', deleteBtn._deleteHandler);
-      
-      // Crear nuevo handler
-      deleteBtn._deleteHandler = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        console.log('👆 Click detectado en botón eliminar');
-        const putCode = deleteBtn.getAttribute('data-putcode');
-        const title = deleteBtn.getAttribute('data-title');
-        handleDeleteClick(putCode, title);
-      };
-      
-      deleteBtn.addEventListener('click', deleteBtn._deleteHandler);
-      console.log('✅ Event listener de eliminar agregado para:', cardId);
-    }
-    
-    console.log('✅ Card inicializada correctamente:', cardId);
-  }
-  
-  // Inicializar cuando esté listo
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeCard);
-    console.log('⏳ Esperando DOMContentLoaded para:', cardId);
-  } else {
-    // DOM ya está listo, inicializar inmediatamente
-    setTimeout(initializeCard, 10); // Pequeño delay para asegurar que el elemento esté en el DOM
-    console.log('🚀 DOM listo, inicializando inmediatamente:', cardId);
-  }
-</script>
 
 <style>
   .publication-entry {

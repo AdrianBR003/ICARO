@@ -1,0 +1,87 @@
+---
+export interface Props {
+  work: {
+    putCode: string;
+    title: string;
+    [key: string]: any;
+  };
+  cardId: string;
+  isAdmin?: boolean;
+}
+
+const { work, cardId, isAdmin = false } = Astro.props;
+---
+
+{work && work.putCode && work.title ? (
+  <button
+    class={`delete-btn ${isAdmin ? 'block' : 'hidden'} z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm`}
+    data-putcode={work.putCode}
+    data-title={work.title}
+    data-card-id={cardId}
+    aria-label="Eliminar"
+    type="button"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5 text-gray-600"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+        clip-rule="evenodd"
+      />
+    </svg>
+  </button>
+
+  <script is:inline define:vars={{ work, cardId }}>
+    document.addEventListener('DOMContentLoaded', function() {
+      const cardElement = document.getElementById(cardId);
+      if (!cardElement) return;
+      
+      const deleteBtn = cardElement.querySelector('.delete-btn');
+      if (!deleteBtn) return;
+
+      async function handleDelete() {
+        const putCode = work?.putCode || deleteBtn.getAttribute('data-putcode');
+        const title = work?.title || deleteBtn.getAttribute('data-title');
+        
+        if (!putCode) {
+          alert('Error: No se puede eliminar, falta información.');
+          return;
+        }
+
+        const confirmed = confirm(`¿Estás seguro de que deseas eliminar "${title}"?`);
+        if (!confirmed) return;
+
+        try {
+          const response = await fetch(`http://localhost:8080/api/works/delete/${putCode}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            alert('Publicación eliminada correctamente.');
+            window.location.reload();
+          } else {
+            alert('Error al eliminar la publicación. Por favor, intenta nuevamente.');
+          }
+        } catch (error) {
+          console.error('Error de red:', error);
+          alert('Error de conexión. Por favor, intenta nuevamente.');
+        }
+      }
+
+      deleteBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleDelete();
+      });
+    });
+  </script>
+) : (
+  <p class="text-sm text-gray-500">No se puede eliminar esta publicación.</p>
+)}

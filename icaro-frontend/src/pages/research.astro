@@ -11,7 +11,6 @@ import "@/styles/index.css";
 
 const API_BASE_URL = "http://localhost:8080";
 let works = [];
-let isAdmin = false;
 
 try {
   const res = await fetch(`${API_BASE_URL}/api/works/all`);
@@ -106,21 +105,8 @@ worksWithProjectNames.forEach((work) => {
   }
 });
 
-// Verificar si es admin
-try {
-  const response = await fetch(
-    "http://localhost:8080/api/session/check-admin",
-    {
-      credentials: "include",
-    },
-  );
-
-  if (response.ok) {
-    isAdmin = await response.json();
-  }
-} catch (error) {
-  console.error("Error checking admin status:", error);
-}
+// Ya no verificamos isAdmin del lado del servidor
+// Se hará del lado del cliente
 ---
 
 <BaseLayout>
@@ -136,7 +122,8 @@ try {
 
   <section class="max-w-4xl mx-auto px-4">
    
-    <ResearchAddPublication isAdmin={isAdmin} />
+    <!-- Estos componentes inicialmente se renderizan como no-admin -->
+    <ResearchAddPublication isAdmin={false} />
 
     <ResearchFilters
       tagCategories={tagCategories}
@@ -145,7 +132,8 @@ try {
       mostRecentYear={mostRecentYear}
     />
 
-    <ResearchList researchGroups={researchGroups} />
+    <!-- ResearchList se renderiza inicialmente sin isAdmin -->
+    <ResearchList researchGroups={researchGroups} isAdmin={false} />
 
     <div class="text-center mt-8">
       <button
@@ -158,6 +146,54 @@ try {
 
   <script is:inline>
     document.addEventListener("DOMContentLoaded", function () {
+      
+      // ============= VERIFICACIÓN DE ADMIN DEL LADO CLIENTE =============
+      async function checkAndUpdateAdminElements() {
+        try {
+          const response = await fetch('http://localhost:8080/api/session/check-admin', {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const isAdmin = await response.json();
+            console.log('🔍 Admin status from client:', isAdmin);
+            
+            // Actualizar elementos de admin
+            updateAdminElements(isAdmin);
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+        }
+      }
+      
+      function updateAdminElements(isAdmin) {
+        // Mostrar/ocultar botones de edit
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.style.display = isAdmin ? 'block' : 'none';
+        });
+        
+        // Mostrar/ocultar botones de delete
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.style.display = isAdmin ? 'block' : 'none';
+        });
+        
+        // Actualizar el componente ResearchAddPublication si tiene elementos admin
+        const addPublicationContainer = document.querySelector('[data-admin-element]');
+        if (addPublicationContainer) {
+          addPublicationContainer.style.display = isAdmin ? 'block' : 'none';
+        }
+      }
+      
+      // Verificar admin status al cargar la página
+      checkAndUpdateAdminElements();
+      
+      // Escuchar cuando cambie el estado de admin (desde TopUtility)
+      window.addEventListener('adminStatusChanged', function(event) {
+        console.log('👑 Admin status changed, updating elements...');
+        updateAdminElements(event.detail.isAdmin);
+      });
+      
+      // ============= RESTO DEL CÓDIGO EXISTENTE =============
       let visibleItems = 10;
       const articles = Array.from(
         document.querySelectorAll(".publication-entry"),

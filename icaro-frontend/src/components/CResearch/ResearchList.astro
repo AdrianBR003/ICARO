@@ -1,7 +1,6 @@
 ---
 import ResearchCard from './CCResearchList/ResearchCard.astro';
-import ResearchEdit from './CCResearchList/ResearchEdit.astro';
-import ResearchDelete from './CCResearchList/ResearchDelete.astro';
+
 
 export interface Props {
   researchGroups: Array<{
@@ -22,7 +21,9 @@ export interface Props {
   isAdmin?: boolean;
 }
 
-const { researchGroups, isAdmin = false } = Astro.props;
+const { researchGroups, isAdmin } = Astro.props;
+console.log("🔍 ResearchList - isAdmin:", isAdmin);
+
 ---
 
 <div class="space-y-8" id="publications">
@@ -38,12 +39,6 @@ const { researchGroups, isAdmin = false } = Astro.props;
     )
   }
 </div>
-
-<!-- Incluir el modal de edición -->
-<ResearchEdit />
-
-<!-- Incluir la funcionalidad de eliminación -->
-<ResearchDelete />
 
 <script>
 // Asegurar que las funciones estén disponibles globalmente
