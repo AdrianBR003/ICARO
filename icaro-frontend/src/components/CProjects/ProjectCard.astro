@@ -1,11 +1,14 @@
 ---
+import ProjectEdit from "./ProjectEdit.astro";
+import ProjectDelete from "./ProjectDelete.astro";
+
 interface Project {
   id: string;
   title: string;
   description: string;
   colaborators: string[];
-  startDate: string;
-  endDate: string;
+  firstprojectDate: string; // Formato: "yyyy-MM-dd"
+  secondprojectDate: string; // Formato: "yyyy-MM-dd"
   relatedWorks: {
     type: string;
     title: string;
@@ -14,19 +17,46 @@ interface Project {
   }[];
 }
 
-const { project } = Astro.props;
+interface Props {
+  project: Project;
+  isAdmin?: boolean;
+}
+
+const { project, isAdmin = false } = Astro.props;
+const cardId = `project-card-${project.id}`;
+
+// Función para formatear las fechas de yyyy-MM-dd a un formato más legible
+function formatDate(dateString: string): string {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  };
+  
+  return date.toLocaleDateString('es-ES', options);
+}
+
+const formattedFirstDate = formatDate(project.firstprojectDate);
+const formattedSecondDate = formatDate(project.secondprojectDate);
 ---
 
 <div
-  class="project-card bg-white border rounded-lg p-6 shadow-sm transition-all duration-300 cursor-pointer"
+  class="project-card relative bg-white border rounded-lg p-6 shadow-sm transition-all duration-300 cursor-pointer"
   data-project-id={project.id}
   data-expandable="true"
 >
+  <!-- Botones de admin -->
+  <ProjectEdit project={project} isAdmin={isAdmin} />
+  <ProjectDelete project={project} cardId={cardId} isAdmin={isAdmin} />
+  
   <div class="flex justify-between items-start">
-    <div class="flex-1">
+    <div class="flex-1 pr-16"> <!-- Agregamos padding-right para los botones -->
       <div class="flex items-center mb-4">
         <span class="bg-[#1D293D] text-white text-xs px-3 py-1 rounded-full font-medium mr-3">
-          {project.startDate} / {project.endDate}
+          {formattedFirstDate} / {formattedSecondDate}
         </span>
       </div>
       <h3 class="text-xl font-bold text-gray-900 mb-2">

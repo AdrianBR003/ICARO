@@ -8,27 +8,22 @@ const { isAdmin } = Astro.props;
 
 <div id="add-publication-container" class="mb-6 flex justify-center">
   <button
-  id="addButton"
-  class:list={[
-    isAdmin ? "block" : "hidden",
-    // inline-flex para que el botón se comporte como un flex en línea,
-    // gap para separación, whitespace-nowrap para evitar saltos de línea
-    "bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded inline-flex items-center gap-2 whitespace-nowrap edit-btn transition-colors",
-  ]}
-  onclick="showAddPublicationModal()"
->
-  <svg xmlns="http://www.w3.org/2000/svg"
-       class="h-5 w-5 inline-block self-center"
-       viewBox="0 0 20 20"
-       fill="currentColor"
-       aria-hidden="true">
-    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-  </svg>
+    id="addButton"
+    class={`edit-btn ${isAdmin ? 'flex' : 'hidden'} bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded items-center gap-2 whitespace-nowrap transition-colors`}
+    onclick="showAddPublicationModal()"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg"
+         class="h-5 w-5 inline-block self-center"
+         viewBox="0 0 20 20"
+         fill="currentColor"
+         aria-hidden="true">
+      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+    </svg>
 
-  <span class="leading-none align-middle">Añadir Publicación</span>
-</button>
+    <span class="leading-none align-middle">Añadir Publicación</span>
+  </button>
 
-
+  <!-- Resto del modal permanece igual -->
   <div
     id="add-publication-modal"
     class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
@@ -230,11 +225,71 @@ const { isAdmin } = Astro.props;
 let tagsList = [];
 let externalIdsList = [];
 
+document.addEventListener('DOMContentLoaded', function() {
+  initializeEventListeners();
+});
+
+function initializeEventListeners() {
+  const tagInput = document.getElementById('tagInput');
+  const externalIdInput = document.getElementById('externalIdInput');
+  const form = document.getElementById('add-publication-form');
+  
+  if (tagInput) {
+    tagInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addTag();
+      }
+    });
+  }
+  
+  if (externalIdInput) {
+    externalIdInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addExternalId();
+      }
+    });
+  }
+  
+  if (form) {
+    form.addEventListener('submit', handleFormSubmit);
+  }
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      hideAddPublicationModal();
+    }
+  });
+}
+
 function generatePutCode() {
   return Math.floor(10000000 + Math.random() * 90000000).toString();
 }
 
-function showAddPublicationModal() {
+async function showAddPublicationModal() {
+  // Verificar permisos de admin antes de mostrar el modal
+  try {
+    const response = await fetch('http://localhost:8080/api/session/check-admin', {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const isAdmin = await response.json();
+      if (!isAdmin) {
+        alert('No tiene permisos para realizar esta acción');
+        return;
+      }
+    } else {
+      alert('Error al verificar permisos');
+      return;
+    }
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    alert('Error de conexión');
+    return;
+  }
+  
   document.getElementById('putCode').value = generatePutCode();
   document.getElementById('add-publication-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden'; 
@@ -263,6 +318,8 @@ function removeTag(tag) {
 
 function renderTags() {
   const container = document.getElementById('tagsContainer');
+  if (!container) return;
+  
   container.innerHTML = '';
   
   tagsList.forEach(tag => {
@@ -298,6 +355,8 @@ function removeExternalId(id) {
 
 function renderExternalIds() {
   const container = document.getElementById('externalIdsContainer');
+  if (!container) return;
+  
   container.innerHTML = '';
   
   externalIdsList.forEach(id => {
@@ -315,107 +374,79 @@ function renderExternalIds() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('add-publication-form');
-  const tagInput = document.getElementById('tagInput');
-  const externalIdInput = document.getElementById('externalIdInput');
+async function handleFormSubmit(e) {
+  e.preventDefault();
   
-  tagInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addTag();
-    }
-  });
+  const title = document.getElementById('title').value.trim();
+  const participantsInput = document.getElementById('participants').value.trim();
+  const projectDate = document.getElementById('projectDate').value;
+  const workType = document.getElementById('workType').value.trim();
   
-  externalIdInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addExternalId();
-    }
-  });
-  
-  if (form) {
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const title = document.getElementById('title').value.trim();
-      const participantsInput = document.getElementById('participants').value.trim();
-      const projectDate = document.getElementById('projectDate').value;
-      const workType = document.getElementById('workType').value.trim();
-      
-      if (!title || !participantsInput || !projectDate || !workType) {
-        alert('Por favor, complete todos los campos obligatorios');
-        return;
-      }
-      
-      const participantsArray = participantsInput
-        .split(',')
-        .map(participant => participant.trim())
-        .filter(participant => participant !== '');
-      
-      const orcidsInput = document.getElementById('ownerOrcids').value.trim();
-      const orcidsArray = orcidsInput ? 
-        orcidsInput.split(',')
-          .map(orcid => orcid.trim())
-          .filter(orcid => orcid !== '') : [];
-      
-      const publicationData = {
-        putCode: document.getElementById('putCode').value.trim(),
-        title: title,
-        description: document.getElementById('description').value.trim(),
-        participants: participantsArray,
-        ownerOrcids: orcidsArray,
-        externalIds: externalIdsList,
-        projectDate: projectDate,
-        projectId: document.getElementById('projectId').value.trim() || null,
-        tags: [workType, ...tagsList],
-        link: document.getElementById('link').value.trim() || ''
-      };
-      
-      try {
-        console.log('Datos a enviar:', publicationData);
-        
-        const response = await fetch('http://localhost:8080/api/works/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(publicationData)
-        });
-        
-        if (response.ok) {
-          alert('Publicación añadida con éxito');
-          form.reset();
-          tagsList = [];
-          externalIdsList = [];
-          renderTags();
-          renderExternalIds();
-          hideAddPublicationModal();
-          window.location.reload();
-        } else {
-          let errorMessage = 'Error desconocido';
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.message || JSON.stringify(errorData);
-          } catch {
-            errorMessage = await response.text();
-          }
-          
-          console.error('Error del backend:', errorMessage);
-          alert('Error al añadir la publicación: ' + errorMessage);
-        }
-      } catch (error) {
-        console.error('Error de conexión:', error);
-        alert('Error de conexión al intentar añadir la publicación: ' + error.message);
-      }
-    });
+  if (!title || !participantsInput || !projectDate || !workType) {
+    alert('Por favor, complete todos los campos obligatorios');
+    return;
   }
   
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
+  const participantsArray = participantsInput
+    .split(',')
+    .map(participant => participant.trim())
+    .filter(participant => participant !== '');
+  
+  const orcidsInput = document.getElementById('ownerOrcids').value.trim();
+  const orcidsArray = orcidsInput ? 
+    orcidsInput.split(',')
+      .map(orcid => orcid.trim())
+      .filter(orcid => orcid !== '') : [];
+  
+  const publicationData = {
+    putCode: document.getElementById('putCode').value.trim(),
+    title: title,
+    description: document.getElementById('description').value.trim(),
+    participants: participantsArray,
+    ownerOrcids: orcidsArray,
+    externalIds: externalIdsList,
+    projectDate: projectDate,
+    projectId: document.getElementById('projectId').value.trim() || null,
+    tags: [workType, ...tagsList],
+    link: document.getElementById('link').value.trim() || ''
+  };
+  
+  try {
+    console.log('Datos a enviar:', publicationData);
+    
+    const response = await fetch('http://localhost:8080/api/works/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(publicationData)
+    });
+    
+    if (response.ok) {
+      alert('Publicación añadida con éxito');
+      document.getElementById('add-publication-form').reset();
+      tagsList = [];
+      externalIdsList = [];
+      renderTags();
+      renderExternalIds();
       hideAddPublicationModal();
+      window.location.reload();
+    } else {
+      let errorMessage = 'Error desconocido';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || JSON.stringify(errorData);
+      } catch {
+        errorMessage = await response.text();
+      }
+      
+      console.error('Error del backend:', errorMessage);
+      alert('Error al añadir la publicación: ' + errorMessage);
     }
-  });
-});
+  } catch (error) {
+    console.error('Error de conexión:', error);
+    alert('Error de conexión al intentar añadir la publicación: ' + error.message);
+  }
+}
 </script>

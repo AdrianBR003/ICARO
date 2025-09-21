@@ -21,8 +21,9 @@ public class Project {
     private List<String> participants; // Name Participants
     private List<String> tags;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate projectDate;
-
+    private LocalDate FirstprojectDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate SecondprojectDate;
     @Indexed
     private List<String> workIds; // IDs de los works relacionados
 

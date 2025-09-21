@@ -11,6 +11,23 @@ import "@/styles/index.css";
 
 const API_BASE_URL = "http://localhost:8080";
 let works = [];
+let isAdmin = false;
+
+// Verificar estado de admin del lado servidor
+try {
+  const response = await fetch(
+    "http://localhost:8080/api/session/check-admin",
+    {
+      credentials: "include",
+    },
+  );
+
+  if (response.ok) {
+    isAdmin = await response.json();
+  }
+} catch (error) {
+  console.error("Error checking admin status:", error);
+}
 
 try {
   const res = await fetch(`${API_BASE_URL}/api/works/all`);
@@ -105,8 +122,6 @@ worksWithProjectNames.forEach((work) => {
   }
 });
 
-// Ya no verificamos isAdmin del lado del servidor
-// Se hará del lado del cliente
 ---
 
 <BaseLayout>
@@ -122,7 +137,7 @@ worksWithProjectNames.forEach((work) => {
 
   <section class="max-w-4xl mx-auto px-4">
    
-    <ResearchAddPublication isAdmin={false} />
+    <ResearchAddPublication isAdmin={isAdmin} />
 
     <ResearchFilters
       tagCategories={tagCategories}
@@ -131,7 +146,7 @@ worksWithProjectNames.forEach((work) => {
       mostRecentYear={mostRecentYear}
     />
 
-    <ResearchList researchGroups={researchGroups} isAdmin={false} />
+    <ResearchList researchGroups={researchGroups} isAdmin={isAdmin} />
 
     <div class="text-center mt-8">
       <button
@@ -145,7 +160,7 @@ worksWithProjectNames.forEach((work) => {
   <script is:inline>
     document.addEventListener("DOMContentLoaded", function () {
       
-      // ============= VERIFICACIÓN DE ADMIN DEL LADO CLIENTE =============
+      // ============= VERIFICACIÓN DE ADMIN DEL LADO CLIENTE (SOLO PARA ELEMENTOS DINÁMICOS) =============
       async function checkAndUpdateAdminElements() {
         try {
           const response = await fetch('http://localhost:8080/api/session/check-admin', {
@@ -153,38 +168,43 @@ worksWithProjectNames.forEach((work) => {
           });
           
           if (response.ok) {
-            const isAdmin = await response.json();
-            console.log('🔍 Admin status from client:', isAdmin);
-            
+            const isAdmin = await response.json();            
             updateAdminElements(isAdmin);
           }
         } catch (error) {
           console.error('Error checking admin status:', error);
+          updateAdminElements(false);
         }
       }
       
       function updateAdminElements(isAdmin) {
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-          btn.style.display = isAdmin ? 'block' : 'none';
+        // Solo actualizar elementos que no se renderizaron del lado servidor
+        document.querySelectorAll('.edit-btn:not(#addButton)').forEach(btn => {
+          if (isAdmin) {
+            btn.classList.remove('hidden');
+            btn.classList.add('flex');
+          } else {
+            btn.classList.remove('flex');
+            btn.classList.add('hidden');
+          }
         });
         
+        // Para botones de eliminar - usar solo clases CSS
         document.querySelectorAll('.delete-btn').forEach(btn => {
-          btn.style.display = isAdmin ? 'block' : 'none';
+          if (isAdmin) {
+            btn.classList.remove('hidden');
+            btn.classList.add('block');
+          } else {
+            btn.classList.remove('block');
+            btn.classList.add('hidden');
+          }
         });
-        
-        const addPublicationContainer = document.querySelector('[data-admin-element]');
-        if (addPublicationContainer) {
-          addPublicationContainer.style.display = isAdmin ? 'block' : 'none';
-        }
       }
       
+      // Ejecutar la verificación de admin solo para elementos dinámicos
       checkAndUpdateAdminElements();
       
-      window.addEventListener('adminStatusChanged', function(event) {
-        console.log('👑 Admin status changed, updating elements...');
-        updateAdminElements(event.detail.isAdmin);
-      });
-      
+      // ============= RESTO DE LA FUNCIONALIDAD DE FILTROS =============
       let visibleItems = 10;
       const articles = Array.from(
         document.querySelectorAll(".publication-entry"),

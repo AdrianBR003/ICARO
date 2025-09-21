@@ -64,8 +64,8 @@ const projectsWithWorks = await Promise.all(
       title: project.title,
       description: project.description,
       colaborators: project.participants || [],
-      startDate: project.projectDate ? new Date(project.projectDate).getFullYear().toString() : "N/A",
-      endDate: project.projectDate ? new Date(project.projectDate).getFullYear().toString() : "N/A",
+      firstprojectDate: project.firstprojectDate || "N/A", 
+      secondprojectDate: project.secondprojectDate || "N/A", 
       relatedWorks: relatedWorks.map(work => ({
         type: work.tags && work.tags.length > 0 ? work.tags[0] : "Publicación",
         title: work.title,
@@ -91,6 +91,55 @@ const projectsWithWorks = await Promise.all(
 
     <section class="max-w-4xl mx-auto px-4">
         <SearchInput placeholder="Buscar proyectos por nombre..." />
-        <ProjectsList projects={projectsWithWorks} />
+        <ProjectsList projects={projectsWithWorks} isAdmin={isAdmin} />
     </section>
+
+    <script is:inline>
+      document.addEventListener("DOMContentLoaded", function () {
+        
+        // ============= VERIFICACIÓN DE ADMIN DEL LADO CLIENTE (SOLO PARA ELEMENTOS DINÁMICOS) =============
+        async function checkAndUpdateAdminElements() {
+          try {
+            const response = await fetch('http://localhost:8080/api/session/check-admin', {
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              const isAdmin = await response.json();            
+              updateAdminElements(isAdmin);
+            }
+          } catch (error) {
+            console.error('Error checking admin status:', error);
+            updateAdminElements(false);
+          }
+        }
+        
+        function updateAdminElements(isAdmin) {
+          // Solo actualizar elementos que no se renderizaron del lado servidor
+          document.querySelectorAll('.edit-btn:not(#addProjectButton)').forEach(btn => {
+            if (isAdmin) {
+              btn.classList.remove('hidden');
+              btn.classList.add('flex');
+            } else {
+              btn.classList.remove('flex');
+              btn.classList.add('hidden');
+            }
+          });
+          
+          // Para botones de eliminar - usar solo clases CSS
+          document.querySelectorAll('.delete-btn').forEach(btn => {
+            if (isAdmin) {
+              btn.classList.remove('hidden');
+              btn.classList.add('block');
+            } else {
+              btn.classList.remove('block');
+              btn.classList.add('hidden');
+            }
+          });
+        }
+        
+        // Ejecutar la verificación de admin solo para elementos dinámicos
+        checkAndUpdateAdminElements();
+      });
+    </script>
 </BaseLayout>

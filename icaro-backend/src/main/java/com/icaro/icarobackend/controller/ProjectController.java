@@ -2,6 +2,8 @@ package com.icaro.icarobackend.controller;
 
 import com.icaro.icarobackend.model.Project;
 import com.icaro.icarobackend.repository.ProjectRepository;
+import com.icaro.icarobackend.service.ProjectService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,27 +13,50 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/project")
+@Slf4j
 public class ProjectController {
 
-    private final ProjectRepository projectRepository;
+    private final ProjectService projectService;
 
     @Autowired
-    public ProjectController(ProjectRepository projectRepository) {
-        this.projectRepository = projectRepository;
+    public ProjectController(ProjectService projectService) {
+        this.projectService = projectService;
     }
 
     @GetMapping("/all")
     public List<Project> findAll() {
-        return projectRepository.findAll();
+        return projectService.findAll();
     }
 
-    @PostMapping("/save ")
+    @PostMapping("/save")
     public ResponseEntity<?> addProject(@RequestBody Project project) {
-        if(this.projectRepository.findById(project.getId()).isPresent()){
+        log.info("adding project {}", project);
+        if(this.projectService.findById(project.getId()).isPresent()){
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }else{
-            this.projectRepository.save(project);
+            this.projectService.save(project);
             return ResponseEntity.ok().build();
         }
     }
+
+    @PostMapping("/update")
+    public ResponseEntity<?> updateProject(@RequestBody Project project) {
+        if(this.projectService.findById(project.getId()).isPresent()){
+            this.projectService.save(project);
+            return ResponseEntity.ok().build();
+        }else{
+            return  ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteProject(@PathVariable String id) {
+        if(this.projectService.findById(id).isPresent()){
+            this.projectService.deleteById(id);
+            return  ResponseEntity.ok().build();
+        }else{
+            return  ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
 }

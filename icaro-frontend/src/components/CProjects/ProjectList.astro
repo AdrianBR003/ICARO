@@ -6,8 +6,8 @@ interface Project {
   title: string;
   description: string;
   colaborators: string[];
-  startDate: string;
-  endDate: string;
+  firstprojectDate: string; 
+  secondprojectDate: string; 
   relatedWorks: {
     type: string;
     title: string;
@@ -18,14 +18,15 @@ interface Project {
 
 interface Props {
   projects: Project[];
+  isAdmin?: boolean;
 }
 
-const { projects } = Astro.props;
+const { projects, isAdmin = false } = Astro.props;
 ---
 
 <div class="space-y-6" id="projects-list">
   {projects.map((project) => (
-    <ProjectCard project={project} />
+    <ProjectCard project={project} isAdmin={isAdmin} />
   ))}
 </div>
 
@@ -56,6 +57,11 @@ const { projects } = Astro.props;
     projectCards.forEach((card) => {
       card.addEventListener('click', function(e) {
         if (e.target.tagName === 'A' || e.target.closest('a')) {
+          return;
+        }
+        
+        // Evitar que los botones de admin activen la expansión
+        if (e.target.closest('.edit-btn') || e.target.closest('.delete-btn')) {
           return;
         }
         

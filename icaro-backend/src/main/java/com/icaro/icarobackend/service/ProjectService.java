@@ -28,4 +28,8 @@ public class ProjectService {
         return projectRepository.findById(id);
     }
 
+    public void deleteById(String id) {
+        projectRepository.deleteById(id);
+    }
+
 }

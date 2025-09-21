@@ -1,0 +1,101 @@
+---
+export interface Props {
+  project: {
+    id: string;
+    title: string;
+    [key: string]: any;
+  };
+  cardId: string;
+  isAdmin?: boolean;
+}
+
+const { project, cardId, isAdmin = false } = Astro.props;
+---
+
+{project && project.id && project.title ? (
+  <button
+    class={`delete-btn ${isAdmin ? 'block' : 'hidden'} absolute top-14 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm`}
+    data-project-id={project.id}
+    data-project-title={project.title}
+    data-card-id={cardId}
+    aria-label="Eliminar proyecto"
+    type="button"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5 text-gray-600"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+        clip-rule="evenodd"
+      />
+    </svg>
+  </button>
+
+  <script is:inline define:vars={{ project, cardId }}>
+    document.addEventListener('DOMContentLoaded', function() {
+      const cardElement = document.querySelector(`[data-project-id="${project.id}"]`);
+      if (!cardElement) return;
+      
+      const deleteBtn = cardElement.querySelector('.delete-btn');
+      if (!deleteBtn) return;
+
+      async function handleDelete() {
+        const projectId = project?.id || deleteBtn.getAttribute('data-project-id');
+        const projectTitle = project?.title || deleteBtn.getAttribute('data-project-title');
+        
+        if (!projectId) {
+          alert('Error: No se puede eliminar, falta información del proyecto.');
+          return;
+        }
+
+        const confirmed = confirm(`¿Estás seguro de que deseas eliminar el proyecto "${projectTitle}"?\n\nEsta acción no se puede deshacer y eliminará también todas las publicaciones relacionadas.`);
+        if (!confirmed) return;
+
+        // Doble confirmación para mayor seguridad
+        const doubleConfirmed = confirm(`¡ATENCIÓN!\n\nEstás a punto de eliminar permanentemente:\n- El proyecto: "${projectTitle}"\n- Todas sus publicaciones relacionadas\n- Todos los datos asociados\n\n¿Estás completamente seguro?`);
+        if (!doubleConfirmed) return;
+
+        try {
+          const response = await fetch(`http://localhost:8080/api/project/delete/${projectId}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            alert('Proyecto eliminado correctamente.');
+            window.location.reload();
+          } else {
+            let errorMessage = 'Error desconocido';
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.message || JSON.stringify(errorData);
+            } catch {
+              errorMessage = await response.text();
+            }
+            
+            console.error('Error del backend:', errorMessage);
+            alert('Error al eliminar el proyecto: ' + errorMessage);
+          }
+        } catch (error) {
+          console.error('Error de conexión:', error);
+          alert('Error de conexión al eliminar el proyecto: ' + error.message);
+        }
+      }
+
+      deleteBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleDelete();
+      });
+    });
+  </script>
+) : (
+  <p class="text-sm text-gray-500">No se puede eliminar este proyecto.</p>
+)}
