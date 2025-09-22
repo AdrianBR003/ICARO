@@ -1,6 +1,6 @@
 ---
-import ProjectEdit from "./ProjectEdit.astro";
-import ProjectDelete from "./ProjectDelete.astro";
+import ProjectEdit from "@/components/CProjects/CCProjectsList/ProjectEdit.astro";
+import ProjectDelete from "@/components/CProjects/CCProjectsList/ProjectDelete.astro";
 
 interface Project {
   id: string;
@@ -44,6 +44,7 @@ const formattedSecondDate = formatDate(project.secondprojectDate);
 ---
 
 <div
+  id={cardId}
   class="project-card relative bg-white border rounded-lg p-6 shadow-sm transition-all duration-300 cursor-pointer"
   data-project-id={project.id}
   data-expandable="true"
@@ -77,6 +78,8 @@ const formattedSecondDate = formatDate(project.secondprojectDate);
     <button
       class="expand-btn ml-4 text-gray-500 hover:text-[#1D293D] transition"
       data-project-id={project.id}
+      type="button"
+      aria-label="Expandir/contraer información del proyecto"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -160,3 +163,32 @@ const formattedSecondDate = formatDate(project.secondprojectDate);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 </style>
+
+<script>
+  // Función para alternar la expansión de la tarjeta
+  function toggleProjectCard(cardId: string): void {
+    const card = document.getElementById(cardId);
+    if (card) {
+      card.classList.toggle('expanded');
+    }
+  }
+  
+  // Inicialización: Añadir event listeners cuando el DOM esté cargado
+  document.addEventListener('DOMContentLoaded', function() {
+    const expandButtons = document.querySelectorAll('.expand-btn');
+    
+    expandButtons.forEach(button => {
+      const projectId = button.getAttribute('data-project-id');
+      if (projectId) {
+        button.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleProjectCard(`project-card-${projectId}`);
+        });
+      }
+    });
+  });
+
+  // Hacer la función global para compatibilidad
+  (window as any).toggleProjectCard = toggleProjectCard;
+</script>
