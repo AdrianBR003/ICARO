@@ -1,0 +1,438 @@
+---
+export interface Props {
+  news: {
+    id: string;
+    title: string;
+    description: string;
+    participants: string[];
+    FirstprojectDate: string; 
+    SecondprojectDate: string;
+    tags: string[];
+    workIds: string[];
+    [key: string]: any;
+  };
+  isAdmin?: boolean;
+}
+
+const { news, isAdmin = false } = Astro.props;
+const modalId = `edit-news-modal-${news.id}`;
+---
+
+<!-- Modal de edición -->
+<div
+  id={modalId}
+  class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+>
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+    <div class="p-6">   
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Editar Noticia</h3>
+        <button
+          type="button"
+          class="close-modal text-gray-500 hover:text-gray-700"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form class="news-edit-form space-y-4">
+        <input type="hidden" name="newsId" value={news.id} />
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Título *</label>
+          <input 
+            type="text" 
+            name="title" 
+            value={news.title} 
+            required 
+            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" 
+          />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Descripción *</label>
+          <textarea 
+            name="description" 
+            rows="3" 
+            required
+            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+          >{news.description || ""}</textarea>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Participantes</label>
+          <textarea 
+            name="participants" 
+            rows="2" 
+            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+            placeholder="Participante1, Participante2, Participante3"
+          >{news.participants?.join(", ") || ""}</textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium">Fecha de Inicio</label>
+            <input 
+              type="date" 
+              name="FirstprojectDate" 
+              value={news.FirstprojectDate || ""} 
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" 
+            />
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Fecha de Finalización</label>
+            <input 
+              type="date" 
+              name="SecondprojectDate" 
+              value={news.SecondprojectDate || ""} 
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" 
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Etiquetas</label>
+          <div class="flex flex-wrap py-2 px-3 border rounded-md" id={`edit-tags-container-${news.id}`}></div>
+          <div class="flex mt-2">
+            <input
+              type="text"
+              id={`edit-tag-input-${news.id}`}
+              class="flex-grow px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+              placeholder="Nueva etiqueta"
+            />
+            <button
+              type="button"
+              class="add-tag-btn px-3 bg-[#006D38] text-white rounded-r-md hover:bg-[#005229] transition-colors"
+              data-news-id={news.id}
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">IDs de Trabajos Relacionados</label>
+          <div class="flex flex-wrap py-2 px-3 border rounded-md" id={`edit-work-ids-container-${news.id}`}></div>
+          <div class="flex mt-2">
+            <input
+              type="text"
+              id={`edit-work-id-input-${news.id}`}
+              class="flex-grow px-3 py-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
+              placeholder="ID del trabajo"
+            />
+            <button
+              type="button"
+              class="add-work-id-btn px-3 bg-[#006D38] text-white rounded-r-md hover:bg-[#005229] transition-colors"
+              data-news-id={news.id}
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex gap-4 pt-4 border-t">
+          <button
+            type="button"
+            class="cancel-btn px-4 py-2 border rounded-md hover:bg-gray-50 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229] transition-colors"
+          >
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ modalId, news, isAdmin }}>
+  let editTagsLists = {};
+  let editWorkIdsLists = {};
+
+  function initializeNewsEditComponent() {
+    const modal = document.getElementById(modalId);
+    
+    if (!modal) {
+      return;
+    }
+
+    const form = modal.querySelector('.news-edit-form');
+    const closeBtn = modal.querySelector('.close-modal');
+    const cancelBtn = modal.querySelector('.cancel-btn');
+    const addTagBtn = modal.querySelector('.add-tag-btn');
+    const addWorkIdBtn = modal.querySelector('.add-work-id-btn');
+
+    if (!form) {
+      return;
+    }
+
+    // Inicializar listas con datos actuales
+    editTagsLists[news.id] = [...(news.tags || [])];
+    editWorkIdsLists[news.id] = [...(news.workIds || [])];
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Event listeners
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeModal);
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeModal);
+    }
+
+    // Cerrar modal al hacer click fuera
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+
+    // Funciones para manejar tags
+    function addEditTag() {
+      const tagInput = document.getElementById(`edit-tag-input-${news.id}`);
+      const tag = tagInput.value.trim();
+      
+      if (!editTagsLists[news.id]) {
+        editTagsLists[news.id] = [...(news.tags || [])];
+      }
+      
+      if (tag && !editTagsLists[news.id].includes(tag)) {
+        editTagsLists[news.id].push(tag);
+        renderEditTags();
+        tagInput.value = '';
+        tagInput.focus();
+      }
+    }
+
+    function removeEditTag(tag) {
+      if (!editTagsLists[news.id]) return;
+      editTagsLists[news.id] = editTagsLists[news.id].filter(t => t !== tag);
+      renderEditTags();
+    }
+
+    function renderEditTags() {
+      const container = document.getElementById(`edit-tags-container-${news.id}`);
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      if (!editTagsLists[news.id] || editTagsLists[news.id].length === 0) {
+        container.innerHTML = '<span class="text-gray-400 text-sm">No hay etiquetas añadidas</span>';
+        return;
+      }
+      
+      editTagsLists[news.id].forEach(tag => {
+        const tagElement = document.createElement('div');
+        tagElement.className = 'inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2';
+        tagElement.innerHTML = `
+          ${tag}
+          <button type="button" class="ml-1 text-gray-500 hover:text-gray-700 remove-edit-tag-btn" data-tag="${tag}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        `;
+        container.appendChild(tagElement);
+      });
+
+      // Agregar event listeners a los botones de eliminar
+      container.querySelectorAll('.remove-edit-tag-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tag = this.getAttribute('data-tag');
+          removeEditTag(tag);
+        });
+      });
+    }
+
+    // Funciones para manejar work IDs
+    function addEditWorkId() {
+      const workIdInput = document.getElementById(`edit-work-id-input-${news.id}`);
+      const workId = workIdInput.value.trim();
+      
+      if (!editWorkIdsLists[news.id]) {
+        editWorkIdsLists[news.id] = [...(news.workIds || [])];
+      }
+      
+      if (workId && !editWorkIdsLists[news.id].includes(workId)) {
+        editWorkIdsLists[news.id].push(workId);
+        renderEditWorkIds();
+        workIdInput.value = '';
+        workIdInput.focus();
+      }
+    }
+
+    function removeEditWorkId(workId) {
+      if (!editWorkIdsLists[news.id]) return;
+      editWorkIdsLists[news.id] = editWorkIdsLists[news.id].filter(w => w !== workId);
+      renderEditWorkIds();
+    }
+
+    function renderEditWorkIds() {
+      const container = document.getElementById(`edit-work-ids-container-${news.id}`);
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      if (!editWorkIdsLists[news.id] || editWorkIdsLists[news.id].length === 0) {
+        container.innerHTML = '<span class="text-gray-400 text-sm">No hay IDs de trabajo añadidos</span>';
+        return;
+      }
+      
+      editWorkIdsLists[news.id].forEach(workId => {
+        const workIdElement = document.createElement('div');
+        workIdElement.className = 'inline-flex items-center bg-blue-100 rounded-full px-3 py-1 text-sm mr-2 mb-2';
+        workIdElement.innerHTML = `
+          ${workId}
+          <button type="button" class="ml-1 text-gray-500 hover:text-gray-700 remove-edit-workid-btn" data-workid="${workId}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        `;
+        container.appendChild(workIdElement);
+      });
+
+      // Agregar event listeners a los botones de eliminar
+      container.querySelectorAll('.remove-edit-workid-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const workId = this.getAttribute('data-workid');
+          removeEditWorkId(workId);
+        });
+      });
+    }
+
+    // Event listeners para añadir tags y work IDs
+    if (addTagBtn) {
+      addTagBtn.addEventListener('click', addEditTag);
+    }
+
+    if (addWorkIdBtn) {
+      addWorkIdBtn.addEventListener('click', addEditWorkId);
+    }
+
+    // Event listeners para Enter en inputs
+    const tagInput = document.getElementById(`edit-tag-input-${news.id}`);
+    const workIdInput = document.getElementById(`edit-work-id-input-${news.id}`);
+
+    if (tagInput) {
+      tagInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addEditTag();
+        }
+      });
+    }
+
+    if (workIdInput) {
+      workIdInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addEditWorkId();
+        }
+      });
+    }
+
+    // Manejar envío del formulario
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!confirm("¿Estás seguro de que deseas guardar los cambios?")) {
+        return;
+      }
+      
+      const formData = new FormData(form);
+      const newsData = {
+        id: formData.get("newsId"),
+        title: formData.get("title"),
+        description: formData.get("description"),
+        participants: formData.get("participants") ? 
+          formData.get("participants").split(",").map(item => item.trim()).filter(Boolean) : [],
+        FirstprojectDate: formData.get("FirstprojectDate") || null,
+        SecondprojectDate: formData.get("SecondprojectDate") || null,
+        tags: editTagsLists[news.id] || [],
+        workIds: editWorkIdsLists[news.id] || []
+      };
+
+      try {
+        const response = await fetch("http://localhost:8080/api/news/update", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: 'include',
+          body: JSON.stringify(newsData)
+        });
+
+        if (response.ok) {
+          alert("La noticia se actualizó correctamente.");
+          closeModal();
+          window.location.reload();
+        } else {
+          let errorMessage = 'Error desconocido';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || JSON.stringify(errorData);
+          } catch {
+            try {
+              errorMessage = await response.text();
+            } catch {
+              errorMessage = `Error ${response.status}: ${response.statusText}`;
+            }
+          }
+          
+          console.error('Error del backend:', errorMessage);
+          alert("Error al actualizar la noticia: " + errorMessage);
+        }
+      } catch (error) {
+        console.error('Error de conexión:', error);
+        alert("Error de conexión al actualizar la noticia: " + error.message);
+      }
+    });
+
+    // Renderizar estado inicial
+    renderEditTags();
+    renderEditWorkIds();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeNewsEditComponent);
+  } else {
+    setTimeout(initializeNewsEditComponent, 50);
+  }
+</script>
+
+<style>
+  .modal {
+    transition: opacity 0.3s ease;
+  }
+  .modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .modal:not(.hidden) {
+    opacity: 1;
+    pointer-events: all;
+  }
+</style>
