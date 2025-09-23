@@ -2,10 +2,7 @@ package com.icaro.icarobackend.controller;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/session")
@@ -26,5 +23,17 @@ public class SessionController {
     public ResponseEntity<?> checkAdmin(HttpSession session) {
         Boolean isAdmin = (Boolean) session.getAttribute("admin");
         return ResponseEntity.ok(isAdmin != null && isAdmin);
+    }
+
+    @PostMapping("/set-admin")
+    public ResponseEntity<?> setAdmin(HttpSession session, @RequestParam boolean admin) {
+        session.setAttribute("admin", admin);
+        return ResponseEntity.ok(admin);
+    }
+
+    @PostMapping("/login-admin") // Para simular login de admin
+    public ResponseEntity<?> loginAdmin(HttpSession session) {
+        session.setAttribute("admin", true);
+        return ResponseEntity.ok(true);
     }
 }

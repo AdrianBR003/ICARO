@@ -1,187 +1,115 @@
 ---
-import NewsEdit from "./NewsEdit.astro";
-import NewsDelete from "./NewsDelete.astro";
-
 interface Props {
   news: {
     id: string;
     title: string;
     description: string;
     participants: string[];
-    FirstprojectDate: string; 
-    SecondprojectDate: string; 
+    FirstprojectDate: string;
+    SecondprojectDate: string;
     tags: string[];
-    workIds: string[];
+    workIds?: string[];
     image?: string;
     link?: string;
+    [key: string]: any;
   };
-  isAdmin?: boolean;
+  isAdmin: boolean;
 }
 
 const { news, isAdmin = false } = Astro.props;
 const cardId = `news-card-${news.id}`;
-
-// Formatear fechas para mostrar
-const formatDate = (dateString: string) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.getFullYear().toString();
-};
-
-const startYear = formatDate(news.FirstprojectDate);
-const endYear = formatDate(news.SecondprojectDate);
-const dateRange = startYear && endYear ? `${startYear} / ${endYear}` : startYear || endYear || '';
 ---
 
-<div
-  id={cardId}
-  class="news-card bg-white border rounded-lg shadow-sm transition-all duration-300 hover:shadow-md relative overflow-hidden"
-  data-news-id={news.id}
->
-  <!-- Botones de admin -->
-  <NewsEdit news={news} isAdmin={isAdmin} />
-  <NewsDelete news={news} cardId={cardId} isAdmin={isAdmin} />
-  
-  <div class="flex min-h-48">
-    <!-- Imagen a la izquierda centrada -->
-    <div class="w-80 flex-shrink-0 flex items-center justify-center p-4">
-      <img 
-        src={news.image || '/images/default-news.jpg'} 
-        alt={news.title}
-        class="w-50 h-50 object-cover rounded-lg shadow-sm"
-        loading="lazy"
-      />
+<div id={cardId} class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative flex">
+  <!-- Botones de admin - Siempre en el DOM pero ocultos por defecto -->
+  <div id={`admin-buttons-${news.id}`} class="absolute top-3 right-3 flex flex-col gap-2 admin-buttons hidden">
+    <button
+      class="edit-btn z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm"
+      onclick="window.editNews(event)"
+      data-news-id={news.id}
+      data-news-title={news.title}
+      data-news-description={news.description}
+      aria-label="Editar noticia"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+      </svg>
+    </button>
+
+    <button
+      class="delete-btn z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm"
+      onclick="window.deleteNews('${news.id}')"
+      aria-label="Eliminar noticia"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </div>
+
+  {news.image && (
+    <div class="flex-shrink-0 flex items-center justify-center w-48 bg-gray-200 overflow-hidden">
+      <img src={news.image} alt={news.title} class="w-full h-full object-cover" loading="lazy" />
+    </div>
+  )}
+
+  <div class="p-6 flex-1">
+    <h3 class="text-xl font-bold mb-2 text-gray-900">{news.title}</h3>
+    <p class="text-gray-600 mb-4 line-clamp-3">{news.description}</p>
+
+    {news.participants?.length > 0 && (
+      <p class="text-sm text-gray-500 mb-3">
+        <span class="font-medium">Participantes:</span> {news.participants.join(", ")}
+      </p>
+    )}
+
+    <div class="flex gap-4 text-sm text-gray-500 mb-3">
+      {news.FirstprojectDate && <div><span class="font-medium">Publicación:</span> {news.FirstprojectDate}</div>}
+      {news.SecondprojectDate && <div><span class="font-medium">Actualización:</span> {news.SecondprojectDate}</div>}
     </div>
 
-    <!-- Contenido ocupando todo el espacio restante -->
-    <div class="flex-1 p-4 flex flex-col min-w-0">
-      <!-- Fecha/Período -->
-      {dateRange && (
-        <div class="mb-2">
-          <span class="bg-[#1D293D] text-white text-xs px-2 py-1 rounded-full font-medium">
-            {dateRange}
-          </span>
-        </div>
-      )}
-
-      <!-- Título -->
-      <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight break-words">
-        {news.title}
-      </h3>
-
-      <!-- Descripción completa -->
-      <div class="flex-grow mb-3">
-        <p class="text-gray-600 text-sm leading-relaxed break-words">
-          {news.description}
-        </p>
+    {news.tags?.length > 0 && (
+      <div class="flex flex-wrap gap-2 mb-4">
+        {news.tags.map((tag, index) => (
+          <span key={index} class="tag inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">{tag}</span>
+        ))}
       </div>
+    )}
 
-      <!-- Participantes (si existen) -->
-      {news.participants && news.participants.length > 0 && (
-        <div class="mb-3">
-          <p class="text-sm text-gray-600">
-            <span class="font-semibold">Participantes:</span> {news.participants.join(", ")}
-          </p>
-        </div>
-      )}
-
-      <!-- Footer con tags y botón -->
-      <div class="flex justify-between items-end mt-auto pt-2">
-        <!-- Tags -->
-        {news.tags && news.tags.length > 0 && (
-          <div class="flex flex-wrap gap-1 flex-1 mr-3 min-w-0">
-            {news.tags.slice(0, 2).map((tag) => (
-              <span class="bg-[#006D38] text-white text-xs px-2 py-1 rounded-full flex-shrink-0 break-words tag">
-                {tag}
-              </span>
-            ))}
-            {news.tags.length > 2 && (
-              <span class="text-xs text-gray-500 px-2 py-1 flex-shrink-0">
-                +{news.tags.length - 2}
-              </span>
-            )}
-          </div>
-        )}
-
-        <!-- Botón de enlace -->
-        <div class="flex-shrink-0">
-          {news.link ? (
-            <a 
-              href={news.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center text-[#006D38] hover:text-[#005229] font-medium text-sm transition-colors whitespace-nowrap"
-            >
-              Ver más
-              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-              </svg>
-            </a>
-          ) : (
-            <button 
-              class="inline-flex items-center text-[#006D38] hover:text-[#005229] font-medium text-sm transition-colors whitespace-nowrap"
-              onclick={`alert('Noticia: ${news.title}')`}
-            >
-              Ver detalles
-              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+    {news.link && (
+      <a href={news.link} class="inline-flex items-center text-[#006D38] hover:text-[#005229] font-medium text-sm transition-colors" target="_blank" rel="noopener noreferrer">
+        Ver más
+      </a>
+    )}
   </div>
 </div>
 
-<style>
-  .news-card {
-    transition: all 0.3s ease;
-  }
-
-  .news-card:hover {
-    transform: translateY(-1px);
-  }
-
-  .break-words {
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    word-break: break-word;
-  }
-
-  .min-w-0 {
-    min-width: 0;
-  }
-
-  @media (max-width: 768px) {
-    .news-card .flex {
-      flex-direction: column;
-    }
-    
-    .news-card .w-80 {
-      width: 100%;
-      height: 160px;
-    }
-    
-    .news-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 0.5rem 0.5rem 0 0;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .news-card {
-      margin: 0.5rem;
-    }
-    
-    .news-card .text-lg {
-      font-size: 1rem;
-    }
-    
-    .news-card .text-sm {
-      font-size: 0.875rem;
-    }
-  }
+<style is:global>
+.line-clamp-3 { 
+  display: -webkit-box; 
+  -webkit-line-clamp: 3; 
+  -webkit-box-orient: vertical; 
+  overflow: hidden; 
+}
 </style>
+
+<script is:inline define:vars={{ isAdmin }}>
+// Estado inicial basado en la prop del servidor
+document.addEventListener('DOMContentLoaded', () => {
+  const adminButtons = document.getElementById('admin-buttons-{news.id}');
+  if (adminButtons) {
+    adminButtons.classList.toggle('hidden', !{isAdmin});
+    console.log('🔔 [NewsCard {news.id}] Estado inicial isAdmin:', {isAdmin});
+  }
+
+  // Escuchar cambios en el estado admin
+  window.addEventListener('adminStatusChanged', (event) => {
+    const { isAdmin: newAdminStatus } = event.detail;
+    const adminButtons = document.getElementById('admin-buttons-{news.id}');
+    if (adminButtons) {
+      adminButtons.classList.toggle('hidden', !newAdminStatus);
+      console.log('🔔 [NewsCard {news.id}] adminStatusChanged. Nuevo estado:', newAdminStatus);
+    }
+  });
+});
+</script>

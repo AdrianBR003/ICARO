@@ -1,77 +1,78 @@
 ---
----
+--- 
+
 <div class="bg-slate-800 text-slate-200 text-xs">
   <div class="container mx-auto px-4 flex justify-end gap-4 py-1">
     <a href="/lang" class="hidden sm:inline">ES</a>
-    <button id="adminToggle" class="cursor-pointer bg-transparent border-none text-inherit">Admin</button>
+    <button id="adminToggle" class="cursor-pointer bg-transparent border-none text-inherit p-1 rounded hover:bg-slate-700 transition-colors">Admin</button>
   </div>
 </div>
 
 <script is:inline>
 document.addEventListener('DOMContentLoaded', () => {
   const adminToggle = document.getElementById('adminToggle');
+  let currentAdminStatus = false;
+  let isProcessing = false;
   
-  // Función para verificar el estado admin
+  console.log('🚀 [TOPUTILITY] Iniciado');
+
+  // Verificar estado inicial
   async function checkAdminStatus() {
     try {
-      const response = await fetch('http://localhost:8080/api/session/check-admin', {
-        credentials: 'include'
-      });
-      
+      const response = await fetch('http://localhost:8080/api/session/check-admin', { credentials: 'include' });
       if (response.ok) {
         const isAdmin = await response.json();
+        currentAdminStatus = isAdmin;
         updateUI(isAdmin);
+        localStorage.setItem('adminStatus', JSON.stringify(isAdmin));
+        return isAdmin;
       }
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('❌ [TOPUTILITY] Error inicial:', error);
     }
+    return false;
   }
-  
-  // Función para alternar el modo admin
-  async function toggleAdmin() {
+
+  // Cambiar estado admin
+  async function toggleAdminStatus() {
+    if (isProcessing) return;
+    isProcessing = true;
+    adminToggle.textContent = 'Cargando...';
+
     try {
-      const response = await fetch('http://localhost:8080/api/session/toggle-admin', {
-        method: 'POST',
-        credentials: 'include'
-      });
+      const newStatus = !currentAdminStatus;
+      const endpoint = newStatus 
+        ? 'http://localhost:8080/api/session/login-admin'
+        : 'http://localhost:8080/api/session/set-admin?admin=false';
       
+      const response = await fetch(endpoint, { method: 'POST', credentials: 'include' });
       if (response.ok) {
-        const isAdmin = await response.json();
-        
-        updateUI(isAdmin);
-        
-        window.dispatchEvent(new CustomEvent('adminStatusChanged', {
-          detail: { isAdmin: isAdmin }
-        }));
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
+        const verified = await (await fetch('http://localhost:8080/api/session/check-admin', { credentials: 'include' })).json();
+        if (verified === newStatus) {
+          currentAdminStatus = verified;
+          localStorage.setItem('adminStatus', JSON.stringify(verified));
+          updateUI(verified);
+          window.dispatchEvent(new CustomEvent('adminStatusChanged', { detail: { isAdmin: verified, source: 'TopUtility' } }));
+          console.log('✅ [TOPUTILITY] Estado cambiado:', verified);
+          setTimeout(() => window.location.reload(), 300);
+        }
       }
     } catch (error) {
-      console.error('Error toggling admin mode:', error);
+      console.error('❌ [TOPUTILITY] Error toggle:', error);
+      updateUI(currentAdminStatus);
+    } finally {
+      isProcessing = false;
     }
   }
-  
-  // Función para actualizar la UI
+
+  // Actualizar UI
   function updateUI(isAdmin) {
     adminToggle.textContent = isAdmin ? 'Close Admin' : 'Admin';
-    
-    // Mostrar/ocultar elementos de edición
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-      btn.classList.toggle('hidden', !isAdmin);
-    });
-    
-    // Cerrar modales si salimos del modo admin
-    if (!isAdmin) {
-      document.querySelectorAll('.modal-container').forEach(modal => {
-        modal.classList.add('hidden');
-      });
-    }
+    adminToggle.classList.toggle('text-green-400', isAdmin);
+    adminToggle.classList.toggle('font-bold', isAdmin);
   }
-  
-  adminToggle.addEventListener('click', toggleAdmin);
-  
+
+  adminToggle.addEventListener('click', toggleAdminStatus);
   checkAdminStatus();
 });
 </script>

@@ -3,81 +3,47 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import Header from "@/components/CCommon/Header.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
-import "@/styles/index.css";
-import imagedefault from "@/assets/imagedefault.webp";
 import CTitle from "@/components/CCommon/TitlePages.astro";
 import NewsList from "@/components/CNews/NewsList.astro";
+import "@/styles/index.css";
+import imagedefault from "@/assets/imagedefault.webp";
 
-// ÚNICA VERIFICACIÓN DE ADMIN - AQUÍ EN EL SERVIDOR
-let isAdmin = false;
-
-try {
-  const response = await fetch(
-    "http://localhost:8080/api/session/check-admin",
-    {
-      credentials: "include",
-    },
-  );
-
-  if (response.ok) {
-    isAdmin = await response.json();
-  }
-} catch (error) {
-  console.error("Error checking admin status:", error);
-}
-
-// Fetch de datos desde la API
 let newsData = [];
+
+// Fetch de noticias (SSR)
 try {
   const API_BASE = import.meta.env.API_URL || 'http://localhost:8080';
-  const response = await fetch(`${API_BASE}/api/news/all`);
-  if (response.ok) {
-    newsData = await response.json();
-  }
-} catch (error) {
-  console.error('Error fetching news:', error);
-  // Datos de respaldo para testing
-  newsData = [
-    {
-      id: 1,
-      title: "Noticia de prueba",
-      description: "Esta es una noticia de prueba para verificar el funcionamiento del sistema...",
-      participants: ["Investigador 1", "Investigador 2"],
-      FirstprojectDate: "2023-01-15",
-      SecondprojectDate: "2023-12-15",
-      tags: ["investigación", "prueba"],
-      workIds: ["W001", "W002"],
-      image: imagedefault.src,
-      link: "/news/1",
-    }
-  ];
+  const res = await fetch(`${API_BASE}/api/news/all`);
+  if (res.ok) newsData = await res.json();
+} catch {
+  console.error('❌ [NEWS] Error fetch news');
+  newsData = [{
+    id: '1',
+    title: "Noticia de prueba",
+    description: "Esta es una noticia de prueba...",
+    participants: ["Investigador 1", "Investigador 2"],
+    image: imagedefault.src,
+    link: "/news/1",
+    FirstprojectDate: '',
+    SecondprojectDate: ''
+  }];
 }
 
-const getImageSrc = (imageFromDb) => {
-  if (!imageFromDb) {
-    return imagedefault.src;
-  }
-  
-  if (imageFromDb.startsWith('http') || imageFromDb.startsWith('/')) {
-    return imageFromDb;
-  }
-  
-  return `/images/${imageFromDb}`;
-};
+const getImageSrc = (img) =>
+  (!img ? imagedefault.src : (img.startsWith('http') || img.startsWith('/')) ? img : `/images/${img}`);
 
-// Formatear datos para el componente
 const formattedNews = newsData.map(item => ({
   id: item.id?.toString() || '1',
   title: item.title || 'Sin título',
   description: item.description || 'Sin descripción',
   participants: Array.isArray(item.participants) ? item.participants : [],
-  FirstprojectDate: item.FirstprojectDate || item.projectDate || '',
-  SecondprojectDate: item.SecondprojectDate || '',
-  tags: Array.isArray(item.tags) ? item.tags : [],
-  workIds: Array.isArray(item.workIds) ? item.workIds : [],
   image: getImageSrc(item.image),
-  link: item.link || `/news/${item.id}`
+  link: item.link || `/news/${item.id}`,
+  FirstprojectDate: item.FirstprojectDate || '',
+  SecondprojectDate: item.SecondprojectDate || ''
 }));
+
+let isAdmin = false; // 🚨 siempre false en SSR
 ---
 
 <BaseLayout>
@@ -94,82 +60,38 @@ const formattedNews = newsData.map(item => ({
   <section class="w-full px-4 mx-auto max-w-custom">
     <div class="text-center mb-10">
       <p class="text-lg text-gray-600 mx-auto max-w-2xl">
-        Nuestro grupo de investigación se especializa en el desarrollo de
-        tecnologías avanzadas de telecomunicación y procesamiento de señales.
+        Nuestro grupo de investigación se especializa en telecomunicación y procesamiento de señales.
       </p>
     </div>
 
-    <!-- PASAMOS isAdmin A NewsList - HERENCIA DE PROPS -->
     <NewsList news={formattedNews} isAdmin={isAdmin} />
   </section>
-
-  <!-- SCRIPT SIMPLIFICADO - Solo maneja interacciones, NO verifica admin -->
-  <script is:inline define:vars={{ isAdmin }}>
-    document.addEventListener("DOMContentLoaded", function () {
-      // El estado de admin ya viene del servidor como variable
-      console.log('Admin status from server:', isAdmin);
-      
-      // Solo aplicamos estilos basados en el estado del servidor
-      function applyAdminStyles() {
-        const adminElements = {
-          editBtns: document.querySelectorAll('.edit-btn'),
-          deleteBtns: document.querySelectorAll('.delete-btn'),
-          addBtns: [
-            document.getElementById('addProjectButton'),
-            document.getElementById('add-news-btn')
-          ].filter(Boolean),
-          adminControls: document.querySelectorAll('.admin-controls')
-        };
-        
-        Object.entries(adminElements).forEach(([key, elements]) => {
-          elements.forEach(element => {
-            if (element) {
-              if (isAdmin) {
-                element.classList.remove('hidden');
-                element.classList.add('flex');
-                element.style.display = 'flex';
-              } else {
-                element.classList.add('hidden');
-                element.classList.remove('flex');
-                element.style.display = 'none';
-              }
-            }
-          });
-        });
-      }
-      
-      // Aplicar estilos cuando los elementos estén listos
-      function waitForElementsAndApplyStyles() {
-        let attempts = 0;
-        const maxAttempts = 10;
-        
-        const checkAndApply = () => {
-          attempts++;
-          
-          // Verificar si hay elementos admin en el DOM
-          const hasAdminElements = document.querySelector('.edit-btn, .delete-btn, #addProjectButton, #add-news-btn, .admin-controls');
-          
-          if (hasAdminElements || attempts >= maxAttempts) {
-            applyAdminStyles();
-          } else {
-            setTimeout(checkAndApply, 100);
-          }
-        };
-        
-        checkAndApply();
-      }
-      
-      // Ejecutar cuando el DOM esté listo
-      waitForElementsAndApplyStyles();
-      
-      // Backup: aplicar después de un delay
-      setTimeout(applyAdminStyles, 300);
-    });
-  </script>
 </BaseLayout>
 
+<script is:inline>
+document.addEventListener('DOMContentLoaded', async () => {
+  // Obtener estado real de admin en cliente
+  const fetchAdminStatus = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/session/check-admin', { credentials: 'include' });
+      if (res.ok) {
+        const admin = await res.json();
+        window.dispatchEvent(new CustomEvent('adminStatusChanged', { detail: { isAdmin: admin, source: 'News.astro' } }));
+      }
+    } catch (err) {
+      console.error('[NEWS] Error fetch admin:', err);
+    }
+  };
+
+  fetchAdminStatus();
+
+  // Actualizar localStorage si quieres mantener estado persistente
+  window.addEventListener('adminStatusChanged', (e) => {
+    localStorage.setItem('adminStatus', JSON.stringify(e.detail.isAdmin));
+  });
+});
+</script>
+
 <style>
-  .max-w-custom {
-    max-width: 1200px;
-  }
+  .max-w-custom { max-width: 1200px; }
 </style>
