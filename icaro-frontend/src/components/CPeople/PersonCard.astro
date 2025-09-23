@@ -1,151 +1,337 @@
 ---
-interface Props {
-  news: {
-    id: string;
-    title: string;
-    description: string;
-    participants: string[];
-    FirstprojectDate: string;
-    SecondprojectDate: string;
-    tags: string[];
-    workIds?: string[];
-    image?: string;
-    link?: string;
-    [key: string]: any;
-  };
-  isAdmin?: boolean;
-}
-
-const { news, isAdmin = false } = Astro.props;
-const cardId = `news-card-${news.id}`;
-const modalId = `edit-modal-${news.id}`;
+const { person } = Astro.props;
+const modalId = `modal-${person.orcid}`;
 ---
 
-<div id={cardId} data-card-id={news.id} class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative flex">
-  <!-- Botones de admin -->
-  <div class="absolute top-3 right-3 flex flex-col gap-2 admin-buttons">
+<div
+  class="person-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 relative"
+>
+  <div class="absolute top-3 right-3 mr-2 flex flex-col gap-2">
+    <!-- Botón Editar -->
     <button
       class="edit-btn hidden z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm"
-      onclick={`openEditModal('${modalId}')`}
-      aria-label="Editar noticia"
+      onclick={`document.dispatchEvent(new CustomEvent('editPerson', {detail: ${JSON.stringify(person)}}))`}
+      aria-label="Editar"
     >
-      <!-- SVG de lápiz -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 text-gray-600"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+        ></path>
       </svg>
     </button>
 
+    <!-- Botón Eliminar -->
     <button
-      class="delete-btn hidden z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm"
-      onclick={`deleteNews('${news.id}')`}
-      aria-label="Eliminar noticia"
+      class="edit-btn delete-btn hidden z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm"
+      data-orcid={person.orcid}
+      data-name={person.name}
+      aria-label="Eliminar"
     >
-      <!-- SVG de basura -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 text-gray-600"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+          clip-rule="evenodd"></path>
       </svg>
     </button>
   </div>
 
-  {news.image && (
-    <div class="flex-shrink-0 flex items-center justify-center w-48 bg-gray-200 overflow-hidden">
-      <img 
-        src={news.image} 
-        alt={news.title} 
-        class="w-full h-full object-cover"
-        loading="lazy"
-      />
-    </div>
-  )}
-
-  <div class="p-6 flex-1">
-    <h3 class="text-xl font-bold mb-2 text-gray-900">{news.title}</h3>
-    <p class="text-gray-600 mb-4 line-clamp-3">{news.description}</p>
-
-    {news.participants?.length > 0 && (
-      <p class="text-sm text-gray-500 mb-3">
-        <span class="font-medium">Participantes:</span> {news.participants.join(", ")}
-      </p>
-    )}
-
-    <div class="flex gap-4 text-sm text-gray-500 mb-3">
-      {news.FirstprojectDate && <div><span class="font-medium">Publicación:</span> {news.FirstprojectDate}</div>}
-      {news.SecondprojectDate && <div><span class="font-medium">Actualización:</span> {news.SecondprojectDate}</div>}
-    </div>
-
-    {news.tags?.length > 0 && (
-      <div class="flex flex-wrap gap-2 mb-4">
-        {news.tags.map(tag => <span class="tag inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">{tag}</span>)}
+  <div class="p-6 flex flex-col gap-4" data-orcid={person.orcid}>
+    <div class="flex items-center gap-4">
+      <div class="relative max-w-23 flex-shrink-0">
+        <img
+          src="http://localhost:8080/assets/people/default.jpg"
+          alt={`Foto de ${person.name}`}
+          class="w-21 h-21 rounded-full object-cover border-2 border-gray-100"
+          loading="lazy"
+          data-orcid-image
+          data-orcid={person.orcid}
+          onerror="this.src='http://localhost:8080/assets/people/default.jpg'"
+        />
       </div>
-    )}
+      <div>
+        <h3 class="person-name text-lg font-semibold text-gray-800">
+          {person.name}
+        </h3>
+        {
+          person.role && (
+            <p class="person-role text-sm text-gray-500">{person.role}</p>
+          )
+        }
+      </div>
+    </div>
 
-    {news.link && (
-      <a href={news.link} class="inline-flex items-center text-[#006D38] hover:text-[#005229] font-medium text-sm transition-colors" target="_blank" rel="noopener noreferrer">
-        Ver más
-      </a>
-    )}
-  </div>
+    <div class="space-y-2 text-sm">
+      {
+        person.email && (
+          <p class="flex items-center gap-2 text-gray-600">
+            <svg
+              class="w-4 h-4 text-gray-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+            </svg>
+            <span class="person-email">{person.email}</span>
+          </p>
+        )
+      }
 
-  <!-- Modal simplificado tipo ejemplo -->
-  <div id={modalId} class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="modal-overlay absolute inset-0 bg-black/50" onclick={`closeEditModal('${modalId}')`}></div>
+      {
+        person.phone && (
+          <p class="flex items-center gap-2 text-gray-600">
+            <svg
+              class="w-4 h-4 text-gray-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span class="person-phone">{person.phone}</span>
+          </p>
+        )
+      }
 
-    <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-      <h3 class="text-xl font-bold mb-4">Editar Noticia</h3>
-      <form class="space-y-4">
-        <input type="text" value={news.title} class="w-full px-3 py-2 border rounded-md" />
-        <textarea class="w-full px-3 py-2 border rounded-md h-32">{news.description}</textarea>
-
-        <div class="flex gap-4 pt-4">
-          <button type="button" onclick={`closeEditModal('${modalId}')`} class="px-4 py-2 border rounded-md hover:bg-gray-50">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]">Guardar Cambios</button>
-        </div>
-      </form>
+      {
+        person.office && (
+          <p class="flex items-center gap-2 text-gray-600">
+            <svg
+              class="w-4 h-4 text-gray-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span class="person-office">{person.office}</span>
+          </p>
+        )
+      }
     </div>
   </div>
-</div>
 
-<style is:global>
-.modal {
-  opacity: 0;
-  pointer-events: none;
-}
-.modal:not(.hidden) {
-  opacity: 1;
-  pointer-events: auto;
-}
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
+  <div
+    id={modalId}
+    class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="modal-overlay absolute inset-0 bg-black/50"
+      onclick={`hideModal('${modalId}')`}
+    >
+    </div>
 
-<script is:inline>
-function openEditModal(modalId) {
-  document.getElementById(modalId)?.classList.remove('hidden');
-}
-function closeEditModal(modalId) {
-  document.getElementById(modalId)?.classList.add('hidden');
-}
+    <div
+      class="relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+    >
+      <div class="p-6">
+        <h3 class="text-xl font-bold mb-4">Editar {person.name}</h3>
 
-async function checkAndToggleAdminButtons() {
-  try {
-    const response = await fetch("/api/session/check-admin", { credentials: "include" });
-    if (response.ok) {
-      const isAdmin = await response.json();
-      document.querySelectorAll('.edit-btn, .delete-btn').forEach(btn => btn.classList.toggle('hidden', !isAdmin));
+        <form class="space-y-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium">Nombre</label>
+            <input
+              type="text"
+              value={person.name}
+              class="w-full px-3 py-2 border rounded-md"
+            />
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Email</label>
+            <input
+              type="email"
+              value={person.email || ""}
+              class="w-full px-3 py-2 border rounded-md"
+            />
+          </div>
+
+          <div class="flex gap-4 pt-4">
+            <button
+              type="button"
+              onclick={`hideModal('${modalId}')`}
+              class="px-4 py-2 border rounded-md hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Función para cargar imágenes de las personas
+    function loadPersonImages() {
+      const images = document.querySelectorAll("img[data-orcid-image]");
+
+      images.forEach((img) => {
+        const orcid = img.getAttribute("data-orcid");
+        if (!orcid) return;
+
+        if (!img.src.includes("default.jpg")) return;
+
+        const extensions = ["png", "jpg", "webp"];
+        let currentIndex = 0;
+
+        function tryExtension() {
+          if (currentIndex >= extensions.length) {
+            return;
+          }
+
+          const imageUrl = `http://localhost:8080/assets/people/${orcid}.${extensions[currentIndex]}`;
+          const testImg = new Image();
+
+          testImg.onload = function () {
+            if (img.src.includes("default.jpg")) {
+              img.src = imageUrl;
+            }
+          };
+          testImg.onerror = function () {
+            currentIndex++;
+            tryExtension();
+          };
+          testImg.src = imageUrl;
+        }
+
+        tryExtension();
+      });
     }
-  } catch(e) { console.error(e); }
-}
 
-document.addEventListener('DOMContentLoaded', checkAndToggleAdminButtons);
+    // Función para eliminar investigador
+    async function deleteInvestigator(orcid) {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/investigators/delete/${orcid}`,
+          {
+            method: "DELETE",
+            credentials: "include",
+          },
+        );
 
-function deleteNews(newsId) {
-  if(confirm('¿Estás seguro?')) {
-    console.log('Eliminar noticia', newsId);
-    // Aquí iría tu fetch DELETE
-  }
-}
-</script>
+        if (response.ok) {
+          alert("Investigador eliminado correctamente");
+          location.reload();
+        } else if (response.status === 401 || response.status === 403) {
+          throw new Error("No tiene permisos para realizar esta acción");
+        } else if (response.status === 404) {
+          console.error("Error 404 - ¿ORCID mal formado?", orcid);
+          throw new Error("Recurso no encontrado. Verifica el ORCID.");
+        } else {
+          const errorText = await response.text();
+          console.error("Error del servidor:", errorText);
+          throw new Error(
+            "Error al eliminar el investigador: " + response.status,
+          );
+        }
+      } catch (error) {
+        console.error("Error en deleteInvestigator:", error);
+        alert(error.message || "Error al eliminar el investigador");
+      }
+    }
+
+    // Función para confirmar eliminación
+    function confirmDelete(orcid, name) {
+      if (
+        confirm(
+          `¿Estás seguro de que deseas eliminar a ${name}? Esta acción no se puede deshacer.`,
+        )
+      ) {
+        deleteInvestigator(orcid);
+      }
+    }
+
+    function setupDeleteButtons() {
+      const deleteButtons = document.querySelectorAll(".delete-btn");
+
+      deleteButtons.forEach((button, index) => {
+        button.addEventListener("click", function () {
+          const orcid = this.getAttribute("data-orcid");
+          const name = this.getAttribute("data-name");
+
+          if (
+            confirm(
+              `¿Estás seguro de que deseas eliminar a ${name}? Esta acción no se puede deshacer.`,
+            )
+          ) {
+            console.log("Confirmado eliminar, ORCID:", orcid);
+            deleteInvestigator(orcid);
+          }
+        });
+      });
+    }
+    // Función para verificar y mostrar botones de administrador
+    async function checkAndToggleAdminButtons() {
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/session/check-admin",
+          {
+            credentials: "include",
+          },
+        );
+
+        if (response.ok) {
+          const isAdmin = await response.json();
+          const editButtons = document.querySelectorAll(".edit-btn");
+
+          editButtons.forEach((btn) => {
+            btn.classList.toggle("hidden", !isAdmin);
+          });
+
+          if (isAdmin) {
+            setupDeleteButtons();
+          }
+        }
+      } catch (error) {
+        console.error("Error checking admin status");
+      }
+    }
+    
+    // Event listeners
+    document.addEventListener("DOMContentLoaded", function () {
+      loadPersonImages();
+      checkAndToggleAdminButtons();
+      setInterval(checkAndToggleAdminButtons, 30000);
+    });
+
+    window.addEventListener("load", loadPersonImages);
+    setTimeout(loadPersonImages, 100);
+    setTimeout(loadPersonImages, 500);
+  </script>
+
+  <style is:global>
+    .modal {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .modal:not(.hidden) {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+  </style>
+</div>

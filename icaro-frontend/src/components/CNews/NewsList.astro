@@ -52,24 +52,49 @@ const { news, isAdmin = false } = Astro.props;
     })}
   </div>
 
-  <!-- Modal global de edición -->
+  <!-- Modal global de edición - Más ancho -->
   <div id="editModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="modal-overlay absolute inset-0 bg-black/50" onclick="window.hideModal('editModal')"></div>
 
-    <div class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
+    <div class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
       <h3 id="modalTitle" class="text-xl font-bold mb-4">Editar Noticia</h3>
 
       <form id="editForm" class="space-y-4">
         <input type="hidden" id="editId" />
 
+        <!-- Campo ID visible pero no editable -->
         <div>
-          <label class="block mb-1 text-sm font-medium">Título</label>
+          <label class="block mb-1 text-sm font-medium">ID de la noticia</label>
+          <input 
+            type="text" 
+            id="editIdDisplay" 
+            readonly 
+            class="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+            placeholder="Se generará automáticamente al guardar"
+          />
+          <p class="text-xs text-gray-400 mt-1">Este ID es de solo lectura y se genera automáticamente</p>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Título *</label>
           <input type="text" id="editTitle" required class="w-full px-3 py-2 border rounded-md"/>
         </div>
 
         <div>
-          <label class="block mb-1 text-sm font-medium">Descripción</label>
-          <textarea id="editDescription" required class="w-full px-3 py-2 border rounded-md h-32"></textarea>
+          <label class="block mb-1 text-sm font-medium">Descripción *</label>
+          <textarea id="editDescription" required class="w-full px-3 py-2 border rounded-md h-40"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block mb-1 text-sm font-medium">Enlace (URL)</label>
+            <input type="url" id="editLink" class="w-full px-3 py-2 border rounded-md" placeholder="https://ejemplo.com"/>
+          </div>
+
+          <div>
+            <label class="block mb-1 text-sm font-medium">Fecha del Proyecto</label>
+            <input type="date" id="editProjectDate" class="w-full px-3 py-2 border rounded-md"/>
+          </div>
         </div>
 
         <div class="flex gap-4 pt-4">
@@ -110,7 +135,9 @@ window.editNews = function(event) {
   const newsItem = {
     id: button.getAttribute('data-news-id'),
     title: button.getAttribute('data-news-title'),
-    description: button.getAttribute('data-news-description')
+    description: button.getAttribute('data-news-description'),
+    link: button.getAttribute('data-news-link') || '',
+    projectDate: button.getAttribute('data-news-projectdate') || ''
   };
   
   console.log('🔔 [NewsList] editNews llamado para:', newsItem);
@@ -140,6 +167,12 @@ window.hideModal = function(modalId) {
   }
 };
 
+// Función para generar un ID único
+window.generateNewsId = function() {
+  const randomId = Math.floor(1000 + Math.random() * 9000);
+  return `news-${randomId}`;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🔔 [NewsList] Componente cargado. isAdmin inicial:', isAdmin);
 
@@ -161,28 +194,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const newsItem = event.detail;
     console.log('🔔 [NewsList] Evento editNews recibido:', newsItem);
     
+    // Rellenar el formulario con los datos de la noticia
     document.getElementById('editId').value = newsItem.id;
+    
+    // Mostrar el ID en el campo de solo lectura
+    const displayId = newsItem.id || window.generateNewsId();
+    document.getElementById('editIdDisplay').value = displayId;
+    
     document.getElementById('editTitle').value = newsItem.title;
     document.getElementById('editDescription').value = newsItem.description;
-    document.getElementById('modalTitle').textContent = `Editar "${newsItem.title}"`;
+    document.getElementById('editLink').value = newsItem.link;
+    document.getElementById('editProjectDate').value = newsItem.projectDate;
+    
+    document.getElementById('modalTitle').textContent = newsItem.id 
+      ? `Editar "${newsItem.title}"` 
+      : "Crear Nueva Noticia";
+    
     window.showModal('editModal');
   });
 
   // Manejar el envío del formulario de edición
   document.getElementById('editForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const id = document.getElementById('editId').value;
+    const id = document.getElementById('editId').value || window.generateNewsId();
     const title = document.getElementById('editTitle').value;
     const description = document.getElementById('editDescription').value;
+    const link = document.getElementById('editLink').value;
+    const projectDate = document.getElementById('editProjectDate').value;
     
     // Aquí iría la lógica para guardar los cambios
-    console.log('Guardar cambios:', { id, title, description });
+    console.log('Guardar cambios:', { id, title, description, link, projectDate });
     window.hideModal('editModal');
   });
 
   // Cerrar modal al hacer clic fuera
   document.getElementById('editModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'editModal') {
+      window.hideModal('editModal');
+    }
+  });
+
+  // También cerrar con la tecla Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
       window.hideModal('editModal');
     }
   });

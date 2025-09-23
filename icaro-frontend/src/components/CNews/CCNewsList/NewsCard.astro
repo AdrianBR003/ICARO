@@ -18,6 +18,9 @@ interface Props {
 
 const { news, isAdmin = false } = Astro.props;
 const cardId = `news-card-${news.id}`;
+
+// Usar FirstprojectDate como projectDate para el modal
+const projectDate = news.FirstprojectDate || '';
 ---
 
 <div id={cardId} class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative flex">
@@ -29,6 +32,8 @@ const cardId = `news-card-${news.id}`;
       data-news-id={news.id}
       data-news-title={news.title}
       data-news-description={news.description}
+      data-news-link={news.link || ''}
+      data-news-projectdate={projectDate}
       aria-label="Editar noticia"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
