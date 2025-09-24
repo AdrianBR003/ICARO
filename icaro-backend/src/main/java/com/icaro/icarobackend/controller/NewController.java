@@ -8,7 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -16,6 +21,9 @@ import java.util.List;
 public class NewController {
 
     NewService newService;
+
+    private String uploadDir = "src/main/resources/static/assets/news";
+
 
     public NewController(NewService newService) {
         this.newService = newService;
@@ -60,4 +68,29 @@ public class NewController {
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(id);
         }
     }
+
+    @GetMapping("/check-image/{orcid}")
+    public ResponseEntity<Map<String, Object>> checkImageExists(@PathVariable String orcid) {
+        Map<String, Object> response = new HashMap<>();
+
+        String[] extensions = {"jpg", "png", "webp"};
+        String foundExtension = null;
+
+        for (String ext : extensions) {
+            Path imagePath = Paths.get(uploadDir, "img_" + orcid + "." + ext);
+            if (Files.exists(imagePath)) {
+                foundExtension = ext;
+                break;
+            }
+        }
+
+        response.put("exists", foundExtension != null);
+        response.put("extension", foundExtension);
+        response.put("imageUrl", foundExtension != null ?
+                "/static/assets/people/img_" + orcid + "." + foundExtension :
+                "/static/assets/people/default.jpg");
+
+        return ResponseEntity.ok(response);
+    }
+
 }

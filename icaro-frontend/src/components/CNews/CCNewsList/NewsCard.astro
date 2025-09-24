@@ -25,11 +25,11 @@ console.log('🔍 [NewsCard] Datos recibidos:', {
 });
 ---
 
-<div id={cardId} class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative flex">
+<div id={cardId} class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 relative flex flex-col md:flex-row">
   <!-- Botones de admin -->
   <div id={`admin-buttons-${news.id}`} class="absolute top-3 right-3 flex flex-col gap-2 admin-buttons hidden z-20">
     <button
-      class="edit-btn z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm"
+      class="edit-btn z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm border border-gray-200"
       onclick="window.editNews(event)"
       data-news-id={news.id}
       data-news-title={news.title}
@@ -44,7 +44,7 @@ console.log('🔍 [NewsCard] Datos recibidos:', {
     </button>
 
     <button
-      class="delete-btn z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm"
+      class="delete-btn z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm border border-gray-200"
       onclick={`window.deleteNews('${news.id}')`}
       aria-label="Eliminar noticia"
     >
@@ -54,20 +54,21 @@ console.log('🔍 [NewsCard] Datos recibidos:', {
     </button>
   </div>
 
-  {news.image && (
-    <div class="flex-shrink-0 flex items-center justify-center w-48 max-w-xs bg-gray-100 overflow-hidden">
-      <img 
-        src={news.image} 
-        alt={news.title} 
-        class="w-full h-48 object-contain mx-auto" 
-        loading="lazy" 
-        style="max-height: 12rem;"
-      />
-    </div>
-  )}
+  <!-- Contenedor de imagen con carga simplificada -->
+  <div class="flex-shrink-0 w-full md:w-80 bg-gray-50 overflow-hidden">
+    <img 
+      src="http://localhost:8080/assets/news/default.png" 
+      alt={`Imagen de la noticia: ${news.title}`}
+      data-news-image={news.id}
+      class="w-full h-48 md:h-full object-cover transition-opacity duration-300"
+      loading="lazy" 
+      onerror="this.src='http://localhost:8080/assets/news/default.png'"
+    />
+  </div>
 
+  <!-- Contenido de la noticia -->
   <div class="p-6 flex-1 min-w-0">
-    <h3 class="text-xl font-bold mb-2 text-gray-900">{news.title}</h3>
+    <h3 class="text-xl font-bold mb-3 text-gray-900 leading-tight">{news.title}</h3>
 
     <!-- Campo de Fecha de Publicación -->
     {publicationDate && (
@@ -127,12 +128,58 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('🔔 [NewsCard ${news.id}] adminStatusChanged. Nuevo estado:', newAdminStatus);
     }
   });
+
+  // Cargar imagen específica para esta noticia
+  loadNewsImage('${news.id}');
 });
+
+// Función para cargar imágenes de las noticias
+function loadNewsImage(newsId) {
+  const img = document.querySelector(`img[data-news-image="${newsId}"]`);
+  if (!img) return;
+
+  // Si ya no es la imagen por defecto, no hacer nada
+  if (!img.src.includes('default.png')) return;
+
+  const extensions = ['webp', 'jpg', 'jpeg', 'png'];
+  let currentIndex = 0;
+
+  function tryExtension() {
+    if (currentIndex >= extensions.length) {
+      return;
+    }
+
+    const imageUrl = `http://localhost:8080/assets/news/${newsId}.${extensions[currentIndex]}`;
+    const testImg = new Image();
+
+    testImg.onload = function () {
+      if (img.src.includes('default.png')) {
+        img.src = imageUrl;
+        console.log(`✅ Imagen cargada: ${newsId}.${extensions[currentIndex]}`);
+      }
+    };
+    
+    testImg.onerror = function () {
+      currentIndex++;
+      tryExtension();
+    };
+    
+    testImg.src = imageUrl;
+  }
+
+  tryExtension();
+}
 </script>
 
 <style is:global>
 .news-card {
   min-height: fit-content;
+  transition: all 0.3s ease;
+}
+
+.news-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* Mejorar la legibilidad del texto largo */
@@ -147,16 +194,44 @@ document.addEventListener('DOMContentLoaded', () => {
   min-width: 0;
 }
 
+/* Estilos responsive para la imagen */
+@media (max-width: 768px) {
+  .news-card {
+    flex-direction: column;
+  }
+  
+  .flex-shrink-0 {
+    width: 100% !important;
+  }
+}
+
 /* Estilos específicos para la imagen */
 .w-48 {
   width: 12rem;
 }
 
-.max-w-xs {
-  max-width: 20rem;
+.object-cover {
+  object-fit: cover;
 }
 
-.object-contain {
-  object-fit: contain;
+/* Padding para la imagen */
+.bg-gray-50 {
+  background-color: #f9fafb;
+}
+
+/* Animaciones suaves */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Mejoras de accesibilidad */
+button:focus {
+  outline: 2px solid #006D38;
+  outline-offset: 2px;
+}
+
+a:focus {
+  outline: 2px solid #006D38;
+  outline-offset: 2px;
 }
 </style>
