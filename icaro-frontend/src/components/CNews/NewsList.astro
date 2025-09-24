@@ -6,12 +6,7 @@ interface News {
   id: string;
   title: string;
   description: string;
-  participants: string[];
-  FirstprojectDate: string;
-  SecondprojectDate: string;
-  tags: string[];
-  workIds?: string[];
-  image?: string;
+  publicationDate?: string;
   link?: string;
 }
 
@@ -28,35 +23,57 @@ const { news, isAdmin = false } = Astro.props;
 
   <div class="mb-6">
     <div class="relative max-w-md mx-auto">
-      <input type="text" id="search-input" placeholder="Buscar noticias..." class="w-full px-4 py-2 pl-10 pr-4 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent transition-all" />
+      <input
+        type="text"
+        id="search-input"
+        placeholder="Buscar noticias..."
+        class="w-full px-4 py-2 pl-10 pr-4 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent transition-all"
+      />
       <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        <svg
+          class="w-5 h-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
       </div>
     </div>
   </div>
 
   <div class="space-y-6" id="news-list">
-    {news.map((newsItem, index) => {
-      const validatedNews = {
-        ...newsItem,
-        id: newsItem.id || `news-${index}`,
-        title: newsItem.title || 'Sin título',
-        description: newsItem.description || 'Sin descripción',
-        participants: Array.isArray(newsItem.participants) ? newsItem.participants : [],
-        tags: Array.isArray(newsItem.tags) ? newsItem.tags : [],
-        workIds: Array.isArray(newsItem.workIds) ? newsItem.workIds : [],
-      };
-      return <NewsCard news={validatedNews} isAdmin={isAdmin} />;
-    })}
+    {
+      news.map((newsItem, index) => {
+        const validatedNews = {
+          ...newsItem,
+          id: newsItem.id || `news-${index}`,
+          title: newsItem.title || "Sin título",
+          description: newsItem.description || "Sin descripción",
+        };
+        return <NewsCard news={validatedNews} isAdmin={isAdmin} />;
+      })
+    }
   </div>
 
-  <!-- Modal global de edición - Más ancho -->
-  <div id="editModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="modal-overlay absolute inset-0 bg-black/50" onclick="window.hideModal('editModal')"></div>
+  <!-- Modal global de edición -->
+  <div
+    id="editModal"
+    class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+  >
+    <div
+      class="modal-overlay absolute inset-0 bg-black/50"
+      onclick="window.hideModal('editModal')"
+    >
+    </div>
 
-    <div class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+    <div
+      class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6"
+    >
       <h3 id="modalTitle" class="text-xl font-bold mb-4">Editar Noticia</h3>
 
       <form id="editForm" class="space-y-4">
@@ -65,180 +82,396 @@ const { news, isAdmin = false } = Astro.props;
         <!-- Campo ID visible pero no editable -->
         <div>
           <label class="block mb-1 text-sm font-medium">ID de la noticia</label>
-          <input 
-            type="text" 
-            id="editIdDisplay" 
-            readonly 
+          <input
+            type="text"
+            id="editIdDisplay"
+            readonly
             class="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
             placeholder="Se generará automáticamente al guardar"
           />
-          <p class="text-xs text-gray-400 mt-1">Este ID es de solo lectura y se genera automáticamente</p>
+          <p class="text-xs text-gray-400 mt-1">
+            Este ID es de solo lectura y se genera automáticamente
+          </p>
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Título *</label>
-          <input type="text" id="editTitle" required class="w-full px-3 py-2 border rounded-md"/>
+          <input
+            type="text"
+            id="editTitle"
+            required
+            class="w-full px-3 py-2 border rounded-md"
+          />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Descripción *</label>
-          <textarea id="editDescription" required class="w-full px-3 py-2 border rounded-md h-40"></textarea>
+          <textarea
+            id="editDescription"
+            required
+            class="w-full px-3 py-2 border rounded-md h-40"></textarea>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block mb-1 text-sm font-medium">Enlace (URL)</label>
-            <input type="url" id="editLink" class="w-full px-3 py-2 border rounded-md" placeholder="https://ejemplo.com"/>
+            <input
+              type="url"
+              id="editLink"
+              class="w-full px-3 py-2 border rounded-md"
+              placeholder="https://ejemplo.com"
+            />
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Fecha del Proyecto</label>
-            <input type="date" id="editProjectDate" class="w-full px-3 py-2 border rounded-md"/>
+            <label class="block mb-1 text-sm font-medium"
+              >Fecha de Publicación</label
+            >
+            <input
+              type="date"
+              id="editPublicationDate"
+              class="w-full px-3 py-2 border rounded-md"
+            />
+            <p class="text-xs text-gray-400 mt-1">
+              Fecha en que se publica la noticia
+            </p>
           </div>
         </div>
 
         <div class="flex gap-4 pt-4">
-          <button type="button" onclick="window.hideModal('editModal')" class="px-4 py-2 border rounded-md hover:bg-gray-50">Cancelar</button>
-          <button type="submit" class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]">Guardar</button>
+          <button
+            type="button"
+            onclick="window.hideModal('editModal')"
+            class="px-4 py-2 border rounded-md hover:bg-gray-50"
+            >Cancelar</button
+          >
+          <button
+            type="submit"
+            class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
+            >Guardar</button
+          >
         </div>
       </form>
     </div>
   </div>
-</div>
 
-<style is:global>
-.modal { 
-  opacity: 0; 
-  pointer-events: none; 
-  transition: opacity 0.3s ease; 
-}
-.modal:not(.hidden) { 
-  opacity: 1; 
-  pointer-events: auto; 
-}
-.modal-content {
-  transform: translateY(-20px);
-  transition: transform 0.3s ease;
-}
-.modal:not(.hidden) .modal-content {
-  transform: translateY(0);
-}
-</style>
+  <style is:global>
+    .modal {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal:not(.hidden) {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-content {
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+    .modal:not(.hidden) .modal-content {
+      transform: translateY(0);
+    }
+  </style>
 
-<script is:inline define:vars={{ isAdmin }}>
-// Funciones globales que deben estar disponibles para todos los NewsCard
-window.editNews = function(event) {
-  event.preventDefault();
-  event.stopPropagation();
-  
-  const button = event.currentTarget;
-  const newsItem = {
-    id: button.getAttribute('data-news-id'),
-    title: button.getAttribute('data-news-title'),
-    description: button.getAttribute('data-news-description'),
-    link: button.getAttribute('data-news-link') || '',
-    projectDate: button.getAttribute('data-news-projectdate') || ''
-  };
-  
-  console.log('🔔 [NewsList] editNews llamado para:', newsItem);
-  document.dispatchEvent(new CustomEvent('editNews', { detail: newsItem }));
-};
+  <script is:inline define:vars={{ isAdmin }}>
+    // Configuración de la API
+    const API_BASE_URL = "http://localhost:8080/api/news";
 
-window.deleteNews = function(newsId) {
-  if(confirm('¿Estás seguro de que quieres eliminar esta noticia?')) {
-    console.log('Eliminar noticia', newsId);
-    // Aquí iría tu fetch DELETE
-  }
-};
+    // Funciones globales para NewsCard
+    window.editNews = function (event) {
+      event.preventDefault();
+      event.stopPropagation();
 
-window.showModal = function(modalId) {
-  const modal = document.getElementById(modalId);
-  if(modal){
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-  }
-};
+      const button = event.currentTarget;
+      const newsItem = {
+        id: button.getAttribute("data-news-id"),
+        title: button.getAttribute("data-news-title"),
+        description: button.getAttribute("data-news-description"),
+        link: button.getAttribute("data-news-link") || "",
+        publicationDate: button.getAttribute("data-news-publicationdate") || "",
+      };
 
-window.hideModal = function(modalId) {
-  const modal = document.getElementById(modalId);
-  if(modal){
-    modal.classList.add('hidden');
-    document.body.style.overflow = 'auto';
-  }
-};
+      console.log("🔔 [NewsList] editNews llamado para:", newsItem);
+      document.dispatchEvent(new CustomEvent("editNews", { detail: newsItem }));
+    };
 
-// Función para generar un ID único
-window.generateNewsId = function() {
-  const randomId = Math.floor(1000 + Math.random() * 9000);
-  return `news-${randomId}`;
-};
+    window.deleteNews = async function (newsId) {
+      if (!confirm("¿Estás seguro de que quieres eliminar esta noticia?")) {
+        return;
+      }
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🔔 [NewsList] Componente cargado. isAdmin inicial:', isAdmin);
+      try {
+        console.log("🗑️ [NewsList] Eliminando noticia:", newsId);
 
-  // Escuchar cambios en el estado admin desde TopUtility
-  window.addEventListener('adminStatusChanged', (event) => {
-    const { isAdmin: newAdminStatus, source } = event.detail;
-    console.log('🔔 [NewsList] adminStatusChanged escuchado. Nuevo estado:', newAdminStatus, 'Fuente:', source);
-    
-    // Actualizar todos los botones admin
-    const adminButtons = document.querySelectorAll('[id^="admin-buttons-"]');
-    console.log('🔔 [NewsList] Encontrados', adminButtons.length, 'conjuntos de botones admin');
-    adminButtons.forEach(button => {
-      button.classList.toggle('hidden', !newAdminStatus);
+        const response = await fetch(`${API_BASE_URL}/delete/${newsId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.status === 202) {
+          console.log("✅ Noticia eliminada exitosamente");
+
+          const newsElement = document.getElementById(`news-${newsId}`);
+          if (newsElement) {
+            newsElement.remove();
+          }
+
+          showNotification("Noticia eliminada exitosamente", "success");
+
+          document.dispatchEvent(
+            new CustomEvent("newsDeleted", { detail: { id: newsId } }),
+          );
+        } else if (response.status === 409) {
+          const errorData = await response.text();
+          console.error("❌ Error al eliminar noticia:", errorData);
+          showNotification("La noticia no existe o ya fue eliminada", "error");
+        } else {
+          console.error(
+            "❌ Error inesperado al eliminar noticia:",
+            response.status,
+          );
+          showNotification("Error al eliminar la noticia", "error");
+        }
+      } catch (error) {
+        console.error("❌ Error de conexión al eliminar noticia:", error);
+        showNotification("Error de conexión al eliminar la noticia", "error");
+      }
+    };
+
+    // Función para mostrar notificaciones
+    function showNotification(message, type = "info") {
+      const notification = document.createElement("div");
+      notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform ${
+        type === "success"
+          ? "bg-green-500"
+          : type === "error"
+            ? "bg-red-500"
+            : "bg-blue-500"
+      }`;
+      notification.textContent = message;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.opacity = "0";
+        notification.style.transform = "translateX(100%)";
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    window.showModal = function (modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+    };
+
+    window.hideModal = function (modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "auto";
+      }
+    };
+
+    window.generateNewsId = function () {
+      const randomId = Math.floor(Math.random() * 10000); // 0 - 9999
+      return `news-${randomId}`;
+    };
+
+    // Función para guardar/actualizar noticia
+    async function saveNews(newsData) {
+      try {
+        const isEdit = !!newsData.id;
+        const url = isEdit ? `${API_BASE_URL}/save` : `${API_BASE_URL}/create`;
+        const method = "POST";
+
+        console.log(
+          `💾 [NewsList] ${isEdit ? "Actualizando" : "Creando"} noticia:`,
+          newsData,
+        );
+
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: newsData.id,
+            title: newsData.title,
+            description: newsData.description,
+            link: newsData.link || "",
+            publicationDate: newsData.publicationDate || null,
+          }),
+        });
+
+        if (response.status === 201) {
+          const savedNews = await response.json();
+          console.log("✅ Noticia guardada exitosamente:", savedNews);
+
+          showNotification(
+            isEdit
+              ? "Noticia actualizada exitosamente"
+              : "Noticia creada exitosamente",
+            "success",
+          );
+
+          document.dispatchEvent(
+            new CustomEvent("newsSaved", {
+              detail: {
+                news: savedNews,
+                isEdit: isEdit,
+              },
+            }),
+          );
+
+          return true;
+        } else if (response.status === 409) {
+          const errorData = await response.text();
+          console.error("❌ Conflicto al guardar noticia:", errorData);
+          showNotification("La noticia ya existe", "error");
+          return false;
+        } else {
+          console.error(
+            "❌ Error inesperado al guardar noticia:",
+            response.status,
+          );
+          showNotification("Error al guardar la noticia", "error");
+          return false;
+        }
+      } catch (error) {
+        console.error("❌ Error de conexión al guardar noticia:", error);
+        showNotification("Error de conexión al guardar la noticia", "error");
+        return false;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log(
+        "🔔 [NewsList] Componente cargado. isAdmin inicial:",
+        isAdmin,
+      );
+
+      // Escuchar cambios en el estado admin
+      window.addEventListener("adminStatusChanged", (event) => {
+        const { isAdmin: newAdminStatus, source } = event.detail;
+        console.log(
+          "🔔 [NewsList] adminStatusChanged escuchado. Nuevo estado:",
+          newAdminStatus,
+          "Fuente:",
+          source,
+        );
+
+        const adminButtons = document.querySelectorAll(
+          '[id^="admin-buttons-"]',
+        );
+        console.log(
+          "🔔 [NewsList] Encontrados",
+          adminButtons.length,
+          "conjuntos de botones admin",
+        );
+        adminButtons.forEach((button) => {
+          button.classList.toggle("hidden", !newAdminStatus);
+        });
+      });
+
+      // Escuchar el evento de edición
+      document.addEventListener("editNews", (event) => {
+        const newsItem = event.detail;
+        console.log("🔔 [NewsList] Evento editNews recibido:", newsItem);
+
+        document.getElementById("editId").value = newsItem.id;
+
+        const displayId = newsItem.id || window.generateNewsId();
+        document.getElementById("editIdDisplay").value = displayId;
+
+        document.getElementById("editTitle").value = newsItem.title;
+        document.getElementById("editDescription").value = newsItem.description;
+        document.getElementById("editLink").value = newsItem.link;
+        document.getElementById("editPublicationDate").value =
+          newsItem.publicationDate;
+
+        document.getElementById("modalTitle").textContent = newsItem.id
+          ? `Editar "${newsItem.title}"`
+          : "Crear Nueva Noticia";
+
+        window.showModal("editModal");
+      });
+
+      // Manejar el envío del formulario
+      document
+        .getElementById("editForm")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const id =
+            document.getElementById("editId").value || window.generateNewsId();
+          const title = document.getElementById("editTitle").value;
+          const description = document.getElementById("editDescription").value;
+          const link = document.getElementById("editLink").value;
+          const publicationDate = document.getElementById(
+            "editPublicationDate",
+          ).value;
+
+          // Validaciones básicas
+          if (!title.trim() || !description.trim()) {
+            showNotification("Título y descripción son obligatorios", "error");
+            return;
+          }
+
+          const newsData = {
+            id: id,
+            title: title.trim(),
+            description: description.trim(),
+            link: link.trim(),
+            publicationDate: publicationDate || null,
+          };
+
+          const success = await saveNews(newsData);
+
+          if (success) {
+            window.hideModal("editModal");
+            document.getElementById("editForm").reset();
+            document.getElementById("editId").value = "";
+          }
+        });
+
+      // Escuchar eventos de actualización
+      document.addEventListener("newsSaved", (event) => {
+        const { news: savedNews, isEdit } = event.detail;
+        console.log(
+          "🔄 [NewsList] Noticia guardada, actualizando UI:",
+          savedNews,
+        );
+      });
+
+      document.addEventListener("newsDeleted", (event) => {
+        const { id } = event.detail;
+        console.log("🔄 [NewsList] Noticia eliminada, actualizando UI:", id);
+        window.location.reload();
+      });
+
+      // Cerrar modal al hacer clic fuera
+      document.getElementById("editModal")?.addEventListener("click", (e) => {
+        if (e.target.id === "editModal") {
+          window.hideModal("editModal");
+        }
+      });
+
+      // Cerrar con Escape
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          window.hideModal("editModal");
+        }
+      });
     });
-  });
-
-  // Escuchar el evento de edición desde las tarjetas
-  document.addEventListener('editNews', (event) => {
-    const newsItem = event.detail;
-    console.log('🔔 [NewsList] Evento editNews recibido:', newsItem);
-    
-    // Rellenar el formulario con los datos de la noticia
-    document.getElementById('editId').value = newsItem.id;
-    
-    // Mostrar el ID en el campo de solo lectura
-    const displayId = newsItem.id || window.generateNewsId();
-    document.getElementById('editIdDisplay').value = displayId;
-    
-    document.getElementById('editTitle').value = newsItem.title;
-    document.getElementById('editDescription').value = newsItem.description;
-    document.getElementById('editLink').value = newsItem.link;
-    document.getElementById('editProjectDate').value = newsItem.projectDate;
-    
-    document.getElementById('modalTitle').textContent = newsItem.id 
-      ? `Editar "${newsItem.title}"` 
-      : "Crear Nueva Noticia";
-    
-    window.showModal('editModal');
-  });
-
-  // Manejar el envío del formulario de edición
-  document.getElementById('editForm')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const id = document.getElementById('editId').value || window.generateNewsId();
-    const title = document.getElementById('editTitle').value;
-    const description = document.getElementById('editDescription').value;
-    const link = document.getElementById('editLink').value;
-    const projectDate = document.getElementById('editProjectDate').value;
-    
-    // Aquí iría la lógica para guardar los cambios
-    console.log('Guardar cambios:', { id, title, description, link, projectDate });
-    window.hideModal('editModal');
-  });
-
-  // Cerrar modal al hacer clic fuera
-  document.getElementById('editModal')?.addEventListener('click', (e) => {
-    if (e.target.id === 'editModal') {
-      window.hideModal('editModal');
-    }
-  });
-
-  // También cerrar con la tecla Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      window.hideModal('editModal');
-    }
-  });
-});
-</script>
+  </script>
+</div>

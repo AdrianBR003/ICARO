@@ -19,5 +19,5 @@ public class New {
     private String description;
     private String link;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate projectDate;
+    private LocalDate publicationDate;
 }

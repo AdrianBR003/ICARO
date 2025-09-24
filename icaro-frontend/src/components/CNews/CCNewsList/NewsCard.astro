@@ -4,12 +4,7 @@ interface Props {
     id: string;
     title: string;
     description: string;
-    participants: string[];
-    FirstprojectDate: string;
-    SecondprojectDate: string;
-    tags: string[];
-    workIds?: string[];
-    image?: string;
+    publicationDate?: string;
     link?: string;
     [key: string]: any;
   };
@@ -17,15 +12,22 @@ interface Props {
 }
 
 const { news, isAdmin = false } = Astro.props;
-const cardId = `news-card-${news.id}`;
+const cardId = `${news.id}`;
 
-// Usar FirstprojectDate como projectDate para el modal
-const projectDate = news.FirstprojectDate || '';
+// Solo trabajamos con la fecha de publicación
+const publicationDate = news.publicationDate || '';
+
+// Debug: log para ver qué datos llegan
+console.log('🔍 [NewsCard] Datos recibidos:', {
+  id: news.id,
+  publicationDate,
+  fullNews: news
+});
 ---
 
 <div id={cardId} class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow relative flex">
-  <!-- Botones de admin - Siempre en el DOM pero ocultos por defecto -->
-  <div id={`admin-buttons-${news.id}`} class="absolute top-3 right-3 flex flex-col gap-2 admin-buttons hidden">
+  <!-- Botones de admin -->
+  <div id={`admin-buttons-${news.id}`} class="absolute top-3 right-3 flex flex-col gap-2 admin-buttons hidden z-20">
     <button
       class="edit-btn z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm"
       onclick="window.editNews(event)"
@@ -33,7 +35,7 @@ const projectDate = news.FirstprojectDate || '';
       data-news-title={news.title}
       data-news-description={news.description}
       data-news-link={news.link || ''}
-      data-news-projectdate={projectDate}
+      data-news-publicationdate={publicationDate}
       aria-label="Editar noticia"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
@@ -43,7 +45,7 @@ const projectDate = news.FirstprojectDate || '';
 
     <button
       class="delete-btn z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm"
-      onclick="window.deleteNews('${news.id}')"
+      onclick={`window.deleteNews('${news.id}')`}
       aria-label="Eliminar noticia"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
@@ -53,68 +55,108 @@ const projectDate = news.FirstprojectDate || '';
   </div>
 
   {news.image && (
-    <div class="flex-shrink-0 flex items-center justify-center w-48 bg-gray-200 overflow-hidden">
-      <img src={news.image} alt={news.title} class="w-full h-full object-cover" loading="lazy" />
+    <div class="flex-shrink-0 flex items-center justify-center w-48 max-w-xs bg-gray-100 overflow-hidden">
+      <img 
+        src={news.image} 
+        alt={news.title} 
+        class="w-full h-48 object-contain mx-auto" 
+        loading="lazy" 
+        style="max-height: 12rem;"
+      />
     </div>
   )}
 
-  <div class="p-6 flex-1">
+  <div class="p-6 flex-1 min-w-0">
     <h3 class="text-xl font-bold mb-2 text-gray-900">{news.title}</h3>
-    <p class="text-gray-600 mb-4 line-clamp-3">{news.description}</p>
 
-    {news.participants?.length > 0 && (
-      <p class="text-sm text-gray-500 mb-3">
-        <span class="font-medium">Participantes:</span> {news.participants.join(", ")}
-      </p>
-    )}
-
-    <div class="flex gap-4 text-sm text-gray-500 mb-3">
-      {news.FirstprojectDate && <div><span class="font-medium">Publicación:</span> {news.FirstprojectDate}</div>}
-      {news.SecondprojectDate && <div><span class="font-medium">Actualización:</span> {news.SecondprojectDate}</div>}
-    </div>
-
-    {news.tags?.length > 0 && (
-      <div class="flex flex-wrap gap-2 mb-4">
-        {news.tags.map((tag, index) => (
-          <span key={index} class="tag inline-block px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">{tag}</span>
-        ))}
+    <!-- Campo de Fecha de Publicación -->
+    {publicationDate && (
+      <div class="mb-3 flex items-center text-sm text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#006D38]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="font-medium text-gray-800">Fecha de publicación:</span>
+        <span class="ml-1 text-gray-600">{publicationDate}</span>
       </div>
     )}
+
+    <!-- Mostrar siempre el campo con placeholder si no hay fecha -->
+    {!publicationDate && (
+      <div class="mb-3 flex items-center text-sm text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span class="font-medium">Fecha de publicación:</span>
+        <span class="ml-1 italic">Sin fecha</span>
+      </div>
+    )}
+
+    <!-- Descripción completa -->
+    <div class="mb-4">
+      <p class="text-gray-600 whitespace-pre-wrap break-words leading-relaxed">
+        {news.description}
+      </p>
+    </div>
 
     {news.link && (
       <a href={news.link} class="inline-flex items-center text-[#006D38] hover:text-[#005229] font-medium text-sm transition-colors" target="_blank" rel="noopener noreferrer">
         Ver más
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+        </svg>
       </a>
     )}
   </div>
 </div>
 
-<style is:global>
-.line-clamp-3 { 
-  display: -webkit-box; 
-  -webkit-line-clamp: 3; 
-  -webkit-box-orient: vertical; 
-  overflow: hidden; 
-}
-</style>
-
 <script is:inline define:vars={{ isAdmin }}>
 // Estado inicial basado en la prop del servidor
 document.addEventListener('DOMContentLoaded', () => {
-  const adminButtons = document.getElementById('admin-buttons-{news.id}');
+  const adminButtons = document.getElementById('admin-buttons-${news.id}');
   if (adminButtons) {
-    adminButtons.classList.toggle('hidden', !{isAdmin});
-    console.log('🔔 [NewsCard {news.id}] Estado inicial isAdmin:', {isAdmin});
+    adminButtons.classList.toggle('hidden', !${isAdmin});
+    console.log('🔔 [NewsCard ${news.id}] Estado inicial isAdmin:', ${isAdmin});
   }
 
   // Escuchar cambios en el estado admin
   window.addEventListener('adminStatusChanged', (event) => {
     const { isAdmin: newAdminStatus } = event.detail;
-    const adminButtons = document.getElementById('admin-buttons-{news.id}');
+    const adminButtons = document.getElementById('admin-buttons-${news.id}');
     if (adminButtons) {
       adminButtons.classList.toggle('hidden', !newAdminStatus);
-      console.log('🔔 [NewsCard {news.id}] adminStatusChanged. Nuevo estado:', newAdminStatus);
+      console.log('🔔 [NewsCard ${news.id}] adminStatusChanged. Nuevo estado:', newAdminStatus);
     }
   });
 });
 </script>
+
+<style is:global>
+.news-card {
+  min-height: fit-content;
+}
+
+/* Mejorar la legibilidad del texto largo */
+.text-gray-600 {
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Asegurar que el contenido no se desborde */
+.min-w-0 {
+  min-width: 0;
+}
+
+/* Estilos específicos para la imagen */
+.w-48 {
+  width: 12rem;
+}
+
+.max-w-xs {
+  max-width: 20rem;
+}
+
+.object-contain {
+  object-fit: contain;
+}
+</style>

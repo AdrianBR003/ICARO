@@ -21,26 +21,18 @@ try {
     id: '1',
     title: "Noticia de prueba",
     description: "Esta es una noticia de prueba...",
-    participants: ["Investigador 1", "Investigador 2"],
-    image: imagedefault.src,
     link: "/news/1",
-    FirstprojectDate: '',
-    SecondprojectDate: ''
+    publicationDate: "2024-01-15"
   }];
 }
 
-const getImageSrc = (img) =>
-  (!img ? imagedefault.src : (img.startsWith('http') || img.startsWith('/')) ? img : `/images/${img}`);
-
+// Formatear noticias para coincidir con el modelo del backend
 const formattedNews = newsData.map(item => ({
   id: item.id?.toString() || '1',
   title: item.title || 'Sin título',
   description: item.description || 'Sin descripción',
-  participants: Array.isArray(item.participants) ? item.participants : [],
-  image: getImageSrc(item.image),
   link: item.link || `/news/${item.id}`,
-  FirstprojectDate: item.FirstprojectDate || '',
-  SecondprojectDate: item.SecondprojectDate || ''
+  publicationDate: item.publicationDate || null // Mantener formato yyyy-MM-dd del backend
 }));
 
 let isAdmin = false; // 🚨 siempre false en SSR

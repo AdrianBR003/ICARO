@@ -5,6 +5,7 @@ import com.icaro.icarobackend.repository.NewRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NewService {
@@ -21,6 +22,14 @@ public class NewService {
 
     public void addNew(New n){
         newRepository.save(n);
+    }
+
+    public Optional<New> findById(String id){
+        return this.newRepository.findById(id);
+    }
+
+    public void removeNewId(String id){
+        this.newRepository.deleteById(id);
     }
 
 }
