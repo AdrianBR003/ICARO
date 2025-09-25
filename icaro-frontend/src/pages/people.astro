@@ -48,7 +48,7 @@ let people = await fetchInvestigadores();
     class="w-full content-wrap bg-white shadow-md
            max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-10"
   >
-      <CTitle Title="People" />
+    <CTitle Title="People" />
 
     <div class="flex justify-end p-3">
       <button
@@ -56,10 +56,17 @@ let people = await fetchInvestigadores();
         class="hidden bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded flex items-center edit-btn"
         onclick="showAddModal()"
       >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-    </svg>
-        <i class="fas fa-plus mr-2"></i>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 mr-2"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+            clip-rule="evenodd"></path>
+        </svg>
         Añadir Investigador
       </button>
     </div>
@@ -250,6 +257,26 @@ let people = await fetchInvestigadores();
   </div>
 
   <script is:inline>
+    // === SISTEMA DE AUTENTICACIÓN ===
+    
+    // Helper para generar headers con token JWT
+    function getAuthHeaders() {
+      const token = localStorage.getItem('adminToken');
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Si existe token, añadir header Authorization con Bearer
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      return headers;
+    }
+
+    // === FUNCIONES DE MODAL ===
+    
     function showEditModal(person) {
       document.getElementById("editOrcid").value = person.orcid;
       document.getElementById("editName").value = person.name || "";
@@ -258,8 +285,7 @@ let people = await fetchInvestigadores();
       document.getElementById("editPhone").value = person.phone || "";
       document.getElementById("editOffice").value = person.office || "";
 
-      document.getElementById("modalTitle").textContent =
-        `Editar ${person.name}`;
+      document.getElementById("modalTitle").textContent = `Editar ${person.name}`;
       showModal("editModal");
     }
 
@@ -269,33 +295,6 @@ let people = await fetchInvestigadores();
 
     function showAddModal() {
       showModal("addModal");
-    }
-
-    async function checkAndToggleAdminButtons() {
-      try {
-        const response = await fetch(
-          "http://localhost:8080/api/session/check-admin",
-          {
-            credentials: "include",
-          },
-        );
-
-        if (response.ok) {
-          const isAdmin = await response.json();
-          const editButtons = document.querySelectorAll(".edit-btn");
-          const addButton = document.getElementById("addButton");
-
-          editButtons.forEach((btn) => {
-            btn.classList.toggle("hidden", !isAdmin);
-          });
-
-          if (addButton) {
-            addButton.classList.toggle("hidden", !isAdmin);
-          }
-        }
-      } catch (error) {
-        console.error("Error checking admin status");
-      }
     }
 
     function showModal(modalId) {
@@ -326,112 +325,163 @@ let people = await fetchInvestigadores();
       }
     }
 
-    document
-      .getElementById("editForm")
-      ?.addEventListener("submit", async (e) => {
-        e.preventDefault();
+    // === OPERACIONES CON BACKEND (REQUIEREN ADMIN) ===
+    
+    // Editar investigador - requiere token JWT con ROLE_ADMIN
+    document.getElementById("editForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-        const orcid = document.getElementById("editOrcid").value;
-        const name = document.getElementById("editName").value;
-        const email = document.getElementById("editEmail").value;
-        const role = document.getElementById("editRole").value;
-        const phone = document.getElementById("editPhone").value;
-        const office = document.getElementById("editOffice").value;
+      const orcid = document.getElementById("editOrcid").value;
+      const name = document.getElementById("editName").value;
+      const email = document.getElementById("editEmail").value;
+      const role = document.getElementById("editRole").value;
+      const phone = document.getElementById("editPhone").value;
+      const office = document.getElementById("editOffice").value;
 
-        try {
-          const response = await fetch(
-            `http://localhost:8080/api/investigators/${orcid}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                givenNames: name,
-                email: email,
-                role: role,
-                phone: phone,
-                office: office,
-              }),
-              credentials: "include",
-            },
-          );
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/investigators/${orcid}`,
+          {
+            method: "PUT",
+            headers: getAuthHeaders(), // Incluye token JWT si existe
+            body: JSON.stringify({
+              givenNames: name,
+              email: email,
+              role: role,
+              phone: phone,
+              office: office,
+            }),
+          },
+        );
 
-          if (response.ok) {
-            alert("Cambios guardados correctamente");
-            hideEditModal();
-            location.reload();
-          } else if (response.status === 401 || response.status === 403) {
-            throw new Error("No tiene permisos para realizar esta acción");
-          } else {
-            const errorText = await response.text();
-            console.error("Error del servidor:", errorText);
-            throw new Error("Error al guardar los cambios: " + response.status);
-          }
-        } catch (error) {
-          console.error("Error:", error);
-          alert(error.message || "Error al guardar los cambios");
+        if (response.ok) {
+          alert("Cambios guardados correctamente");
+          hideEditModal();
+          location.reload();
+        } else if (response.status === 401 || response.status === 403) {
+          // Token inválido o sin permisos de admin
+          alert("No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.");
+          window.location.href = '/admin-login';
+        } else {
+          const errorText = await response.text();
+          console.error("Error del servidor:", errorText);
+          throw new Error("Error al guardar los cambios: " + response.status);
         }
+      } catch (error) {
+        console.error("Error:", error);
+        alert(error.message || "Error al guardar los cambios");
+      }
+    });
+
+    // Añadir investigador - requiere token JWT con ROLE_ADMIN
+    document.getElementById("addForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const orcid = document.getElementById("addOrcid").value;
+      const givenNames = document.getElementById("addName").value;
+      const email = document.getElementById("addEmail").value;
+      const role = document.getElementById("addRole").value;
+      const phone = document.getElementById("addPhone").value;
+      const office = document.getElementById("addOffice").value;
+
+      try {
+        const response = await fetch(
+          "http://localhost:8080/api/investigators/add",
+          {
+            method: "POST",
+            headers: getAuthHeaders(), // Incluye token JWT si existe
+            body: JSON.stringify({
+              orcid: orcid,
+              givenNames: givenNames,
+              email: email,
+              role: role,
+              phone: phone,
+              office: office,
+            }),
+          },
+        );
+
+        if (response.status === 204) {
+          alert("Investigador añadido correctamente");
+          hideModal("addModal");
+          location.reload();
+        } else if (response.status === 401 || response.status === 403) {
+          // Token inválido o sin permisos de admin
+          alert("No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.");
+          window.location.href = '/admin-login';
+        } else {
+          const errorText = await response.text();
+          console.error("Error del servidor:", errorText);
+          throw new Error(
+            "Error al añadir el investigador: " + response.status,
+          );
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert(error.message || "Error al añadir el investigador");
+      }
+    });
+
+    // === GESTIÓN DE VISIBILIDAD DE CONTROLES ADMIN ===
+    
+    // Actualizar visibilidad de botones según estado de admin
+    function updateAdminVisibility(isAdmin) {
+      const editButtons = document.querySelectorAll(".edit-btn");
+      const addButton = document.getElementById("addButton");
+
+      editButtons.forEach((btn) => {
+        btn.classList.toggle("hidden", !isAdmin);
       });
 
-    document
-      .getElementById("addForm")
-      ?.addEventListener("submit", async (e) => {
-        e.preventDefault();
+      if (addButton) {
+        addButton.classList.toggle("hidden", !isAdmin);
+      }
+    }
 
-        const orcid = document.getElementById("addOrcid").value;
-        const givenNames = document.getElementById("addName").value;
-        const email = document.getElementById("addEmail").value;
-        const role = document.getElementById("addRole").value;
-        const phone = document.getElementById("addPhone").value;
-        const office = document.getElementById("addOffice").value;
-
-        try {
-          const response = await fetch(
-            "http://localhost:8080/api/investigators/add",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                orcid: orcid,
-                givenNames: givenNames,
-                email: email,
-                role: role,
-                phone: phone,
-                office: office,
-              }),
-              credentials: "include",
-            },
-          );
-
-          if (response.status === 204) {
-            alert("Investigador añadido correctamente");
-            hideModal("addModal");
-            location.reload();
-          } else if (response.status === 401 || response.status === 403) {
-            throw new Error("No tiene permisos para realizar esta acción");
-          } else {
-            const errorText = await response.text();
-            console.error("Error del servidor:", errorText);
-            throw new Error(
-              "Error al añadir el investigador: " + response.status,
-            );
-          }
-        } catch (error) {
-          console.error("Error:", error);
-          alert(error.message || "Error al añadir el investigador");
+    // Verificar estado admin inicial desde token almacenado
+    async function checkInitialAdminStatus() {
+      try {
+        const token = localStorage.getItem("adminToken");
+        if (!token) {
+          updateAdminVisibility(false);
+          return;
         }
-      });
 
+        // Verificar token con backend
+        const response = await fetch("http://localhost:8080/api/auth/verify", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          updateAdminVisibility(data.authenticated && data.isAdmin);
+        } else {
+          updateAdminVisibility(false);
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        updateAdminVisibility(false);
+      }
+    }
+
+    // === EVENT LISTENERS ===
+    
+    // Escuchar eventos desde PersonCard para abrir modal de edición
     document.addEventListener("editPerson", (e) => {
       showEditModal(e.detail);
     });
 
+    // Escuchar cambios de estado admin desde TopUtility
+    window.addEventListener("adminStatusChanged", (event) => {
+      const { isAdmin } = event.detail;
+      updateAdminVisibility(isAdmin);
+    });
+
+    // Inicialización al cargar la página
     document.addEventListener("DOMContentLoaded", function () {
-      checkAndToggleAdminButtons();
-      setInterval(checkAndToggleAdminButtons, 30000);
+      checkInitialAdminStatus();
+      // Verificar estado cada 30 segundos
+      setInterval(checkInitialAdminStatus, 30000);
     });
   </script>
 </BaseLayout>

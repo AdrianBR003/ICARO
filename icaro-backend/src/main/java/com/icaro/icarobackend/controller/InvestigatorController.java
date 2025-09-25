@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,14 +38,22 @@ public class InvestigatorController {
         this.orcidService = orcidService;
     }
 
-    @PostMapping("/add")
-    public ResponseEntity <Void> addInvestigator(
-            @RequestBody Map<String, Object> body,
-            HttpSession session) {
+    // ---------- METODOS SIN VERIFICACION -------------
 
-        if (!Boolean.TRUE.equals(session.getAttribute("admin"))) {
-            return ResponseEntity.status(403).build();
-        }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Investigator>> getAllInvestigator() {
+        return ResponseEntity.ok(investigatorService.getAllInvestigator());
+    }
+
+
+    // ---------- METODOS VERIFICACION -------------
+
+    @PostMapping("/add")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity <Void> addInvestigator(
+            @RequestBody Map<String, Object> body) {
+
         String orcid = (String) body.get("orcid");
         String givenNames = (String) body.get("givenNames");
         String familyName = (String) body.get("familyName");
@@ -58,30 +67,14 @@ public class InvestigatorController {
     }
 
     @DeleteMapping("/delete/{orcid}")
-    public ResponseEntity<Void> deleteInvestigator(@PathVariable String orcid, HttpSession session) {
-        // Verificar permisos de administrador
-        if (!Boolean.TRUE.equals(session.getAttribute("admin"))) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        try {
-            // Verificar si el investigador existe
-            Optional<Investigator> investigator = investigatorService.findInvestigatorbyOID(orcid);
-
-            if (investigator.isPresent()) {
-                log.info("eliminando investigator: " + investigator.get().getOrcid());
-                investigatorService.deleteInvestigatorbyOID(orcid);
-                return ResponseEntity.ok().build();
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            log.error("Error al eliminar investigador con ORCID: " + orcid, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteInvestigator(@PathVariable String orcid) {
+        this.investigatorService.deleteInvestigatorbyOID(orcid);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{orcid}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity   <Void> updateInvestigator(
             @PathVariable String orcid,
             @RequestBody Map<String, Object> body,
@@ -109,15 +102,12 @@ public class InvestigatorController {
      * @return
      */
     @GetMapping("/{orcid}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Investigator> getInvestigatorOrcid(@PathVariable String orcid) {
         Investigator inv = this.orcidService.fetchInvestigator(orcid);
         return ResponseEntity.ok(inv);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<Investigator>> getAllInvestigator() {
-        return ResponseEntity.ok(investigatorService.getAllInvestigator());
-    }
 
     /**
      * Endpoint que guarda el Investigator y sus trabajos asociados
@@ -126,6 +116,7 @@ public class InvestigatorController {
      * @return
      */
     @PostMapping("/{orcid}/save")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Investigator> saveInvestigator(@PathVariable String orcid) {
         Investigator inv = this.investigatorService.syncAndMergeInvestigator(orcid);
         return ResponseEntity.ok(inv);
@@ -139,6 +130,7 @@ public class InvestigatorController {
      * @return
      */
     @PostMapping("/upload-image")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> uploadImage(
             @RequestParam("image") MultipartFile image,
             @RequestParam("orcid") String orcid) {
@@ -178,6 +170,7 @@ public class InvestigatorController {
     }
 
     @GetMapping("/check-image/{orcid}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> checkImageExists(@PathVariable String orcid) {
         Map<String, Object> response = new HashMap<>();
 
