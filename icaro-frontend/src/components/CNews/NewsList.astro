@@ -181,18 +181,18 @@ const { news, isAdmin = false } = Astro.props;
 
     // Cache para evitar múltiples peticiones de la misma imagen
     const imageCache = new Map();
-    
+
     // Función mejorada para cargar imágenes de noticias
-    window.loadNewsImages = function() {
+    window.loadNewsImages = function () {
       const images = document.querySelectorAll("img[data-news-image]");
-      
+
       images.forEach((img) => {
         const newsId = img.getAttribute("data-news-image");
         if (!newsId) return;
-        
+
         // Si ya tiene una imagen cargada que no es default, no hacer nada
         if (img.dataset.imageLoaded === "true") return;
-        
+
         // Si ya está en caché, usar la URL cacheada
         if (imageCache.has(newsId)) {
           const cachedUrl = imageCache.get(newsId);
@@ -202,7 +202,7 @@ const { news, isAdmin = false } = Astro.props;
           }
           return;
         }
-        
+
         // Intentar cargar la imagen con diferentes extensiones
         loadNewsImage(newsId, img);
       });
@@ -212,65 +212,69 @@ const { news, isAdmin = false } = Astro.props;
     function loadNewsImage(newsId, imgElement) {
       const extensions = ["webp", "jpg", "jpeg", "png"];
       let currentIndex = 0;
-      
+
       function tryNextExtension() {
         if (currentIndex >= extensions.length) {
           // No se encontró imagen, mantener la default
           imageCache.set(newsId, null);
           return;
         }
-        
+
         const ext = extensions[currentIndex];
         const imageUrl = `${ASSETS_BASE_URL}/${newsId}.${ext}`;
-        
+
         // Crear una imagen temporal para probar la URL
         const testImg = new Image();
-        
-        testImg.onload = function() {
+
+        testImg.onload = function () {
           // Imagen encontrada exitosamente
           imgElement.src = imageUrl;
           imgElement.dataset.imageLoaded = "true";
           imageCache.set(newsId, imageUrl);
           console.log(`✅ Imagen cargada: ${newsId}.${ext}`);
         };
-        
-        testImg.onerror = function() {
+
+        testImg.onerror = function () {
           // Esta extensión no funcionó, intentar con la siguiente
           currentIndex++;
           tryNextExtension();
         };
-        
+
         // Iniciar la carga
         testImg.src = imageUrl;
       }
-      
+
       tryNextExtension();
     }
 
     // Función para búsqueda de noticias
     function setupSearch() {
-      const searchInput = document.getElementById('search-input');
-      const newsList = document.getElementById('news-list');
-      
+      const searchInput = document.getElementById("search-input");
+      const newsList = document.getElementById("news-list");
+
       if (!searchInput || !newsList) return;
-      
+
       const newsCards = Array.from(newsList.children);
-      
-      searchInput.addEventListener('input', (e) => {
+
+      searchInput.addEventListener("input", (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-        
-        newsCards.forEach(card => {
-          const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
-          const description = card.querySelector('.text-gray-600')?.textContent.toLowerCase() || '';
-          
-          const matches = title.includes(searchTerm) || description.includes(searchTerm);
-          card.style.display = matches ? '' : 'none';
+
+        newsCards.forEach((card) => {
+          const title =
+            card.querySelector("h3")?.textContent.toLowerCase() || "";
+          const description =
+            card.querySelector(".text-gray-600")?.textContent.toLowerCase() ||
+            "";
+
+          const matches =
+            title.includes(searchTerm) || description.includes(searchTerm);
+          card.style.display = matches ? "" : "none";
         });
       });
     }
 
     // Funciones globales para NewsCard
-    window.editNews = function(event) {
+    window.editNews = function (event) {
       event.preventDefault();
       event.stopPropagation();
 
@@ -287,14 +291,12 @@ const { news, isAdmin = false } = Astro.props;
       document.dispatchEvent(new CustomEvent("editNews", { detail: newsItem }));
     };
 
-    window.deleteNews = async function(newsId) {
+    window.deleteNews = async function (newsId) {
       if (!confirm("¿Estás seguro de que quieres eliminar esta noticia?")) {
         return;
       }
 
       try {
-        console.log("🗑️ [NewsList] Eliminando noticia:", newsId);
-
         const response = await fetch(`${API_BASE_URL}/delete/${newsId}`, {
           method: "DELETE",
           headers: {
@@ -303,73 +305,35 @@ const { news, isAdmin = false } = Astro.props;
         });
 
         if (response.ok) {
-          console.log("✅ Noticia eliminada exitosamente");
-
-          // Eliminar el elemento del DOM
-          const newsElement = document.querySelector(`#news-${newsId}, [id="${newsId}"]`);
+          const newsElement = document.querySelector(
+            `#news-${newsId}, [id="${newsId}"]`,
+          );
           if (newsElement) {
             newsElement.style.opacity = "0";
             newsElement.style.transform = "translateX(-100%)";
             setTimeout(() => newsElement.remove(), 300);
           }
-
-          // Limpiar caché de imagen
           imageCache.delete(newsId);
-
-          showNotification("Noticia eliminada exitosamente", "success");
-
+          // Si no recarga, no hace falta almacenarla simplemente la imprimimos
+          notifySuccess('Noticia eliminada exitosamente.');
           document.dispatchEvent(
-            new CustomEvent("newsDeleted", { detail: { id: newsId } })
+            new CustomEvent("newsDeleted", { detail: { id: newsId } }),
           );
         } else if (response.status === 409) {
           const errorData = await response.text();
           console.error("❌ Error al eliminar noticia:", errorData);
-          showNotification("La noticia no existe o ya fue eliminada", "error");
+          addNotification('error', 'Error al eliminar la noticia.');
         } else {
           console.error("❌ Error inesperado:", response.status);
-          showNotification("Error al eliminar la noticia", "error");
+          addNotification('error', 'Error al eliminar la noticia.');
         }
       } catch (error) {
         console.error("❌ Error de conexión:", error);
-        showNotification("Error de conexión al eliminar la noticia", "error");
+        addNotification('error', 'Error de conexión al eliminar la noticia.');
       }
     };
 
-    // Función para mostrar notificaciones
-    function showNotification(message, type = "info") {
-      // Eliminar notificaciones anteriores
-      const existingNotifications = document.querySelectorAll('.notification-toast');
-      existingNotifications.forEach(n => n.remove());
-      
-      const notification = document.createElement("div");
-      notification.className = `notification-toast fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform ${
-        type === "success"
-          ? "bg-green-500"
-          : type === "error"
-            ? "bg-red-500"
-            : "bg-blue-500"
-      }`;
-      notification.textContent = message;
-
-      document.body.appendChild(notification);
-
-      // Animación de entrada
-      requestAnimationFrame(() => {
-        notification.style.transform = "translateX(0)";
-      });
-
-      setTimeout(() => {
-        notification.style.opacity = "0";
-        notification.style.transform = "translateX(100%)";
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 300);
-      }, 3000);
-    }
-
-    window.showModal = function(modalId) {
+    window.showModal = function (modalId) {
       const modal = document.getElementById(modalId);
       if (modal) {
         modal.classList.remove("hidden");
@@ -377,7 +341,7 @@ const { news, isAdmin = false } = Astro.props;
       }
     };
 
-    window.hideModal = function(modalId) {
+    window.hideModal = function (modalId) {
       const modal = document.getElementById(modalId);
       if (modal) {
         modal.classList.add("hidden");
@@ -385,7 +349,7 @@ const { news, isAdmin = false } = Astro.props;
       }
     };
 
-    window.generateNewsId = function() {
+    window.generateNewsId = function () {
       const timestamp = Date.now();
       const random = Math.floor(Math.random() * 1000);
       return `news-${timestamp}-${random}`;
@@ -394,13 +358,13 @@ const { news, isAdmin = false } = Astro.props;
     // Función para guardar/actualizar noticia
     async function saveNews(newsData) {
       try {
-        const isEdit = !!newsData.id && !newsData.id.includes('news-');
-        const url = isEdit ? `${API_BASE_URL}/update` : `${API_BASE_URL}/create`;
-        
-        console.log(`💾 [NewsList] ${isEdit ? "Actualizando" : "Creando"} noticia:`, newsData);
+        const isEdit = !!newsData.id && !newsData.id.includes("news-");
+        const url = isEdit
+          ? `${API_BASE_URL}/update`
+          : `${API_BASE_URL}/create`;
 
         const response = await fetch(url, {
-          method: isEdit ? "PUT" : "POST",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
@@ -415,12 +379,6 @@ const { news, isAdmin = false } = Astro.props;
 
         if (response.ok) {
           const savedNews = await response.json();
-          console.log("✅ Noticia guardada exitosamente:", savedNews);
-
-          showNotification(
-            isEdit ? "Noticia actualizada exitosamente" : "Noticia creada exitosamente",
-            "success"
-          );
 
           document.dispatchEvent(
             new CustomEvent("newsSaved", {
@@ -428,43 +386,53 @@ const { news, isAdmin = false } = Astro.props;
                 news: savedNews,
                 isEdit: isEdit,
               },
-            })
+            }),
           );
 
           return true;
         } else if (response.status === 409) {
           const errorData = await response.text();
           console.error("❌ Conflicto al guardar noticia:", errorData);
-          showNotification("La noticia ya existe", "error");
+          addNotification('error', 'Ya existe una noticia con este ID');
           return false;
         } else {
           console.error("❌ Error inesperado:", response.status);
-          showNotification("Error al guardar la noticia", "error");
+          addNotification('error', 'Error al guardar la noticia');
           return false;
         }
       } catch (error) {
         console.error("❌ Error de conexión:", error);
-        showNotification("Error de conexión al guardar la noticia", "error");
+        addNotification('error', 'Error de conexión al guardar la noticia');
         return false;
       }
     }
 
     // Inicialización cuando el DOM está listo
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("🔔 [NewsList] Componente cargado. isAdmin inicial:", isAdmin);
+      console.log(
+        "🔔 [NewsList] Componente cargado. isAdmin inicial:",
+        isAdmin,
+      );
 
       // Cargar imágenes de noticias al inicio
       window.loadNewsImages();
-      
+
       // Configurar búsqueda
       setupSearch();
 
       // Escuchar cambios en el estado admin
       window.addEventListener("adminStatusChanged", (event) => {
         const { isAdmin: newAdminStatus, source } = event.detail;
-        console.log("🔔 [NewsList] adminStatusChanged:", newAdminStatus, "Fuente:", source);
+        console.log(
+          "🔔 [NewsList] adminStatusChanged:",
+          newAdminStatus,
+          "Fuente:",
+          source,
+        );
 
-        const adminButtons = document.querySelectorAll('[id^="admin-buttons-"]');
+        const adminButtons = document.querySelectorAll(
+          '[id^="admin-buttons-"]',
+        );
         adminButtons.forEach((button) => {
           button.classList.toggle("hidden", !newAdminStatus);
         });
@@ -476,14 +444,15 @@ const { news, isAdmin = false } = Astro.props;
         console.log("🔔 [NewsList] Evento editNews recibido:", newsItem);
 
         document.getElementById("editId").value = newsItem.id;
-        
+
         const displayId = newsItem.id || window.generateNewsId();
         document.getElementById("editIdDisplay").value = displayId;
 
         document.getElementById("editTitle").value = newsItem.title;
         document.getElementById("editDescription").value = newsItem.description;
         document.getElementById("editLink").value = newsItem.link;
-        document.getElementById("editPublicationDate").value = newsItem.publicationDate;
+        document.getElementById("editPublicationDate").value =
+          newsItem.publicationDate;
 
         document.getElementById("modalTitle").textContent = newsItem.id
           ? `Editar "${newsItem.title}"`
@@ -493,52 +462,53 @@ const { news, isAdmin = false } = Astro.props;
       });
 
       // Manejar el envío del formulario
-      document.getElementById("editForm")?.addEventListener("submit", async (e) => {
-        e.preventDefault();
+      document
+        .getElementById("editForm")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
 
-        const id = document.getElementById("editId").value || window.generateNewsId();
-        const title = document.getElementById("editTitle").value;
-        const description = document.getElementById("editDescription").value;
-        const link = document.getElementById("editLink").value;
-        const publicationDate = document.getElementById("editPublicationDate").value;
+          const id =
+            document.getElementById("editId").value || window.generateNewsId();
+          const title = document.getElementById("editTitle").value;
+          const description = document.getElementById("editDescription").value;
+          const link = document.getElementById("editLink").value;
+          const publicationDate = document.getElementById(
+            "editPublicationDate",
+          ).value;
 
-        // Validaciones básicas
-        if (!title.trim() || !description.trim()) {
-          showNotification("Título y descripción son obligatorios", "error");
-          return;
-        }
+          // Validaciones básicas
+          if (!title.trim() || !description.trim()) {
+            addNotification('error', 'Título y Descripción son obligatorios.');
+            return;
+          }
 
-        const newsData = {
-          id: id,
-          title: title.trim(),
-          description: description.trim(),
-          link: link.trim(),
-          publicationDate: publicationDate || null,
-        };
+          const newsData = {
+            id: id,
+            title: title.trim(),
+            description: description.trim(),
+            link: link.trim(),
+            publicationDate: publicationDate || null,
+          };
 
-        const success = await saveNews(newsData);
+          const success = await saveNews(newsData);
 
-        if (success) {
-          window.hideModal("editModal");
-          document.getElementById("editForm").reset();
-          document.getElementById("editId").value = "";
-          
-          // Recargar la página para mostrar los cambios
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        }
-      });
+          if (success) {
+            window.hideModal("editModal");
+            document.getElementById("editForm").reset();
+            document.getElementById("editId").value = "";
+
+            // Recargar la página para mostrar los cambios
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          }
+        });
 
       // Escuchar eventos de actualización
       document.addEventListener("newsSaved", (event) => {
         const { news: savedNews, isEdit } = event.detail;
-        console.log("🔄 [NewsList] Noticia guardada:", savedNews);
-        
-        // Limpiar caché de imagen para forzar recarga
         imageCache.delete(savedNews.id);
-        
-        // Recargar imágenes después de un breve delay
+
         setTimeout(() => {
           window.loadNewsImages();
         }, 500);
@@ -557,21 +527,30 @@ const { news, isAdmin = false } = Astro.props;
           window.hideModal("editModal");
         }
       });
-      
+
       // Observador para detectar nuevos elementos
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
-          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
             // Recargar imágenes cuando se añaden nuevos nodos
             setTimeout(() => window.loadNewsImages(), 100);
           }
         });
       });
-      
-      const newsListElement = document.getElementById('news-list');
+
+      const newsListElement = document.getElementById("news-list");
       if (newsListElement) {
         observer.observe(newsListElement, { childList: true, subtree: true });
       }
     });
+
+    // Funcion para el componente Notification
+    function addNotification(type, message) {
+      const notifications = JSON.parse(
+        sessionStorage.getItem("notifications") || "[]",
+      );
+      notifications.push({ type, message });
+      sessionStorage.setItem("notifications", JSON.stringify(notifications));
+    }
   </script>
 </div>

@@ -62,6 +62,7 @@ let isAdmin = false; // 🚨 siempre false en SSR
 
 <script is:inline>
 document.addEventListener('DOMContentLoaded', async () => {
+
   // Obtener estado real de admin en cliente
   const fetchAdminStatus = async () => {
     try {
@@ -81,6 +82,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   window.addEventListener('adminStatusChanged', (e) => {
     localStorage.setItem('adminStatus', JSON.stringify(e.detail.isAdmin));
   });
+
+  // Mostrar notificación de éxito si viene de creación [NOTIFICACIONES CNotification]
+  // Solo se muestran si se recarga la pagina, sino llamar directamente a la funcion   notifySuccess('');
+  const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
+  notifications.forEach(n => {
+    if (n.type === 'success') notifySuccess(n.message);
+    if (n.type === 'error') notifyError(n.message);
+    if (n.type === 'warning') notifyWarning(n.message);
+    if (n.type === 'info') notifyInfo(n.message);
+  });
+  sessionStorage.removeItem('notifications'); // Limpiar después de mostrar
+
 });
 </script>
 

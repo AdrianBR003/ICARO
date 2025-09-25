@@ -3,30 +3,48 @@ interface Props {
   isAdmin: boolean;
 }
 const { isAdmin } = Astro.props;
-console.log('isAdmin en NewsAdd:', isAdmin);
+console.log("isAdmin en NewsAdd:", isAdmin);
 ---
 
 <!-- Siempre en el DOM, oculto si no es admin -->
-<div id="news-add-wrapper" class={isAdmin ? '' : 'hidden'}>
+<div id="news-add-wrapper" class={isAdmin ? "" : "hidden"}>
   <div class="mb-6 flex justify-center">
     <button
       id="btn-add-news"
       class="bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded flex items-center transition-colors"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5 mr-2"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+          clip-rule="evenodd"></path>
       </svg>
       Añadir Noticia
     </button>
   </div>
 
   <!-- Modal -->
-  <div id="modal-add-news" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5);">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+  <div
+    id="modal-add-news"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+    style="background: rgba(0,0,0,0.5);"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+    >
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold">Crear Nueva Noticia</h3>
-          <button type="button" id="btn-close-modal" class="text-gray-500 hover:text-gray-700">✕</button>
+          <button
+            type="button"
+            id="btn-close-modal"
+            class="text-gray-500 hover:text-gray-700">✕</button
+          >
         </div>
 
         <form id="form-add-news">
@@ -34,42 +52,91 @@ console.log('isAdmin en NewsAdd:', isAdmin);
             <!-- Campos del formulario -->
             <div>
               <label class="block mb-1 text-sm font-medium">Título *</label>
-              <input type="text" name="title" required class="w-full px-3 py-2 border rounded-md" />
+              <input
+                type="text"
+                name="title"
+                required
+                class="w-full px-3 py-2 border rounded-md"
+              />
             </div>
             <div>
-              <label class="block mb-1 text-sm font-medium">Descripción *</label>
-              <textarea name="description" rows="3" required class="w-full px-3 py-2 border rounded-md"></textarea>
+              <label class="block mb-1 text-sm font-medium">Descripción *</label
+              >
+              <textarea
+                name="description"
+                rows="3"
+                required
+                class="w-full px-3 py-2 border rounded-md"></textarea>
             </div>
             <div>
-              <label class="block mb-1 text-sm font-medium">Participantes</label>
-              <textarea name="participants" rows="2" class="w-full px-3 py-2 border rounded-md" placeholder="Participante1, Participante2"></textarea>
+              <label class="block mb-1 text-sm font-medium">Participantes</label
+              >
+              <textarea
+                name="participants"
+                rows="2"
+                class="w-full px-3 py-2 border rounded-md"
+                placeholder="Participante1, Participante2"></textarea>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block mb-1 text-sm font-medium">Fecha Publicación *</label>
-                <input type="date" name="FirstprojectDate" required class="w-full px-3 py-2 border rounded-md" />
+                <label class="block mb-1 text-sm font-medium"
+                  >Fecha Publicación *</label
+                >
+                <input
+                  type="date"
+                  name="FirstprojectDate"
+                  required
+                  class="w-full px-3 py-2 border rounded-md"
+                />
               </div>
               <div>
-                <label class="block mb-1 text-sm font-medium">Fecha Actualización</label>
-                <input type="date" name="SecondprojectDate" class="w-full px-3 py-2 border rounded-md" />
+                <label class="block mb-1 text-sm font-medium"
+                  >Fecha Actualización</label
+                >
+                <input
+                  type="date"
+                  name="SecondprojectDate"
+                  class="w-full px-3 py-2 border rounded-md"
+                />
               </div>
             </div>
             <div>
               <label class="block mb-1 text-sm font-medium">Tags</label>
-              <input type="text" name="tags" class="w-full px-3 py-2 border rounded-md" placeholder="tag1, tag2, tag3" />
+              <input
+                type="text"
+                name="tags"
+                class="w-full px-3 py-2 border rounded-md"
+                placeholder="tag1, tag2, tag3"
+              />
             </div>
             <div>
               <label class="block mb-1 text-sm font-medium">URL Imagen</label>
-              <input type="text" name="image" class="w-full px-3 py-2 border rounded-md" />
+              <input
+                type="text"
+                name="image"
+                class="w-full px-3 py-2 border rounded-md"
+              />
             </div>
             <div>
               <label class="block mb-1 text-sm font-medium">Enlace</label>
-              <input type="text" name="link" class="w-full px-3 py-2 border rounded-md" />
+              <input
+                type="text"
+                name="link"
+                class="w-full px-3 py-2 border rounded-md"
+              />
             </div>
 
             <div class="flex gap-4 pt-4 border-t">
-              <button type="button" id="btn-cancel" class="px-4 py-2 border rounded-md">Cancelar</button>
-              <button type="submit" class="px-4 py-2 bg-[#006D38] text-white rounded-md">Crear</button>
+              <button
+                type="button"
+                id="btn-cancel"
+                class="px-4 py-2 border rounded-md">Cancelar</button
+              >
+              <button
+                type="submit"
+                class="px-4 py-2 bg-[#006D38] text-white rounded-md"
+                >Crear</button
+              >
             </div>
           </div>
         </form>
@@ -79,77 +146,115 @@ console.log('isAdmin en NewsAdd:', isAdmin);
 </div>
 
 <script is:inline>
-document.addEventListener('DOMContentLoaded', () => {
-  const wrapper = document.getElementById('news-add-wrapper');
-  const btnAdd = document.getElementById('btn-add-news');
-  const modal = document.getElementById('modal-add-news');
-  const btnClose = document.getElementById('btn-close-modal');
-  const btnCancel = document.getElementById('btn-cancel');
-  const form = document.getElementById('form-add-news');
+  document.addEventListener("DOMContentLoaded", () => {
+    const wrapper = document.getElementById("news-add-wrapper");
+    const btnAdd = document.getElementById("btn-add-news");
+    const modal = document.getElementById("modal-add-news");
+    const btnClose = document.getElementById("btn-close-modal");
+    const btnCancel = document.getElementById("btn-cancel");
+    const form = document.getElementById("form-add-news");
 
-  // Mostrar/ocultar wrapper según cambios globales desde TopUtility
-  window.addEventListener('adminStatusChanged', (event) => {
-    const { isAdmin } = event.detail;
-    wrapper.classList.toggle('hidden', !isAdmin);
-    console.log('🔔 [NewsAdd] adminStatusChanged escuchado desde TopUtility:', isAdmin);
-  });
+    // Mostrar/ocultar wrapper según cambios globales desde TopUtility
+    window.addEventListener("adminStatusChanged", (event) => {
+      const { isAdmin } = event.detail;
+      wrapper.classList.toggle("hidden", !isAdmin);
+      console.log(
+        "🔔 [NewsAdd] adminStatusChanged escuchado desde TopUtility:",
+        isAdmin,
+      );
+    });
 
-  if (!btnAdd || !modal || !form) return;
+    if (!btnAdd || !modal || !form) return;
 
-  const showModal = () => { modal.classList.remove('hidden'); document.body.style.overflow = 'hidden'; };
-  const hideModal = () => { modal.classList.add('hidden'); document.body.style.overflow = ''; form.reset(); };
-
-  btnAdd.onclick = e => { e.preventDefault(); showModal(); };
-  if (btnClose) btnClose.onclick = hideModal;
-  if (btnCancel) btnCancel.onclick = hideModal;
-  modal.onclick = e => { if (e.target === modal) hideModal(); };
-
-  form.onsubmit = async e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    if (!formData.get('title') || !formData.get('description') || !formData.get('FirstprojectDate')) {
-      alert('Complete los campos obligatorios');
-      return;
-    }
-
-    const participants = formData.get('participants') 
-      ? formData.get('participants').split(',').map(s => s.trim()).filter(Boolean)
-      : [];
-    const tags = formData.get('tags') 
-      ? formData.get('tags').split(',').map(s => s.trim()).filter(Boolean)
-      : [];
-
-    const newsData = {
-      title: formData.get('title'),
-      description: formData.get('description'),
-      participants,
-      FirstprojectDate: formData.get('FirstprojectDate'),
-      SecondprojectDate: formData.get('SecondprojectDate') || null,
-      tags,
-      image: formData.get('image') || null,
-      link: formData.get('link') || null
+    const showModal = () => {
+      modal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    };
+    const hideModal = () => {
+      modal.classList.add("hidden");
+      document.body.style.overflow = "";
+      form.reset();
     };
 
-    try {
-      const response = await fetch('http://localhost:8080/api/news/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(newsData)
-      });
-      if (response.ok) {
-        alert('Noticia creada exitosamente');
-        hideModal();
-        window.location.reload();
-      } else {
-        const errorText = await response.text();
-        alert('Error al crear la noticia: ' + errorText);
-      }
-    } catch (error) {
-      alert('Error de conexión: ' + error.message);
-    }
-  };
+    btnAdd.onclick = (e) => {
+      e.preventDefault();
+      showModal();
+    };
+    if (btnClose) btnClose.onclick = hideModal;
+    if (btnCancel) btnCancel.onclick = hideModal;
+    modal.onclick = (e) => {
+      if (e.target === modal) hideModal();
+    };
 
-  document.onkeydown = e => { if (e.key === 'Escape' && !modal.classList.contains('hidden')) hideModal(); };
-});
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      if (
+        !formData.get("title") ||
+        !formData.get("description") ||
+        !formData.get("FirstprojectDate")
+      ) {
+        alert("Complete los campos obligatorios");
+        return;
+      }
+
+      const participants = formData.get("participants")
+        ? formData
+            .get("participants")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+      const tags = formData.get("tags")
+        ? formData
+            .get("tags")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [];
+
+      const newsData = {
+        title: formData.get("title"),
+        description: formData.get("description"),
+        participants,
+        FirstprojectDate: formData.get("FirstprojectDate"),
+        SecondprojectDate: formData.get("SecondprojectDate") || null,
+        tags,
+        image: formData.get("image") || null,
+        link: formData.get("link") || null,
+      };
+
+      try {
+        const response = await fetch("http://localhost:8080/api/news/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(newsData),
+        });
+        if (response.ok) {
+          hideModal();
+          addNotification('success', 'Noticia creada exitosamente.');
+          window.location.reload();
+        } else {
+          const errorText = await response.text();
+          notifyError("Error al crear la noticia: " + errorText);
+        }
+      } catch (error) {
+        notifyError("Error de conexión: " + error.message);
+      }
+    };
+
+    document.onkeydown = (e) => {
+      if (e.key === "Escape" && !modal.classList.contains("hidden"))
+        hideModal();
+    };
+  });
+
+  function addNotification(type, message) {
+    const notifications = JSON.parse(
+      sessionStorage.getItem("notifications") || "[]",
+    );
+    notifications.push({ type, message });
+    sessionStorage.setItem("notifications", JSON.stringify(notifications));
+  }
 </script>

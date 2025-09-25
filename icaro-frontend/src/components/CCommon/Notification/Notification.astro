@@ -1,0 +1,176 @@
+---
+// components/Notification.astro
+// Solo necesitas incluir este componente una vez en tu layout
+---
+
+<!-- Contenedor donde aparecerán las notificaciones -->
+<div id="notification-container"></div>
+
+<script>
+// Función principal - la única que necesitas usar
+function notify(message, type = 'info', duration = 4000) {
+  let container = document.getElementById('notification-container');
+  if (!container) return;
+
+  // Si no tiene estilos aplicados, los aplicamos
+  if (!container.style.position) {
+    // Responsive: móvil abajo, desktop arriba derecha
+    const isMobile = window.innerWidth < 768;
+    container.style.cssText = `
+      position: fixed;
+      ${isMobile ? 'bottom: 1rem; left: 1rem; right: 1rem;' : 'top: 1rem; right: 1rem; max-width: 384px;'}
+      z-index: 9999;
+      pointer-events: none;
+    `;
+  }
+
+  // Crear la notificación
+  const notification = document.createElement('div');
+  const id = `notification-${Date.now()}`;
+  notification.id = id;
+  
+  // Iconos y configuración para cada tipo
+  const config = {
+    success: { 
+      icon: '✅', 
+      bgColor: '#10b981', 
+      borderColor: '#059669',
+      bgClass: 'bg-green-500'
+    },
+    error: { 
+      icon: '❌', 
+      bgColor: '#ef4444', 
+      borderColor: '#dc2626',
+      bgClass: 'bg-red-500'
+    },
+    warning: { 
+      icon: '⚠️', 
+      bgColor: '#f59e0b', 
+      borderColor: '#d97706',
+      bgClass: 'bg-yellow-500'
+    },
+    info: { 
+      icon: 'ℹ️', 
+      bgColor: '#3b82f6', 
+      borderColor: '#2563eb',
+      bgClass: 'bg-blue-500'
+    }
+  };
+
+  const currentConfig = config[type] || config.info;
+  const isMobile = window.innerWidth < 768;
+
+  // Aplicar estilos inline inspirados en tu diseño original
+  notification.style.cssText = `
+    background: ${currentConfig.bgColor};
+    border: 2px solid ${currentConfig.borderColor};
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.75rem;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    ${isMobile ? 'transform: translateY(100%);' : 'transform: translateX(100%);'}
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: auto;
+    max-width: ${isMobile ? '100%' : '384px'};
+    width: 100%;
+  `;
+
+  // Crear el contenido de la notificación
+  notification.innerHTML = `
+    <div style="display: flex; align-items: flex-start; gap: 0.75rem; flex: 1;">
+      <span style="font-size: 1.125rem; line-height: 1; flex-shrink: 0; margin-top: 0.125rem;">${currentConfig.icon}</span>
+      <div style="font-size: 0.875rem; line-height: 1.25; color: white; word-break: break-word;">${message}</div>
+    </div>
+    <button 
+      onclick="removeNotification('${id}')" 
+      style="
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8); 
+        cursor: pointer; 
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1;
+        padding: 0;
+        margin-left: 1rem;
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s ease;
+      "
+      onmouseover="this.style.color='rgba(255, 255, 255, 1)';"
+      onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';"
+    >×</button>
+  `;
+
+  // Añadir al contenedor
+  container.appendChild(notification);
+
+  // Mostrar con animación
+  setTimeout(() => {
+    notification.style.transform = 'translateY(0) translateX(0)';
+    notification.style.opacity = '1';
+  }, 10);
+
+  // Auto-eliminar después del tiempo especificado
+  setTimeout(() => removeNotification(id), duration);
+
+  return id;
+}
+
+// Función para eliminar notificaciones
+function removeNotification(id) {
+  const notification = document.getElementById(id);
+  if (notification) {
+    const isMobile = window.innerWidth < 768;
+    notification.style.opacity = '0';
+    notification.style.transform = isMobile ? 'translateY(100%)' : 'translateX(100%)';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }
+}
+
+// Funciones de conveniencia
+function notifySuccess(message, duration = 4000) { return notify(message, 'success', duration); }
+function notifyError(message, duration = 4000) { return notify(message, 'error', duration); }
+function notifyWarning(message, duration = 4000) { return notify(message, 'warning', duration); }
+function notifyInfo(message, duration = 4000) { return notify(message, 'info', duration); }
+
+// Hacer las funciones globales
+window.notify = notify;
+window.notifySuccess = notifySuccess;
+window.notifyError = notifyError;
+window.notifyWarning = notifyWarning;
+window.notifyInfo = notifyInfo;
+window.removeNotification = removeNotification;
+
+// Asegurar que el contenedor esté listo y se ajuste al redimensionar
+function setupContainer() {
+  const container = document.getElementById('notification-container');
+  if (container) {
+    const isMobile = window.innerWidth < 768;
+    container.style.cssText = `
+      position: fixed;
+      ${isMobile ? 'bottom: 1rem; left: 1rem; right: 1rem;' : 'top: 1rem; right: 1rem; max-width: 384px;'}
+      z-index: 9999;
+      pointer-events: none;
+    `;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', setupContainer);
+window.addEventListener('resize', setupContainer);
+</script>
