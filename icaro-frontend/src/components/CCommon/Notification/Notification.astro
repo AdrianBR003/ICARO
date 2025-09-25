@@ -1,20 +1,14 @@
 ---
-// components/Notification.astro
-// Solo necesitas incluir este componente una vez en tu layout
 ---
 
-<!-- Contenedor donde aparecerán las notificaciones -->
 <div id="notification-container"></div>
 
 <script>
-// Función principal - la única que necesitas usar
 function notify(message, type = 'info', duration = 4000) {
   let container = document.getElementById('notification-container');
   if (!container) return;
 
-  // Si no tiene estilos aplicados, los aplicamos
   if (!container.style.position) {
-    // Responsive: móvil abajo, desktop arriba derecha
     const isMobile = window.innerWidth < 768;
     container.style.cssText = `
       position: fixed;
@@ -24,7 +18,6 @@ function notify(message, type = 'info', duration = 4000) {
     `;
   }
 
-  // Crear la notificación
   const notification = document.createElement('div');
   const id = `notification-${Date.now()}`;
   notification.id = id;
@@ -60,7 +53,6 @@ function notify(message, type = 'info', duration = 4000) {
   const currentConfig = config[type] || config.info;
   const isMobile = window.innerWidth < 768;
 
-  // Aplicar estilos inline inspirados en tu diseño original
   notification.style.cssText = `
     background: ${currentConfig.bgColor};
     border: 2px solid ${currentConfig.borderColor};
@@ -82,7 +74,6 @@ function notify(message, type = 'info', duration = 4000) {
     width: 100%;
   `;
 
-  // Crear el contenido de la notificación
   notification.innerHTML = `
     <div style="display: flex; align-items: flex-start; gap: 0.75rem; flex: 1;">
       <span style="font-size: 1.125rem; line-height: 1; flex-shrink: 0; margin-top: 0.125rem;">${currentConfig.icon}</span>
@@ -128,7 +119,6 @@ function notify(message, type = 'info', duration = 4000) {
   return id;
 }
 
-// Función para eliminar notificaciones
 function removeNotification(id) {
   const notification = document.getElementById(id);
   if (notification) {

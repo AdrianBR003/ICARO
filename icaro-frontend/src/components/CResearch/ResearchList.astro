@@ -18,12 +18,9 @@ export interface Props {
       tags: string[];
     }>;
   }>;
-  isAdmin?: boolean;
 }
 
-const { researchGroups, isAdmin } = Astro.props;
-console.log("🔍 ResearchList - isAdmin:", isAdmin);
-
+const { researchGroups } = Astro.props;
 ---
 
 <div class="space-y-8" id="publications">
@@ -33,7 +30,6 @@ console.log("🔍 ResearchList - isAdmin:", isAdmin);
         <ResearchCard 
           work={work} 
           year={year} 
-          isAdmin={isAdmin} 
         />
       ))
     )

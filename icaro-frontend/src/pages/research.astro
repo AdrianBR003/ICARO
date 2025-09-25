@@ -11,24 +11,8 @@ import "@/styles/index.css";
 
 const API_BASE_URL = "http://localhost:8080";
 let works = [];
-let isAdmin = false;
 
-// Verificar estado de admin del lado servidor
-try {
-  const response = await fetch(
-    "http://localhost:8080/api/session/check-admin",
-    {
-      credentials: "include",
-    },
-  );
-
-  if (response.ok) {
-    isAdmin = await response.json();
-  }
-} catch (error) {
-  console.error("Error checking admin status:", error);
-}
-
+// Obtener trabajos
 try {
   const res = await fetch(`${API_BASE_URL}/api/works/all`);
   if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
@@ -64,6 +48,7 @@ try {
   works = [];
 }
 
+// Obtener nombres de proyectos
 const projectIds = [
   ...new Set(works.map((work) => work.projectId).filter(Boolean)),
 ];
@@ -96,6 +81,7 @@ const worksWithProjectNames = works.map((work) => {
   };
 });
 
+// Agrupar por año
 const groupsObj = {};
 worksWithProjectNames.forEach((w) => {
   const year = w.projectDate?.slice(0, 4) || "Sin fecha";
@@ -112,6 +98,7 @@ if (noDate.length) researchGroups.push({ year: "Sin fecha", items: noDate });
 
 const mostRecentYear = researchGroups[0]?.year || "all";
 
+// Categorías para filtros
 const tagCategories = new Set();
 const projectCategories = new Set();
 
@@ -121,7 +108,6 @@ worksWithProjectNames.forEach((work) => {
     projectCategories.add(work.projectName);
   }
 });
-
 ---
 
 <BaseLayout>
@@ -136,8 +122,8 @@ worksWithProjectNames.forEach((work) => {
   <CTitle Title="Research" />
 
   <section class="max-w-4xl mx-auto px-4">
-   
-    <ResearchAddPublication isAdmin={isAdmin} />
+    <!-- Botón de agregar publicación - se muestra/oculta dinámicamente -->
+    <ResearchAddPublication />
 
     <ResearchFilters
       tagCategories={tagCategories}
@@ -146,7 +132,8 @@ worksWithProjectNames.forEach((work) => {
       mostRecentYear={mostRecentYear}
     />
 
-    <ResearchList researchGroups={researchGroups} isAdmin={isAdmin} />
+    <!-- Lista de investigación - isAdmin se maneja dinámicamente -->
+    <ResearchList researchGroups={researchGroups} />
 
     <div class="text-center mt-8">
       <button
@@ -159,27 +146,68 @@ worksWithProjectNames.forEach((work) => {
 
   <script is:inline>
     document.addEventListener("DOMContentLoaded", function () {
+      console.log('🚀 [RESEARCH] Página iniciada');
       
-      // ============= VERIFICACIÓN DE ADMIN DEL LADO CLIENTE (SOLO PARA ELEMENTOS DINÁMICOS) =============
-      async function checkAndUpdateAdminElements() {
+      // ============= GESTIÓN DEL ESTADO ADMIN =============
+      let currentAdminStatus = false;
+      
+      // Verificar estado inicial desde localStorage o API
+      async function initializeAdminStatus() {
         try {
+          // Intentar obtener desde localStorage primero
+          const storedStatus = localStorage.getItem('adminStatus');
+          if (storedStatus !== null) {
+            currentAdminStatus = JSON.parse(storedStatus);
+            updateAdminElements(currentAdminStatus);
+            console.log('📦 [RESEARCH] Estado admin desde localStorage:', currentAdminStatus);
+          }
+          
+          // Verificar con la API para asegurar sincronización
           const response = await fetch('http://localhost:8080/api/session/check-admin', {
             credentials: 'include'
           });
           
           if (response.ok) {
-            const isAdmin = await response.json();            
-            updateAdminElements(isAdmin);
+            const apiStatus = await response.json();
+            if (apiStatus !== currentAdminStatus) {
+              currentAdminStatus = apiStatus;
+              localStorage.setItem('adminStatus', JSON.stringify(apiStatus));
+              updateAdminElements(apiStatus);
+              console.log('🔄 [RESEARCH] Estado admin actualizado desde API:', apiStatus);
+            }
           }
         } catch (error) {
-          console.error('Error checking admin status:', error);
+          console.error('❌ [RESEARCH] Error verificando estado admin:', error);
           updateAdminElements(false);
         }
       }
       
+      // Escuchar cambios desde TopUtility
+      window.addEventListener('adminStatusChanged', function(event) {
+        const { isAdmin, source } = event.detail;
+        console.log(`🔄 [RESEARCH] Estado admin cambiado desde ${source}:`, isAdmin);
+        currentAdminStatus = isAdmin;
+        updateAdminElements(isAdmin);
+      });
+      
+      // Actualizar elementos admin en la UI
       function updateAdminElements(isAdmin) {
-        // Solo actualizar elementos que no se renderizaron del lado servidor
-        document.querySelectorAll('.edit-btn:not(#addButton)').forEach(btn => {
+        console.log('🎨 [RESEARCH] Actualizando UI admin:', isAdmin);
+        
+        // Botón de agregar publicación
+        const addButton = document.getElementById('addButton');
+        if (addButton) {
+          if (isAdmin) {
+            addButton.classList.remove('hidden');
+            addButton.classList.add('flex');
+          } else {
+            addButton.classList.remove('flex');
+            addButton.classList.add('hidden');
+          }
+        }
+        
+        // Botones de editar
+        document.querySelectorAll('.edit-btn').forEach(btn => {
           if (isAdmin) {
             btn.classList.remove('hidden');
             btn.classList.add('flex');
@@ -189,7 +217,7 @@ worksWithProjectNames.forEach((work) => {
           }
         });
         
-        // Para botones de eliminar - usar solo clases CSS
+        // Botones de eliminar
         document.querySelectorAll('.delete-btn').forEach(btn => {
           if (isAdmin) {
             btn.classList.remove('hidden');
@@ -199,12 +227,14 @@ worksWithProjectNames.forEach((work) => {
             btn.classList.add('hidden');
           }
         });
+        
+        console.log('✅ [RESEARCH] UI actualizada correctamente');
       }
       
-      // Ejecutar la verificación de admin solo para elementos dinámicos
-      checkAndUpdateAdminElements();
+      // Inicializar estado admin
+      initializeAdminStatus();
       
-      // ============= RESTO DE LA FUNCIONALIDAD DE FILTROS =============
+      // ============= FUNCIONALIDAD DE FILTROS =============
       let visibleItems = 10;
       const articles = Array.from(
         document.querySelectorAll(".publication-entry"),
@@ -339,6 +369,7 @@ worksWithProjectNames.forEach((work) => {
         }
       }
 
+      // Event listeners para filtros
       const yearFilter = document.getElementById("year-filter");
       if (yearFilter)
         yearFilter.addEventListener("change", updateArticlesDisplay);

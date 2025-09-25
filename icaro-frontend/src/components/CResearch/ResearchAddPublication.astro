@@ -1,15 +1,12 @@
 ---
-interface Props {
-  isAdmin: boolean;
-}
-
-const { isAdmin } = Astro.props;
+// Eliminar la interface Props ya que no necesitamos el prop isAdmin
+// El estado admin se maneja dinámicamente desde el cliente
 ---
 
 <div id="add-publication-container" class="mb-6 flex justify-center">
   <button
     id="addButton"
-    class={`edit-btn ${isAdmin ? 'flex' : 'hidden'} bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded items-center gap-2 whitespace-nowrap transition-colors`}
+    class="edit-btn hidden bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded items-center gap-2 whitespace-nowrap transition-colors"
     onclick="showAddPublicationModal()"
   >
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -23,7 +20,7 @@ const { isAdmin } = Astro.props;
     <span class="leading-none align-middle">Añadir Publicación</span>
   </button>
 
-  <!-- Resto del modal permanece igual -->
+  <!-- Modal permanece igual -->
   <div
     id="add-publication-modal"
     class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
@@ -226,6 +223,7 @@ let tagsList = [];
 let externalIdsList = [];
 
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 [RESEARCH-ADD] Componente iniciado');
   initializeEventListeners();
 });
 
@@ -268,34 +266,45 @@ function generatePutCode() {
 }
 
 async function showAddPublicationModal() {
-  // Verificar permisos de admin antes de mostrar el modal
+  console.log('🔍 [RESEARCH-ADD] Intentando mostrar modal');
+  
+  // Verificar estado admin actual
+  let isAdmin = false;
   try {
+    // Primero intentar desde localStorage
+    const storedStatus = localStorage.getItem('adminStatus');
+    if (storedStatus !== null) {
+      isAdmin = JSON.parse(storedStatus);
+    }
+    
+    // Verificar con la API si no hay localStorage o como backup
     const response = await fetch('http://localhost:8080/api/session/check-admin', {
       credentials: 'include'
     });
     
     if (response.ok) {
-      const isAdmin = await response.json();
-      if (!isAdmin) {
-        alert('No tiene permisos para realizar esta acción');
-        return;
-      }
-    } else {
-      alert('Error al verificar permisos');
-      return;
+      const apiStatus = await response.json();
+      isAdmin = apiStatus;
+      localStorage.setItem('adminStatus', JSON.stringify(apiStatus));
     }
   } catch (error) {
-    console.error('Error checking admin status:', error);
-    alert('Error de conexión');
+    console.error('❌ [RESEARCH-ADD] Error verificando estado admin:', error);
+  }
+  
+  if (!isAdmin) {
+    alert('No tiene permisos para realizar esta acción');
+    console.log('🚫 [RESEARCH-ADD] Sin permisos admin');
     return;
   }
   
+  console.log('✅ [RESEARCH-ADD] Mostrando modal');
   document.getElementById('putCode').value = generatePutCode();
   document.getElementById('add-publication-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden'; 
 }
 
 function hideAddPublicationModal() {
+  console.log('🔄 [RESEARCH-ADD] Ocultando modal');
   document.getElementById('add-publication-modal').classList.add('hidden');
   document.body.style.overflow = ''; 
 }
@@ -412,7 +421,7 @@ async function handleFormSubmit(e) {
   };
   
   try {
-    console.log('Datos a enviar:', publicationData);
+    console.log('📤 [RESEARCH-ADD] Enviando datos:', publicationData);
     
     const response = await fetch('http://localhost:8080/api/works/save', {
       method: 'POST',
@@ -431,6 +440,7 @@ async function handleFormSubmit(e) {
       renderTags();
       renderExternalIds();
       hideAddPublicationModal();
+      console.log('✅ [RESEARCH-ADD] Publicación guardada exitosamente');
       window.location.reload();
     } else {
       let errorMessage = 'Error desconocido';
@@ -441,11 +451,11 @@ async function handleFormSubmit(e) {
         errorMessage = await response.text();
       }
       
-      console.error('Error del backend:', errorMessage);
+      console.error('❌ [RESEARCH-ADD] Error del backend:', errorMessage);
       alert('Error al añadir la publicación: ' + errorMessage);
     }
   } catch (error) {
-    console.error('Error de conexión:', error);
+    console.error('❌ [RESEARCH-ADD] Error de conexión:', error);
     alert('Error de conexión al intentar añadir la publicación: ' + error.message);
   }
 }
