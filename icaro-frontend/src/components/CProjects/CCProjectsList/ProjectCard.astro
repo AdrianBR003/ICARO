@@ -7,8 +7,8 @@ interface Project {
   title: string;
   description: string;
   colaborators: string[];
-  firstprojectDate: string; // Formato: "yyyy-MM-dd"
-  secondprojectDate: string; // Formato: "yyyy-MM-dd"
+  firstprojectDate: string | " ... ";
+  secondprojectDate: string | " ... ";
   relatedWorks: {
     type: string;
     title: string;
@@ -26,10 +26,12 @@ const { project, isAdmin = false } = Astro.props;
 const cardId = `project-card-${project.id}`;
 
 // Función para formatear las fechas de yyyy-MM-dd a un formato más legible
-function formatDate(dateString: string): string {
-  if (!dateString) return '';
+function formatDate(dateString: string | " ... "): string {
+  if (!dateString || dateString === " ... ") return " ... ";
   
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return " ... ";
+
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'short',

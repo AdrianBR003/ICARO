@@ -10,22 +10,6 @@ import ProjectsList from "@/components/CProjects/ProjectList.astro";
 import AddProject from "@/components/CProjects/AddProject.astro";
 
 const API_BASE_URL = 'http://localhost:8080';
-let isAdmin = false;
-
-try {
-  const response = await fetch(
-    "http://localhost:8080/api/session/check-admin",
-    {
-      credentials: "include",
-    },
-  );
-
-  if (response.ok) {
-    isAdmin = await response.json();
-  }
-} catch (error) {
-  console.error("Error checking admin status:", error);
-}
 
 async function fetchProjects() {
   try {
@@ -64,8 +48,8 @@ const projectsWithWorks = await Promise.all(
       title: project.title,
       description: project.description,
       colaborators: project.participants || [],
-      firstprojectDate: project.firstprojectDate || "N/A", 
-      secondprojectDate: project.secondprojectDate || "N/A", 
+      firstprojectDate: project.firstprojectDate || " ... ", 
+      secondprojectDate: project.secondprojectDate || " ... ", 
       relatedWorks: relatedWorks.map(work => ({
         type: work.tags && work.tags.length > 0 ? work.tags[0] : "Publicación",
         title: work.title,
@@ -87,35 +71,78 @@ const projectsWithWorks = await Promise.all(
     </section>
 
     <CTitle Title="Projects" />
-    <AddProject isAdmin={isAdmin} /> 
+    <!-- Eliminar prop isAdmin - se maneja dinámicamente -->
+    <AddProject /> 
 
     <section class="max-w-4xl mx-auto px-4">
         <SearchInput placeholder="Buscar proyectos por nombre..." />
-        <ProjectsList projects={projectsWithWorks} isAdmin={isAdmin} />
+        <!-- Eliminar prop isAdmin - se maneja dinámicamente -->
+        <ProjectsList projects={projectsWithWorks} />
     </section>
 
     <script is:inline>
       document.addEventListener("DOMContentLoaded", function () {
+        console.log('🚀 [PROJECTS] Página iniciada');
         
-        // ============= VERIFICACIÓN DE ADMIN DEL LADO CLIENTE (SOLO PARA ELEMENTOS DINÁMICOS) =============
-        async function checkAndUpdateAdminElements() {
+        // ============= GESTIÓN DEL ESTADO ADMIN =============
+        let currentAdminStatus = false;
+        
+        // Verificar estado inicial desde localStorage o API
+        async function initializeAdminStatus() {
           try {
+            // Intentar obtener desde localStorage primero
+            const storedStatus = localStorage.getItem('adminStatus');
+            if (storedStatus !== null) {
+              currentAdminStatus = JSON.parse(storedStatus);
+              updateAdminElements(currentAdminStatus);
+              console.log('📦 [PROJECTS] Estado admin desde localStorage:', currentAdminStatus);
+            }
+            
+            // Verificar con la API para asegurar sincronización
             const response = await fetch('http://localhost:8080/api/session/check-admin', {
               credentials: 'include'
             });
             
             if (response.ok) {
-              const isAdmin = await response.json();            
-              updateAdminElements(isAdmin);
+              const apiStatus = await response.json();
+              if (apiStatus !== currentAdminStatus) {
+                currentAdminStatus = apiStatus;
+                localStorage.setItem('adminStatus', JSON.stringify(apiStatus));
+                updateAdminElements(apiStatus);
+                console.log('🔄 [PROJECTS] Estado admin actualizado desde API:', apiStatus);
+              }
             }
           } catch (error) {
-            console.error('Error checking admin status:', error);
+            console.error('❌ [PROJECTS] Error verificando estado admin:', error);
             updateAdminElements(false);
           }
         }
         
+        // Escuchar cambios desde TopUtility
+        window.addEventListener('adminStatusChanged', function(event) {
+          const { isAdmin, source } = event.detail;
+          console.log(`🔄 [PROJECTS] Estado admin cambiado desde ${source}:`, isAdmin);
+          currentAdminStatus = isAdmin;
+          updateAdminElements(isAdmin);
+        });
+        
+        // Actualizar elementos admin en la UI
         function updateAdminElements(isAdmin) {
-          // Solo actualizar elementos que no se renderizaron del lado servidor
+          console.log('🎨 [PROJECTS] Actualizando UI admin:', isAdmin);
+          
+          // Botón de agregar proyecto
+          const addProjectButton = document.getElementById('addProjectButton');
+          if (addProjectButton) {
+            if (isAdmin) {
+              addProjectButton.classList.remove('hidden');
+              addProjectButton.classList.add('flex');
+            } else {
+              addProjectButton.classList.remove('flex');
+              addProjectButton.classList.add('hidden');
+            }
+          }
+          
+          // Botones de editar (excluyendo el botón principal de agregar)
           document.querySelectorAll('.edit-btn:not(#addProjectButton)').forEach(btn => {
             if (isAdmin) {
               btn.classList.remove('hidden');
@@ -126,7 +153,7 @@ const projectsWithWorks = await Promise.all(
             }
           });
           
-          // Para botones de eliminar - usar solo clases CSS
+          // Botones de eliminar
           document.querySelectorAll('.delete-btn').forEach(btn => {
             if (isAdmin) {
               btn.classList.remove('hidden');
@@ -136,10 +163,12 @@ const projectsWithWorks = await Promise.all(
               btn.classList.add('hidden');
             }
           });
+          
+          console.log('✅ [PROJECTS] UI actualizada correctamente');
         }
         
-        // Ejecutar la verificación de admin solo para elementos dinámicos
-        checkAndUpdateAdminElements();
+        // Inicializar estado admin
+        initializeAdminStatus();
       });
     </script>
 </BaseLayout>
