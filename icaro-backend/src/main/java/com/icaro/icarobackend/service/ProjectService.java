@@ -4,6 +4,7 @@ import com.icaro.icarobackend.model.Project;
 import com.icaro.icarobackend.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +31,12 @@ public class ProjectService {
 
     public void deleteById(String id) {
         projectRepository.deleteById(id);
+    }
+
+    public List<String> getTitlesProjects(){
+        List <String> titles = new ArrayList<>();
+        projectRepository.findAll().forEach(p -> titles.add(p.getTitle()));
+        return titles;
     }
 
 }

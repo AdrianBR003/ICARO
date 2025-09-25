@@ -141,13 +141,21 @@
 
             <div>
               <label class="block mb-1 text-sm font-medium">Nombre del Proyecto</label>
-              <input
-                type="text"
-                id="projectId"
-                name="projectId"
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
-                placeholder="PRJ-001"
-              />
+              <div class="relative">
+                <select
+                  id="projectId"
+                  name="projectId"
+                  class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent appearance-none bg-white"
+                >
+                  <option value="">Seleccione un proyecto...</option>
+                  <option value="loading" disabled>Cargando proyectos...</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -221,10 +229,12 @@
 <script is:inline>
 let tagsList = [];
 let externalIdsList = [];
+let projectTitles = [];
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🚀 [RESEARCH-ADD] Componente iniciado');
   initializeEventListeners();
+  loadProjectTitles();
 });
 
 function initializeEventListeners() {
@@ -259,6 +269,54 @@ function initializeEventListeners() {
       hideAddPublicationModal();
     }
   });
+}
+
+async function loadProjectTitles() {
+  try {
+    console.log('📋 [RESEARCH-ADD] Cargando títulos de proyectos...');
+    
+    const response = await fetch('http://localhost:8080/api/project/titles', {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      projectTitles = await response.json();
+      populateProjectSelect();
+      console.log('✅ [RESEARCH-ADD] Títulos de proyectos cargados:', projectTitles);
+    } else {
+      console.error('❌ [RESEARCH-ADD] Error al cargar títulos de proyectos:', response.status);
+      showProjectLoadError();
+    }
+  } catch (error) {
+    console.error('❌ [RESEARCH-ADD] Error de conexión al cargar proyectos:', error);
+    showProjectLoadError();
+  }
+}
+
+function populateProjectSelect() {
+  const projectSelect = document.getElementById('projectId');
+  if (!projectSelect) return;
+  
+  // Limpiar opciones existentes
+  projectSelect.innerHTML = '<option value="">Seleccione un proyecto...</option>';
+  
+  // Agregar opciones de proyectos
+  projectTitles.forEach(title => {
+    const option = document.createElement('option');
+    option.value = title;
+    option.textContent = title;
+    projectSelect.appendChild(option);
+  });
+}
+
+function showProjectLoadError() {
+  const projectSelect = document.getElementById('projectId');
+  if (!projectSelect) return;
+  
+  projectSelect.innerHTML = `
+    <option value="">Error al cargar proyectos</option>
+    <option value="" disabled>Intente recargar la página</option>
+  `;
 }
 
 function generatePutCode() {
@@ -301,6 +359,11 @@ async function showAddPublicationModal() {
   document.getElementById('putCode').value = generatePutCode();
   document.getElementById('add-publication-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden'; 
+  
+  // Recargar proyectos si no se han cargado o si han pasado más de 5 minutos
+  if (projectTitles.length === 0) {
+    loadProjectTitles();
+  }
 }
 
 function hideAddPublicationModal() {
@@ -407,6 +470,8 @@ async function handleFormSubmit(e) {
       .map(orcid => orcid.trim())
       .filter(orcid => orcid !== '') : [];
   
+  const selectedProject = document.getElementById('projectId').value;
+  
   const publicationData = {
     putCode: document.getElementById('putCode').value.trim(),
     title: title,
@@ -415,7 +480,7 @@ async function handleFormSubmit(e) {
     ownerOrcids: orcidsArray,
     externalIds: externalIdsList,
     projectDate: projectDate,
-    projectId: document.getElementById('projectId').value.trim() || null,
+    projectId: selectedProject || null,
     tags: [workType, ...tagsList],
     link: document.getElementById('link').value.trim() || ''
   };
@@ -439,6 +504,8 @@ async function handleFormSubmit(e) {
       externalIdsList = [];
       renderTags();
       renderExternalIds();
+      // Resetear el select a la opción por defecto
+      document.getElementById('projectId').selectedIndex = 0;
       hideAddPublicationModal();
       console.log('✅ [RESEARCH-ADD] Publicación guardada exitosamente');
       window.location.reload();

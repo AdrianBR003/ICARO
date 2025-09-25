@@ -59,54 +59,67 @@ const modalId = `modal-${work.id || work.putCode}`;
 
         <div>
           <label class="block mb-1 text-sm font-medium">Título *</label>
-          <input type="text" name="title" value={work.title} required class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="title" value={work.title} required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Descripción</label>
-          <textarea name="description" rows="3" class="w-full px-3 py-2 border rounded-md">{work.description || ""}</textarea>
+          <textarea name="description" rows="3" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent">{work.description || ""}</textarea>
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Participantes</label>
-          <textarea name="participants" rows="2" class="w-full px-3 py-2 border rounded-md">{work.participants?.join(", ") || ""}</textarea>
+          <textarea name="participants" rows="2" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent">{work.participants?.join(", ") || ""}</textarea>
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">IDs Externos (DOI)</label>
-          <input type="text" name="externalIds" value={work.externalIds?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="externalIds" value={work.externalIds?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">ORCID Propietarios</label>
-          <input type="text" name="ownerOrcids" value={work.ownerOrcids?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="ownerOrcids" value={work.ownerOrcids?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Fecha del Proyecto *</label>
-          <input type="date" name="projectDate" value={work.projectDate} required class="w-full px-3 py-2 border rounded-md" />
+          <input type="date" name="projectDate" value={work.projectDate} required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Título del Proyecto</label>
-          <input type="text" name="projectName" value={work.projectName || ""} class="w-full px-3 py-2 border rounded-md" />
+          <div class="relative">
+            <select
+              name="projectName"
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent appearance-none bg-white edit-project-select"
+            >
+              <option value="">Seleccione un proyecto...</option>
+              <option value="loading" disabled>Cargando proyectos...</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Etiquetas</label>
-          <input type="text" name="tags" value={work.tags?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md" />
+          <input type="text" name="tags" value={work.tags?.join(", ") || ""} class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" />
         </div>
 
         <div class="flex gap-4 pt-4 border-t">
           <button
             type="button"
-            class="cancel-btn px-4 py-2 border rounded-md hover:bg-gray-50"
+            class="cancel-btn px-4 py-2 border rounded-md hover:bg-gray-50 transition-colors"
           >
             Cancelar
           </button>
           <button
             type="submit"
-            class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
+            class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229] transition-colors"
           >
             Guardar
           </button>
@@ -118,8 +131,82 @@ const modalId = `modal-${work.id || work.putCode}`;
 
 <script is:inline define:vars={{ modalId, cardId, work, isAdmin }}>
 
-  console.log('ResearchEdit', { isAdmin });
+  console.log('🔧 [RESEARCH-EDIT] Componente iniciado', { isAdmin, work });
 
+  let editProjectTitles = [];
+
+  async function loadEditProjectTitles(selectElement) {
+    try {
+      console.log('📋 [RESEARCH-EDIT] Cargando títulos de proyectos para edición...');
+      
+      const response = await fetch('http://localhost:8080/api/project/titles', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        editProjectTitles = await response.json();
+        populateEditProjectSelect(selectElement);
+        console.log('✅ [RESEARCH-EDIT] Títulos de proyectos cargados:', editProjectTitles);
+      } else {
+        console.error('❌ [RESEARCH-EDIT] Error al cargar títulos de proyectos:', response.status);
+        showEditProjectLoadError(selectElement);
+      }
+    } catch (error) {
+      console.error('❌ [RESEARCH-EDIT] Error de conexión al cargar proyectos:', error);
+      showEditProjectLoadError(selectElement);
+    }
+  }
+
+  function populateEditProjectSelect(selectElement) {
+    if (!selectElement) return;
+    
+    // Guardar el valor actual
+    const currentValue = work.projectName || '';
+    
+    // Limpiar opciones existentes
+    selectElement.innerHTML = '<option value="">Seleccione un proyecto...</option>';
+    
+    // Agregar opciones de proyectos
+    editProjectTitles.forEach(title => {
+      const option = document.createElement('option');
+      option.value = title;
+      option.textContent = title;
+      // Seleccionar la opción actual si coincide
+      if (title === currentValue) {
+        option.selected = true;
+      }
+      selectElement.appendChild(option);
+    });
+    
+    // Si el valor actual no está en la lista, agregarlo como opción seleccionada
+    if (currentValue && !editProjectTitles.includes(currentValue)) {
+      const customOption = document.createElement('option');
+      customOption.value = currentValue;
+      customOption.textContent = currentValue + ' (personalizado)';
+      customOption.selected = true;
+      selectElement.appendChild(customOption);
+    }
+  }
+
+  function showEditProjectLoadError(selectElement) {
+    if (!selectElement) return;
+    
+    const currentValue = work.projectName || '';
+    
+    selectElement.innerHTML = `
+      <option value="">Error al cargar proyectos</option>
+      <option value="" disabled>Intente recargar la página</option>
+    `;
+    
+    // Mantener el valor actual aunque haya error
+    if (currentValue) {
+      const currentOption = document.createElement('option');
+      currentOption.value = currentValue;
+      currentOption.textContent = currentValue + ' (valor actual)';
+      currentOption.selected = true;
+      selectElement.appendChild(currentOption);
+    }
+  }
 
   function initializeEditComponent() {
     const editBtn = document.querySelector(`#${cardId} .edit-btn`);
@@ -127,10 +214,15 @@ const modalId = `modal-${work.id || work.putCode}`;
     const form = modal.querySelector('.research-form');
     const closeBtn = modal.querySelector('.close-modal');
     const cancelBtn = modal.querySelector('.cancel-btn');
+    const projectSelect = modal.querySelector('.edit-project-select');
 
     // Función para abrir el modal
     function openModal() {
       modal.classList.remove('hidden');
+      // Cargar proyectos cuando se abre el modal
+      if (editProjectTitles.length === 0 && projectSelect) {
+        loadEditProjectTitles(projectSelect);
+      }
     }
 
     // Función para cerrar el modal
@@ -139,64 +231,91 @@ const modalId = `modal-${work.id || work.putCode}`;
     }
 
     // Event listeners
-    editBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      openModal();
-    });
+    if (editBtn) {
+      editBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🔍 [RESEARCH-EDIT] Abriendo modal de edición');
+        openModal();
+      });
+    }
 
-    closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeModal);
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeModal);
+    }
 
     // Cerrar modal al hacer click fuera
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        closeModal();
-      }
-    });
+    if (modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+    }
 
     // Manejar envío del formulario
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      if (!confirm("¿Estás seguro de que deseas guardar los cambios?")) {
-        return;
-      }
-      
-      const formData = new FormData(form);
-      const workData = {
-        putCode: formData.get("putCode"),
-        title: formData.get("title"),
-        description: formData.get("description"),
-        participants: formData.get("participants").split(",").map(item => item.trim()).filter(Boolean),
-        externalIds: formData.get("externalIds").split(",").map(item => item.trim()).filter(Boolean),
-        ownerOrcids: formData.get("ownerOrcids").split(",").map(item => item.trim()).filter(Boolean),
-        projectDate: formData.get("projectDate"),
-        projectId: formData.get("projectName"),
-        tags: formData.get("tags").split(",").map(item => item.trim()).filter(Boolean)
-      };
-
-      try {
-        const response = await fetch("http://localhost:8080/api/works/save", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(workData)
-        });
-
-        if (response.ok) {
-          alert("Los cambios se guardaron correctamente.");
-          closeModal();
-          window.location.reload();
-        } else {
-          alert("Error al guardar los cambios. Por favor, intenta nuevamente.");
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!confirm("¿Estás seguro de que deseas guardar los cambios?")) {
+          return;
         }
-      } catch (error) {
-        alert("Error al guardar los cambios. Por favor, intenta nuevamente.");
-      }
-    });
+        
+        const formData = new FormData(form);
+        const selectedProject = formData.get("projectName");
+        
+        const workData = {
+          putCode: formData.get("putCode"),
+          title: formData.get("title"),
+          description: formData.get("description"),
+          participants: formData.get("participants").split(",").map(item => item.trim()).filter(Boolean),
+          externalIds: formData.get("externalIds").split(",").map(item => item.trim()).filter(Boolean),
+          ownerOrcids: formData.get("ownerOrcids").split(",").map(item => item.trim()).filter(Boolean),
+          projectDate: formData.get("projectDate"),
+          projectId: selectedProject || null,
+          tags: formData.get("tags").split(",").map(item => item.trim()).filter(Boolean)
+        };
 
+        try {
+          console.log('📤 [RESEARCH-EDIT] Enviando datos actualizados:', workData);
+          
+          const response = await fetch("http://localhost:8080/api/works/save", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: 'include',
+            body: JSON.stringify(workData)
+          });
+
+          if (response.ok) {
+            alert("Los cambios se guardaron correctamente.");
+            closeModal();
+            console.log('✅ [RESEARCH-EDIT] Cambios guardados exitosamente');
+            window.location.reload();
+          } else {
+            let errorMessage = 'Error desconocido';
+            try {
+              const errorData = await response.json();
+              errorMessage = errorData.message || JSON.stringify(errorData);
+            } catch {
+              errorMessage = await response.text();
+            }
+            
+            console.error('❌ [RESEARCH-EDIT] Error del backend:', errorMessage);
+            alert("Error al guardar los cambios: " + errorMessage);
+          }
+        } catch (error) {
+          console.error('❌ [RESEARCH-EDIT] Error de conexión:', error);
+          alert("Error de conexión al guardar los cambios: " + error.message);
+        }
+      });
+    }
   }
 
   // Inicializar cuando el DOM esté listo

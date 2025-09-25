@@ -59,4 +59,10 @@ public class ProjectController {
         }
     }
 
+    @GetMapping("/titles")
+    public ResponseEntity<List<String>> getTitlesProjects(){
+        log.info("getting titles of projects");
+        return ResponseEntity.ok(projectService.getTitlesProjects());
+    }
+
 }
