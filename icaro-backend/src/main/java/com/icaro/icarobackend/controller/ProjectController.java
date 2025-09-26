@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,8 @@ public class ProjectController {
     public ProjectController(ProjectService projectService) {
         this.projectService = projectService;
     }
+
+    // ---------- METODOS SIN VERIFICACION -------------
 
     @GetMapping("/all")
     public List<Project> findAll() {
@@ -39,7 +42,17 @@ public class ProjectController {
         }
     }
 
+    @GetMapping("/titles")
+    public ResponseEntity<List<String>> getTitlesProjects(){
+        log.info("getting titles of projects");
+        return ResponseEntity.ok(projectService.getTitlesProjects());
+    }
+
+    // ---------- METODOS CON VERIFICACION -------------
+
+
     @PostMapping("/update")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateProject(@RequestBody Project project) {
         if(this.projectService.findById(project.getId()).isPresent()){
             this.projectService.save(project);
@@ -50,6 +63,7 @@ public class ProjectController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteProject(@PathVariable String id) {
         if(this.projectService.findById(id).isPresent()){
             this.projectService.deleteById(id);
@@ -57,12 +71,6 @@ public class ProjectController {
         }else{
             return  ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-    }
-
-    @GetMapping("/titles")
-    public ResponseEntity<List<String>> getTitlesProjects(){
-        log.info("getting titles of projects");
-        return ResponseEntity.ok(projectService.getTitlesProjects());
     }
 
 }
