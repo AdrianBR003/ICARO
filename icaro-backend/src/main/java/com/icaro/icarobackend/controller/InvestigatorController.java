@@ -77,12 +77,7 @@ public class InvestigatorController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity   <Void> updateInvestigator(
             @PathVariable String orcid,
-            @RequestBody Map<String, Object> body,
-            HttpSession session) {
-
-        if (!Boolean.TRUE.equals(session.getAttribute("admin"))) {
-            return ResponseEntity.status(403).build();
-        }
+            @RequestBody Map<String, Object> body) {
 
         String givenNames = (String) body.get("givenNames");
         String familyName = (String) body.get("familyName");

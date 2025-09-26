@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
+
 @Component
 public class JwtUtil {
 
@@ -43,6 +45,17 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public boolean getIsAdminFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        Boolean isAdmin = claims.get("isAdmin", Boolean.class);
+        return isAdmin != null && isAdmin;
     }
 
     public String getUsernameFromToken(String token) {

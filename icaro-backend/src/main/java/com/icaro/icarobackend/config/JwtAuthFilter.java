@@ -12,8 +12,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -30,14 +31,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            if (jwtUtil.validateToken(token)) {
-                String username = jwtUtil.getUsernameFromToken(token);
+            try {
+                if (jwtUtil.validateToken(token)) {
+                    String username = jwtUtil.getUsernameFromToken(token);
+                    boolean isAdmin = jwtUtil.getIsAdminFromToken(token);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null,
-                                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+                    Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+
+                    if (isAdmin) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    }
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                    System.out.println("Usuario autenticado: " + username + ", isAdmin: " + isAdmin);
+                    System.out.println("Authorities: " + authorities);
+                }
+            } catch (Exception e) {
+                System.out.println("Error procesando JWT: " + e.getMessage());
             }
         }
 

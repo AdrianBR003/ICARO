@@ -148,47 +148,63 @@ worksWithProjectNames.forEach((work) => {
     document.addEventListener("DOMContentLoaded", function () {
       console.log('🚀 [RESEARCH] Página iniciada');
       
+      // ============= SISTEMA DE AUTENTICACIÓN JWT =============
+      
+      // Helper para generar headers con token JWT
+      function getAuthHeaders() {
+        const token = localStorage.getItem('adminToken');
+        
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+        
+        // Si existe token, añadir header Authorization con Bearer
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return headers;
+      }
+      
       // ============= GESTIÓN DEL ESTADO ADMIN =============
       let currentAdminStatus = false;
       
-      // Verificar estado inicial desde localStorage o API
-      async function initializeAdminStatus() {
+      // Verificar estado admin con token JWT
+      async function checkAdminStatus() {
+        console.log('🔐 [RESEARCH] Verificando estado admin...');
+        
         try {
-          // Intentar obtener desde localStorage primero
-          const storedStatus = localStorage.getItem('adminStatus');
-          if (storedStatus !== null) {
-            currentAdminStatus = JSON.parse(storedStatus);
-            updateAdminElements(currentAdminStatus);
-            console.log('📦 [RESEARCH] Estado admin desde localStorage:', currentAdminStatus);
+          const token = localStorage.getItem('adminToken');
+          if (!token) {
+            console.log('🔐 [RESEARCH] No hay token almacenado');
+            updateAdminElements(false);
+            return false;
           }
-          
-          // Verificar con la API para asegurar sincronización
-          const response = await fetch('http://localhost:8080/api/session/check-admin', {
-            credentials: 'include'
+
+          console.log('🔐 [RESEARCH] Token encontrado, verificando...');
+          const response = await fetch('http://localhost:8080/api/auth/verify', {
+            headers: { 'Authorization': `Bearer ${token}` }
           });
-          
+
           if (response.ok) {
-            const apiStatus = await response.json();
-            if (apiStatus !== currentAdminStatus) {
-              currentAdminStatus = apiStatus;
-              localStorage.setItem('adminStatus', JSON.stringify(apiStatus));
-              updateAdminElements(apiStatus);
-              console.log('🔄 [RESEARCH] Estado admin actualizado desde API:', apiStatus);
-            }
+            const data = await response.json();
+            const isAdmin = data.authenticated && data.isAdmin;
+            console.log('🔐 [RESEARCH] Verificación exitosa:', { isAdmin, username: data.username });
+            currentAdminStatus = isAdmin;
+            updateAdminElements(isAdmin);
+            return isAdmin;
+          } else {
+            console.log('🔐 [RESEARCH] Token inválido, status:', response.status);
+            throw new Error('Token inválido');
           }
         } catch (error) {
-          console.error('❌ [RESEARCH] Error verificando estado admin:', error);
+          console.error('❌ [RESEARCH] Error verificando token:', error);
+          localStorage.removeItem('adminToken');
+          currentAdminStatus = false;
           updateAdminElements(false);
+          return false;
         }
       }
-      
-      // Escuchar cambios desde TopUtility
-      window.addEventListener('adminStatusChanged', function(event) {
-        const { isAdmin, source } = event.detail;
-        console.log(`🔄 [RESEARCH] Estado admin cambiado desde ${source}:`, isAdmin);
-        currentAdminStatus = isAdmin;
-        updateAdminElements(isAdmin);
-      });
       
       // Actualizar elementos admin en la UI
       function updateAdminElements(isAdmin) {
@@ -231,8 +247,154 @@ worksWithProjectNames.forEach((work) => {
         console.log('✅ [RESEARCH] UI actualizada correctamente');
       }
       
-      // Inicializar estado admin
-      initializeAdminStatus();
+      // Escuchar cambios desde TopUtility
+      window.addEventListener('adminStatusChanged', function(event) {
+        const { isAdmin, source } = event.detail;
+        console.log(`🔄 [RESEARCH] Estado admin cambiado desde ${source}:`, isAdmin);
+        currentAdminStatus = isAdmin;
+        updateAdminElements(isAdmin);
+      });
+      
+      // Inicializar estado admin al cargar la página
+      checkAdminStatus();
+      
+      // Verificar estado cada 5 minutos para detectar tokens expirados
+      setInterval(() => {
+        console.log('⏰ [RESEARCH] Verificación periódica del estado admin');
+        checkAdminStatus();
+      }, 300000);
+
+      // Verificar al volver a la pestaña (detectar cambios en otras pestañas)
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          console.log('👁️ [RESEARCH] Tab visible, verificando admin status');
+          checkAdminStatus();
+        }
+      });
+
+      // Escuchar cambios en localStorage (para sincronizar entre pestañas)
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'adminToken') {
+          console.log('🔄 [RESEARCH] Token cambiado en localStorage:', e.newValue ? 'Token añadido' : 'Token eliminado');
+          if (e.newValue) {
+            checkAdminStatus();
+          } else {
+            currentAdminStatus = false;
+            updateAdminElements(false);
+          }
+        }
+      });
+      
+      // ============= OPERACIONES CRUD (REQUIEREN ADMIN) =============
+      
+      // Función para manejar errores de autenticación
+      function handleAuthError(response) {
+        if (response.status === 401 || response.status === 403) {
+          alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
+          localStorage.removeItem('adminToken');
+          currentAdminStatus = false;
+          updateAdminElements(false);
+          window.location.href = '/admin-login';
+          return true;
+        }
+        return false;
+      }
+      
+      // Eliminar publicación - requiere token JWT con ROLE_ADMIN
+      window.deletePublication = async function(workId) {
+        if (!currentAdminStatus) {
+          alert('Debe iniciar sesión como administrador para realizar esta acción.');
+          return;
+        }
+        
+        if (!confirm('¿Está seguro de que desea eliminar esta publicación?')) {
+          return;
+        }
+
+        try {
+          console.log('🗑️ [RESEARCH] Eliminando publicación:', workId);
+          const response = await fetch(`http://localhost:8080/api/works/${workId}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+          });
+
+          if (response.ok) {
+            alert('Publicación eliminada correctamente');
+            location.reload();
+          } else if (handleAuthError(response)) {
+            return;
+          } else {
+            const errorText = await response.text();
+            console.error('❌ [RESEARCH] Error del servidor:', errorText);
+            throw new Error('Error al eliminar la publicación: ' + response.status);
+          }
+        } catch (error) {
+          console.error('❌ [RESEARCH] Error:', error);
+          alert(error.message || 'Error al eliminar la publicación');
+        }
+      };
+      
+      // Editar publicación - requiere token JWT con ROLE_ADMIN
+      window.editPublication = async function(workId, updatedData) {
+        if (!currentAdminStatus) {
+          alert('Debe iniciar sesión como administrador para realizar esta acción.');
+          return;
+        }
+
+        try {
+          console.log('✏️ [RESEARCH] Editando publicación:', workId, updatedData);
+          const response = await fetch(`http://localhost:8080/api/works/save`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(updatedData)
+          });
+
+          if (response.ok) {
+            alert('Publicación actualizada correctamente');
+            location.reload();
+          } else if (handleAuthError(response)) {
+            return;
+          } else {
+            const errorText = await response.text();
+            console.error('❌ [RESEARCH] Error del servidor:', errorText);
+            throw new Error('Error al actualizar la publicación: ' + response.status);
+          }
+        } catch (error) {
+          console.error('❌ [RESEARCH] Error:', error);
+          alert(error.message || 'Error al actualizar la publicación');
+        }
+      };
+      
+      // Añadir publicación - requiere token JWT con ROLE_ADMIN
+      window.addPublication = async function(newData) {
+        if (!currentAdminStatus) {
+          alert('Debe iniciar sesión como administrador para realizar esta acción.');
+          return;
+        }
+
+        try {
+          console.log(' [RESEARCH] Añadiendo publicación:', newData);
+          const response = await fetch('http://localhost:8080/api/works/add', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(newData)
+          });
+
+          if (response.ok) {
+            alert('Publicación añadida correctamente');
+            location.reload();
+          } else if (handleAuthError(response)) {
+            return;
+          } else {
+            const errorText = await response.text();
+            console.error('❌ [RESEARCH] Error del servidor:', errorText);
+            throw new Error('Error al añadir la publicación: ' + response.status);
+          }
+        } catch (error) {
+          console.error('❌ [RESEARCH] Error:', error);
+          alert(error.message || 'Error al añadir la publicación');
+        }
+      };
       
       // ============= FUNCIONALIDAD DE FILTROS =============
       let visibleItems = 10;
