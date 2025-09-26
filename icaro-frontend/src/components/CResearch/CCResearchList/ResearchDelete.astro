@@ -43,7 +43,71 @@ const { work, cardId, isAdmin = false } = Astro.props;
       const deleteBtn = cardElement.querySelector('.delete-btn');
       if (!deleteBtn) return;
 
+      // ============= SISTEMA DE AUTENTICACIÓN JWT =============
+      
+      // Helper para generar headers con token JWT
+      function getAuthHeaders() {
+        const token = localStorage.getItem('adminToken');
+        
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+        
+        // Si existe token, añadir header Authorization con Bearer
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        return headers;
+      }
+
+      // Función para manejar errores de autenticación
+      function handleAuthError(response) {
+        if (response.status === 401 || response.status === 403) {
+          alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
+          localStorage.removeItem('adminToken');
+          // Opcional: redirigir al login
+          // window.location.href = '/admin-login';
+          return true;
+        }
+        return false;
+      }
+
+      // Verificar si el usuario tiene permisos de admin
+      async function verifyAdminPermissions() {
+        try {
+          const token = localStorage.getItem('adminToken');
+          if (!token) {
+            return false;
+          }
+
+          const response = await fetch('http://localhost:8080/api/auth/verify', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            return data.authenticated && data.isAdmin;
+          } else {
+            localStorage.removeItem('adminToken');
+            return false;
+          }
+        } catch (error) {
+          console.error('❌ [DELETE-WORK] Error verificando permisos:', error);
+          return false;
+        }
+      }
+
       async function handleDelete() {
+        console.log('🗑️ [DELETE-WORK] Intentando eliminar publicación');
+        
+        // Verificar permisos antes de proceder
+        const hasPermissions = await verifyAdminPermissions();
+        if (!hasPermissions) {
+          alert('Debe iniciar sesión como administrador para realizar esta acción.');
+          return;
+        }
+
         const putCode = work?.putCode || deleteBtn.getAttribute('data-putcode');
         const title = work?.title || deleteBtn.getAttribute('data-title');
         
@@ -56,21 +120,28 @@ const { work, cardId, isAdmin = false } = Astro.props;
         if (!confirmed) return;
 
         try {
+          console.log('🗑️ [DELETE-WORK] Eliminando publicación:', putCode);
+          console.log('🔐 [DELETE-WORK] Headers que se van a enviar:', getAuthHeaders());
+          
           const response = await fetch(`http://localhost:8080/api/works/delete/${putCode}`, {
             method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: getAuthHeaders(), // Usar headers con JWT
           });
+
+          console.log('🔐 [DELETE-WORK] Respuesta del servidor:', response.status);
 
           if (response.ok) {
             alert('Publicación eliminada correctamente.');
+            console.log('✅ [DELETE-WORK] Publicación eliminada exitosamente');
             window.location.reload();
+          } else if (handleAuthError(response)) {
+            return;
           } else {
+            console.error('❌ [DELETE-WORK] Error del servidor:', response.status);
             alert('Error al eliminar la publicación. Por favor, intenta nuevamente.');
           }
         } catch (error) {
-          console.error('Error de red:', error);
+          console.error('❌ [DELETE-WORK] Error de conexión:', error);
           alert('Error de conexión. Por favor, intenta nuevamente.');
         }
       }

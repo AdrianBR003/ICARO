@@ -135,18 +135,75 @@ const modalId = `modal-${work.id || work.putCode}`;
 
   let editProjectTitles = [];
 
+  // ============= SISTEMA DE AUTENTICACIÓN JWT =============
+  
+  // Helper para generar headers con token JWT
+  function getAuthHeaders() {
+    const token = localStorage.getItem('adminToken');
+    
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Si existe token, añadir header Authorization con Bearer
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
+  }
+
+  // Función para manejar errores de autenticación
+  function handleAuthError(response) {
+    if (response.status === 401 || response.status === 403) {
+      alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
+      localStorage.removeItem('adminToken');
+      // Opcional: redirigir al login
+      // window.location.href = '/admin-login';
+      return true;
+    }
+    return false;
+  }
+
+  // Verificar si el usuario tiene permisos de admin
+  async function verifyAdminPermissions() {
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        return false;
+      }
+
+      const response = await fetch('http://localhost:8080/api/auth/verify', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.authenticated && data.isAdmin;
+      } else {
+        localStorage.removeItem('adminToken');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ [RESEARCH-EDIT] Error verificando permisos:', error);
+      return false;
+    }
+  }
+
   async function loadEditProjectTitles(selectElement) {
     try {
       console.log('📋 [RESEARCH-EDIT] Cargando títulos de proyectos para edición...');
       
       const response = await fetch('http://localhost:8080/api/project/titles', {
-        credentials: 'include'
+        headers: getAuthHeaders() // Usar headers con JWT
       });
       
       if (response.ok) {
         editProjectTitles = await response.json();
         populateEditProjectSelect(selectElement);
         console.log('✅ [RESEARCH-EDIT] Títulos de proyectos cargados:', editProjectTitles);
+      } else if (handleAuthError(response)) {
+        return;
       } else {
         console.error('❌ [RESEARCH-EDIT] Error al cargar títulos de proyectos:', response.status);
         showEditProjectLoadError(selectElement);
@@ -216,8 +273,16 @@ const modalId = `modal-${work.id || work.putCode}`;
     const cancelBtn = modal.querySelector('.cancel-btn');
     const projectSelect = modal.querySelector('.edit-project-select');
 
-    // Función para abrir el modal
-    function openModal() {
+    // Función para abrir el modal con verificación de permisos
+    async function openModal() {
+      console.log('🔐 [RESEARCH-EDIT] Verificando permisos antes de abrir modal...');
+      
+      const hasPermissions = await verifyAdminPermissions();
+      if (!hasPermissions) {
+        alert('Debe iniciar sesión como administrador para realizar esta acción.');
+        return;
+      }
+
       modal.classList.remove('hidden');
       // Cargar proyectos cuando se abre el modal
       if (editProjectTitles.length === 0 && projectSelect) {
@@ -235,8 +300,8 @@ const modalId = `modal-${work.id || work.putCode}`;
       editBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('🔍 [RESEARCH-EDIT] Abriendo modal de edición');
-        openModal();
+        console.log('🔍 [RESEARCH-EDIT] Intentando abrir modal de edición');
+        openModal(); // Ahora es async y verifica permisos
       });
     }
 
@@ -262,6 +327,13 @@ const modalId = `modal-${work.id || work.putCode}`;
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        // Verificar permisos antes de procesar
+        const hasPermissions = await verifyAdminPermissions();
+        if (!hasPermissions) {
+          alert('Debe iniciar sesión como administrador para realizar esta acción.');
+          return;
+        }
+        
         if (!confirm("¿Estás seguro de que deseas guardar los cambios?")) {
           return;
         }
@@ -283,21 +355,23 @@ const modalId = `modal-${work.id || work.putCode}`;
 
         try {
           console.log('📤 [RESEARCH-EDIT] Enviando datos actualizados:', workData);
+          console.log('🔐 [RESEARCH-EDIT] Headers que se van a enviar:', getAuthHeaders());
           
           const response = await fetch("http://localhost:8080/api/works/save", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: 'include',
+            headers: getAuthHeaders(), // Usar headers con JWT en lugar de credentials
             body: JSON.stringify(workData)
           });
+
+          console.log('🔐 [RESEARCH-EDIT] Respuesta del servidor:', response.status);
 
           if (response.ok) {
             alert("Los cambios se guardaron correctamente.");
             closeModal();
             console.log('✅ [RESEARCH-EDIT] Cambios guardados exitosamente');
             window.location.reload();
+          } else if (handleAuthError(response)) {
+            return;
           } else {
             let errorMessage = 'Error desconocido';
             try {
