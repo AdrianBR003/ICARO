@@ -32,10 +32,10 @@ const formattedNews = newsData.map(item => ({
   title: item.title || 'Sin título',
   description: item.description || 'Sin descripción',
   link: item.link || `/news/${item.id}`,
-  publicationDate: item.publicationDate || null // Mantener formato yyyy-MM-dd del backend
+  publicationDate: item.publicationDate || null
 }));
 
-let isAdmin = false; // 🚨 siempre false en SSR
+let isAdmin = false; // siempre false en SSR
 ---
 
 <BaseLayout>
@@ -61,42 +61,119 @@ let isAdmin = false; // 🚨 siempre false en SSR
 </BaseLayout>
 
 <script is:inline>
-document.addEventListener('DOMContentLoaded', async () => {
-
-  // Obtener estado real de admin en cliente
-  const fetchAdminStatus = async () => {
-    try {
-      const res = await fetch('http://localhost:8080/api/session/check-admin', { credentials: 'include' });
-      if (res.ok) {
-        const admin = await res.json();
-        window.dispatchEvent(new CustomEvent('adminStatusChanged', { detail: { isAdmin: admin, source: 'News.astro' } }));
-      }
-    } catch (err) {
-      console.error('[NEWS] Error fetch admin:', err);
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('🚀 [NEWS] Página iniciada');
+  
+  // ============= SISTEMA DE AUTENTICACIÓN JWT =============
+  
+  function getAuthHeaders() {
+    const token = localStorage.getItem('adminToken');
+    
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
-  };
+    
+    return headers;
+  }
+  
+  // ============= GESTIÓN DEL ESTADO ADMIN =============
+  let currentAdminStatus = false;
+  
+  async function checkAdminStatus() {
+    console.log('🔐 [NEWS] Verificando estado admin...');
+    
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        currentAdminStatus = false;
+        return false;
+      }
 
-  fetchAdminStatus();
+      const response = await fetch('http://localhost:8080/api/auth/verify', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-  // Actualizar localStorage si quieres mantener estado persistente
-  window.addEventListener('adminStatusChanged', (e) => {
-    localStorage.setItem('adminStatus', JSON.stringify(e.detail.isAdmin));
+      if (response.ok) {
+        const data = await response.json();
+        currentAdminStatus = data.authenticated && data.isAdmin;
+        return currentAdminStatus;
+      } else {
+        throw new Error('Token inválido');
+      }
+    } catch (error) {
+      localStorage.removeItem('adminToken');
+      currentAdminStatus = false;
+      return false;
+    }
+  }
+  
+  function handleAuthError(response) {
+    if (response.status === 401 || response.status === 403) {
+      alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
+      localStorage.removeItem('adminToken');
+      currentAdminStatus = false;
+      window.location.href = '/admin-login';
+      return true;
+    }
+    return false;
+  }
+  
+  // Escuchar cambios desde TopUtility
+  window.addEventListener('adminStatusChanged', function(event) {
+    const { isAdmin, source } = event.detail;
+    console.log(`🔄 [NEWS] Estado admin cambiado desde ${source}:`, isAdmin);
+    currentAdminStatus = isAdmin;
+  });
+  
+  // Inicializar estado admin al cargar la página
+  checkAdminStatus();
+  
+  // Verificar estado cada 5 minutos para detectar tokens expirados
+  setInterval(() => {
+    checkAdminStatus();
+  }, 300000);
+
+  // Verificar al volver a la pestaña
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      checkAdminStatus();
+    }
   });
 
-  // Mostrar notificación de éxito si viene de creación [NOTIFICACIONES CNotification]
-  // Solo se muestran si se recarga la pagina, sino llamar directamente a la funcion   notifySuccess('');
+  // Escuchar cambios en localStorage
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'adminToken') {
+      if (e.newValue) {
+        checkAdminStatus();
+      } else {
+        currentAdminStatus = false;
+      }
+    }
+  });
+
+  // Mostrar notificación de éxito si viene de creación
   const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
   notifications.forEach(n => {
-    if (n.type === 'success') notifySuccess(n.message);
-    if (n.type === 'error') notifyError(n.message);
-    if (n.type === 'warning') notifyWarning(n.message);
-    if (n.type === 'info') notifyInfo(n.message);
+    if (n.type === 'success') {
+      // Puedes implementar un sistema de notificaciones toast aquí
+      console.log('✅ Notificación:', n.message);
+    }
   });
-  sessionStorage.removeItem('notifications'); // Limpiar después de mostrar
-
+  sessionStorage.removeItem('notifications');
 });
+
+// Función global para recargar noticias si es necesario
+window.refreshNews = function() {
+  window.location.reload();
+};
 </script>
 
 <style>
-  .max-w-custom { max-width: 1200px; }
+  .max-w-custom { 
+    max-width: 1200px; 
+  }
 </style>
