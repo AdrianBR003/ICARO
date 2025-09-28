@@ -1,0 +1,280 @@
+---
+// Componente para el modal de añadir nuevos investigadores
+---
+
+<div class="flex justify-end p-3">
+  <button
+    id="addButton"
+    class="hidden bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded flex items-center edit-btn"
+    onclick="showAddModal()"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5 mr-2"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+        clip-rule="evenodd"></path>
+    </svg>
+    Añadir Investigador
+  </button>
+</div>
+
+<!-- Modal para añadir nuevo investigador -->
+<div
+  id="addModal"
+  class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
+>
+  <div
+    class="modal-overlay absolute inset-0 bg-black/50"
+    onclick="hideModal('addModal')"
+  >
+  </div>
+
+  <div
+    class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+  >
+    <div class="p-6">
+      <h3 class="text-xl font-bold mb-4">Añadir Nuevo Investigador</h3>
+
+      <form id="addForm" class="space-y-4">
+        <div>
+          <label class="block mb-1 text-sm font-medium">ORCID</label>
+          <input
+            id="addOrcid"
+            type="text"
+            class="w-full px-3 py-2 border rounded-md"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium"
+            >Nombre y Apellidos</label
+          >
+          <input
+            id="addName"
+            type="text"
+            class="w-full px-3 py-2 border rounded-md"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Email</label>
+          <input
+            id="addEmail"
+            type="email"
+            class="w-full px-3 py-2 border rounded-md"
+          />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Rol</label>
+          <input
+            id="addRole"
+            type="text"
+            class="w-full px-3 py-2 border rounded-md"
+          />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Teléfono</label>
+          <input
+            id="addPhone"
+            type="text"
+            class="w-full px-3 py-2 border rounded-md"
+          />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium">Oficina</label>
+          <input
+            id="addOffice"
+            type="text"
+            class="w-full px-3 py-2 border rounded-md"
+          />
+        </div>
+
+        <div class="flex gap-4 pt-4">
+          <button
+            type="button"
+            onclick="hideModal('addModal')"
+            class="px-4 py-2 border rounded-md hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
+          >
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  // === FUNCIONES DE MODAL ===
+  
+  async function showAddModal() {
+    console.log('➕ [ADD-PEOPLE] Intentando mostrar modal de añadir');
+    
+    // Verificar permisos ANTES de mostrar el modal
+    if (!window.currentAdminStatus) {
+      alert('Debe iniciar sesión como administrador para realizar esta acción.');
+      return;
+    }
+
+    // Verificar token válido haciendo una petición al servidor
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No hay token');
+      }
+
+      console.log('🔐 [ADD-PEOPLE] Verificando token antes de abrir modal...');
+      const response = await fetch('http://localhost:8080/api/auth/verify', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Token inválido');
+      }
+
+      const data = await response.json();
+      if (!data.authenticated || !data.isAdmin) {
+        throw new Error('Sin permisos de admin');
+      }
+
+      // Si llegamos aquí, el usuario tiene permisos válidos
+      console.log('✅ [ADD-PEOPLE] Permisos verificados, abriendo modal');
+      showModal("addModal");
+
+    } catch (error) {
+      console.error('❌ [ADD-PEOPLE] Error verificando permisos:', error);
+      alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
+      
+      // Limpiar token inválido y actualizar UI
+      localStorage.removeItem('adminToken');
+      if (window.checkAdminStatus) {
+        window.checkAdminStatus();
+      }
+    }
+  }
+
+  function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove("hidden");
+      setTimeout(() => {
+        modal.style.opacity = "1";
+        const modalContent = modal.querySelector(".modal-content");
+        if (modalContent) {
+          modalContent.style.transform = "translateY(0)";
+        }
+      }, 10);
+    }
+  }
+
+  function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.opacity = "0";
+      const modalContent = modal.querySelector(".modal-content");
+      if (modalContent) {
+        modalContent.style.transform = "translateY(20px)";
+      }
+      setTimeout(() => {
+        modal.classList.add("hidden");
+      }, 200);
+    }
+  }
+
+  // Hacer funciones disponibles globalmente
+  window.showAddModal = showAddModal;
+  window.hideModal = hideModal;
+
+  // === OPERACIONES CON BACKEND ===
+  
+  // Añadir investigador - requiere token JWT con ROLE_ADMIN
+  document.getElementById("addForm")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // Verificar permisos antes de procesar
+    if (!window.currentAdminStatus) {
+      alert('Debe iniciar sesión como administrador para realizar esta acción.');
+      return;
+    }
+
+    const orcid = document.getElementById("addOrcid").value;
+    const givenNames = document.getElementById("addName").value;
+    const email = document.getElementById("addEmail").value;
+    const role = document.getElementById("addRole").value;
+    const phone = document.getElementById("addPhone").value;
+    const office = document.getElementById("addOffice").value;
+
+    try {
+      console.log('➕ [ADD-PEOPLE] Añadiendo investigador:', orcid);
+      
+      const headers = window.getAuthHeaders ? window.getAuthHeaders() : {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+      };
+      
+      console.log('🔐 [ADD-PEOPLE] Headers que se van a enviar:', headers);
+      
+      const response = await fetch(
+        "http://localhost:8080/api/investigators/add",
+        {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({
+            orcid: orcid,
+            givenNames: givenNames,
+            email: email,
+            role: role,
+            phone: phone,
+            office: office,
+          }),
+        },
+      );
+
+      console.log('🔐 [ADD-PEOPLE] Respuesta del servidor:', response.status);
+
+      if (response.status === 204) {
+        alert("Investigador añadido correctamente");
+        hideModal("addModal");
+        location.reload();
+      } else if (window.handleAuthError && window.handleAuthError(response)) {
+        return;
+      } else {
+        const errorText = await response.text();
+        console.error('❌ [ADD-PEOPLE] Error del servidor:', errorText);
+        throw new Error(
+          "Error al añadir el investigador: " + response.status,
+        );
+      }
+    } catch (error) {
+      console.error('❌ [ADD-PEOPLE] Error:', error);
+      alert(error.message || "Error al añadir el investigador");
+    }
+  });
+</script>
+
+<style is:global>
+  .modal {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .modal:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>

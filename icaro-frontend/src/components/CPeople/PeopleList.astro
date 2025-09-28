@@ -1,0 +1,20 @@
+---
+import PeopleCard from "./PeopleCard.astro";
+import PeopleEdit from "./PeopleEdit.astro";
+
+const { people } = Astro.props;
+---
+
+<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
+  {people.map((person) => <PeopleCard person={person} />)}
+</div>
+
+<PeopleEdit />
+
+<script is:inline>
+  // Escuchar eventos desde PersonCard para abrir modal de edición
+  document.addEventListener("editPerson", async (e) => {
+    console.log('✏️ [PEOPLE] Evento editPerson recibido:', e.detail);
+    await window.showEditModal(e.detail);
+  });
+</script>

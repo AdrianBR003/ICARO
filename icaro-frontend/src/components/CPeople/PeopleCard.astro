@@ -1,6 +1,5 @@
 ---
 const { person } = Astro.props;
-const modalId = `modal-${person.orcid}`;
 ---
 
 <div
@@ -128,22 +127,7 @@ const modalId = `modal-${person.orcid}`;
     </div>
   </div>
 
-  <script>
-    // === SISTEMA DE AUTENTICACIÓN JWT ===
-    
-    function getAuthHeaders() {
-      const token = localStorage.getItem('adminToken');
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      return headers;
-    }
-
+  <script is:inline>
     // === FUNCIONES DE CARGA DE IMÁGENES ===
     
     function loadPersonImages() {
@@ -182,9 +166,8 @@ const modalId = `modal-${person.orcid}`;
       });
     }
 
-    // === FUNCIÓN DE ELIMINAR (CORREGIDA) ===
+    // === FUNCIÓN DE ELIMINAR ===
     
-    // Eliminar investigador - requiere token JWT con ROLE_ADMIN
     async function deleteInvestigator(orcid, name) {
       if (!confirm(`¿Estás seguro de que deseas eliminar a ${name}? Esta acción no se puede deshacer.`)) {
         return;
@@ -193,7 +176,7 @@ const modalId = `modal-${person.orcid}`;
       try {
         const response = await fetch(`http://localhost:8080/api/investigators/delete/${orcid}`, {
           method: "DELETE",
-          headers: getAuthHeaders(), 
+          headers: window.getAuthHeaders(), 
         });
 
         if (response.status === 204) {
@@ -222,11 +205,9 @@ const modalId = `modal-${person.orcid}`;
       const deleteButtons = document.querySelectorAll(".delete-btn");
 
       deleteButtons.forEach((button) => {
-        // Remover event listeners previos para evitar duplicados
         button.replaceWith(button.cloneNode(true));
       });
 
-      // Reseleccionar después del clonado
       const newDeleteButtons = document.querySelectorAll(".delete-btn");
       
       newDeleteButtons.forEach((button) => {
@@ -248,7 +229,6 @@ const modalId = `modal-${person.orcid}`;
         btn.classList.toggle("hidden", !isAdmin);
       });
 
-      // Configurar event listeners solo cuando es admin
       if (isAdmin) {
         setupDeleteButtons();
       }
@@ -281,7 +261,6 @@ const modalId = `modal-${person.orcid}`;
 
     // === EVENT LISTENERS ===
     
-    // Escuchar cambios de estado admin desde TopUtility
     window.addEventListener("adminStatusChanged", (event) => {
       const { isAdmin } = event.detail;
       updateAdminVisibility(isAdmin);
