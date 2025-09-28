@@ -15,8 +15,16 @@ const { isAdmin } = Astro.props;
     ]}
     onclick="showAddProjectModal()"
   >
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5 mr-2"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+        clip-rule="evenodd"></path>
     </svg>
     Crear Proyecto
   </button>
@@ -28,12 +36,13 @@ const { isAdmin } = Astro.props;
     <div
       class="modal-overlay absolute inset-0 bg-black/50"
       onclick="hideAddProjectModal()"
-    ></div>
+    >
+    </div>
 
     <div
       class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
     >
-      <div class="p-6">   
+      <div class="p-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold">Crear Nuevo Proyecto</h3>
           <button
@@ -41,15 +50,26 @@ const { isAdmin } = Astro.props;
             onclick="hideAddProjectModal()"
             class="text-gray-500 hover:text-gray-700"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
         </div>
 
         <form id="add-project-form" class="space-y-4">
           <div>
-            <label class="block mb-1 text-sm font-medium">ID del Proyecto *</label>
+            <label class="block mb-1 text-sm font-medium"
+              >ID del Proyecto *</label
+            >
             <input
               type="text"
               id="id"
@@ -61,7 +81,9 @@ const { isAdmin } = Astro.props;
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Título del Proyecto *</label>
+            <label class="block mb-1 text-sm font-medium"
+              >Título del Proyecto *</label
+            >
             <input
               type="text"
               id="title"
@@ -83,7 +105,8 @@ const { isAdmin } = Astro.props;
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Participantes *</label>
+            <label class="block mb-1 text-sm font-medium">Participantes *</label
+            >
             <textarea
               id="participants"
               name="participants"
@@ -96,7 +119,9 @@ const { isAdmin } = Astro.props;
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block mb-1 text-sm font-medium">Fecha de Inicio *</label>
+              <label class="block mb-1 text-sm font-medium"
+                >Fecha de Inicio *</label
+              >
               <input
                 type="date"
                 id="FirstprojectDate"
@@ -107,7 +132,9 @@ const { isAdmin } = Astro.props;
             </div>
 
             <div>
-              <label class="block mb-1 text-sm font-medium">Fecha de Finalización</label>
+              <label class="block mb-1 text-sm font-medium"
+                >Fecha de Finalización</label
+              >
               <input
                 type="date"
                 id="SecondprojectDate"
@@ -119,7 +146,11 @@ const { isAdmin } = Astro.props;
 
           <div>
             <label class="block mb-1 text-sm font-medium">Etiquetas</label>
-            <div class="flex flex-wrap py-2 px-3 border rounded-md" id="tagsContainer"></div>
+            <div
+              class="flex flex-wrap py-2 px-3 border rounded-md"
+              id="tagsContainer"
+            >
+            </div>
             <div class="flex mt-2">
               <input
                 type="text"
@@ -132,17 +163,34 @@ const { isAdmin } = Astro.props;
                 onclick="addTag()"
                 class="px-3 bg-[#006D38] text-white rounded-r-md hover:bg-[#005229] transition-colors"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
               </button>
             </div>
-            <p class="text-xs text-gray-500 mt-1">Presione Enter o el botón '+' para añadir etiquetas</p>
+            <p class="text-xs text-gray-500 mt-1">
+              Presione Enter o el botón '+' para añadir etiquetas
+            </p>
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">IDs de Trabajos Relacionados</label>
-            <div class="flex flex-wrap py-2 px-3 border rounded-md" id="workIdsContainer"></div>
+            <label class="block mb-1 text-sm font-medium"
+              >IDs de Trabajos Relacionados</label
+            >
+            <div
+              class="flex flex-wrap py-2 px-3 border rounded-md"
+              id="workIdsContainer"
+            >
+            </div>
             <div class="flex mt-2">
               <input
                 type="text"
@@ -155,12 +203,23 @@ const { isAdmin } = Astro.props;
                 onclick="addWorkId()"
                 class="px-3 bg-[#006D38] text-white rounded-r-md hover:bg-[#005229] transition-colors"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
               </button>
             </div>
-            <p class="text-xs text-gray-500 mt-1">Presione Enter o el botón '+' para añadir IDs de trabajos</p>
+            <p class="text-xs text-gray-500 mt-1">
+              Presione Enter o el botón '+' para añadir IDs de trabajos
+            </p>
           </div>
 
           <div class="flex gap-4 pt-4 border-t">
@@ -185,43 +244,113 @@ const { isAdmin } = Astro.props;
 </div>
 
 <script is:inline>
-let tagsList = [];
-let workIdsList = [];
+  let tagsList = [];
+  let workIdsList = [];
 
-function showAddProjectModal() {
-  document.getElementById('add-project-modal').classList.remove('hidden');
-  document.body.style.overflow = 'hidden'; 
-}
+  // ============= SISTEMA DE AUTENTICACIÓN JWT =============
 
-function hideAddProjectModal() {
-  document.getElementById('add-project-modal').classList.add('hidden');
-  document.body.style.overflow = ''; 
-}
+  // Helper para generar headers con token JWT
+  function getAuthHeaders() {
+    const token = localStorage.getItem("adminToken");
 
-function addTag() {
-  const tagInput = document.getElementById('tagInput');
-  const tag = tagInput.value.trim();
-  
-  if (tag && !tagsList.includes(tag)) {
-    tagsList.push(tag);
-    renderTags();
-    tagInput.value = '';
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
+    // Si existe token, añadir header Authorization con Bearer
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return headers;
   }
-}
 
-function removeTag(tag) {
-  tagsList = tagsList.filter(t => t !== tag);
-  renderTags();
-}
+  // Función para manejar errores de autenticación
+  function handleAuthError(response) {
+    if (response.status === 401 || response.status === 403) {
+      alert(
+        "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.",
+      );
+      localStorage.removeItem("adminToken");
+      // Opcional: redirigir al login
+      // window.location.href = '/admin-login';
+      return true;
+    }
+    return false;
+  }
 
-function renderTags() {
-  const container = document.getElementById('tagsContainer');
-  container.innerHTML = '';
-  
-  tagsList.forEach(tag => {
-    const tagElement = document.createElement('div');
-    tagElement.className = 'inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2';
-    tagElement.innerHTML = `
+  // Verificar si el usuario tiene permisos de admin
+  async function verifyAdminPermissions() {
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        return false;
+      }
+
+      const response = await fetch("http://localhost:8080/api/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.authenticated && data.isAdmin;
+      } else {
+        localStorage.removeItem("adminToken");
+        return false;
+      }
+    } catch (error) {
+      console.error("❌ [ADD-PROJECT] Error verificando permisos:", error);
+      return false;
+    }
+  }
+
+  async function showAddProjectModal() {
+    console.log("➕ [ADD-PROJECT] Intentando mostrar modal de añadir proyecto");
+
+    // Verificar permisos antes de mostrar el modal
+    const hasPermissions = await verifyAdminPermissions();
+    if (!hasPermissions) {
+      alert(
+        "Debe iniciar sesión como administrador para realizar esta acción.",
+      );
+      return;
+    }
+
+    console.log("✅ [ADD-PROJECT] Permisos verificados, abriendo modal");
+    document.getElementById("add-project-modal").classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function hideAddProjectModal() {
+    document.getElementById("add-project-modal").classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  function addTag() {
+    const tagInput = document.getElementById("tagInput");
+    const tag = tagInput.value.trim();
+
+    if (tag && !tagsList.includes(tag)) {
+      tagsList.push(tag);
+      renderTags();
+      tagInput.value = "";
+    }
+  }
+
+  function removeTag(tag) {
+    tagsList = tagsList.filter((t) => t !== tag);
+    renderTags();
+  }
+
+  function renderTags() {
+    const container = document.getElementById("tagsContainer");
+    container.innerHTML = "";
+
+    tagsList.forEach((tag) => {
+      const tagElement = document.createElement("div");
+      tagElement.className =
+        "inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2";
+      tagElement.innerHTML = `
       ${tag}
       <button type="button" onclick="removeTag('${tag}')" class="ml-1 text-gray-500 hover:text-gray-700">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,34 +358,35 @@ function renderTags() {
         </svg>
       </button>
     `;
-    container.appendChild(tagElement);
-  });
-}
-
-function addWorkId() {
-  const workIdInput = document.getElementById('workIdInput');
-  const workId = workIdInput.value.trim();
-  
-  if (workId && !workIdsList.includes(workId)) {
-    workIdsList.push(workId);
-    renderWorkIds();
-    workIdInput.value = '';
+      container.appendChild(tagElement);
+    });
   }
-}
 
-function removeWorkId(workId) {
-  workIdsList = workIdsList.filter(w => w !== workId);
-  renderWorkIds();
-}
+  function addWorkId() {
+    const workIdInput = document.getElementById("workIdInput");
+    const workId = workIdInput.value.trim();
 
-function renderWorkIds() {
-  const container = document.getElementById('workIdsContainer');
-  container.innerHTML = '';
-  
-  workIdsList.forEach(workId => {
-    const workIdElement = document.createElement('div');
-    workIdElement.className = 'inline-flex items-center bg-blue-100 rounded-full px-3 py-1 text-sm mr-2 mb-2';
-    workIdElement.innerHTML = `
+    if (workId && !workIdsList.includes(workId)) {
+      workIdsList.push(workId);
+      renderWorkIds();
+      workIdInput.value = "";
+    }
+  }
+
+  function removeWorkId(workId) {
+    workIdsList = workIdsList.filter((w) => w !== workId);
+    renderWorkIds();
+  }
+
+  function renderWorkIds() {
+    const container = document.getElementById("workIdsContainer");
+    container.innerHTML = "";
+
+    workIdsList.forEach((workId) => {
+      const workIdElement = document.createElement("div");
+      workIdElement.className =
+        "inline-flex items-center bg-blue-100 rounded-full px-3 py-1 text-sm mr-2 mb-2";
+      workIdElement.innerHTML = `
       ${workId}
       <button type="button" onclick="removeWorkId('${workId}')" class="ml-1 text-gray-500 hover:text-gray-700">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,104 +394,173 @@ function renderWorkIds() {
         </svg>
       </button>
     `;
-    container.appendChild(workIdElement);
-  });
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('add-project-form');
-  const tagInput = document.getElementById('tagInput');
-  const workIdInput = document.getElementById('workIdInput');
-  
-  tagInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addTag();
-    }
-  });
-  
-  workIdInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addWorkId();
-    }
-  });
-  
-  if (form) {
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const id = document.getElementById('id').value.trim();
-      const title = document.getElementById('title').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const participantsInput = document.getElementById('participants').value.trim();
-      const FirstprojectDate = document.getElementById('FirstprojectDate').value;
-      
-      if (!id || !title || !description || !participantsInput || !FirstprojectDate) {
-        alert('Por favor, complete todos los campos obligatorios');
-        return;
-      }
-      
-      const participantsArray = participantsInput
-        .split(',')
-        .map(participant => participant.trim())
-        .filter(participant => participant !== '');
-      
-      const projectData = {
-        id: id,
-        title: title,
-        description: description,
-        participants: participantsArray,
-        tags: tagsList,
-        FirstprojectDate: FirstprojectDate,
-        SecondprojectDate: document.getElementById('SecondprojectDate').value || null,
-        workIds: workIdsList
-      };
-      
-      try {
-        console.log('Datos del proyecto a enviar:', projectData);
-        
-        const response = await fetch('http://localhost:8080/api/project/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(projectData)
-        });
-        
-        if (response.ok) {
-          alert('Proyecto creado con éxito');
-          form.reset();
-          tagsList = [];
-          workIdsList = [];
-          renderTags();
-          renderWorkIds();
-          hideAddProjectModal();
-          window.location.reload();
-        } else {
-          let errorMessage = 'Error desconocido';
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.message || JSON.stringify(errorData);
-          } catch {
-            errorMessage = await response.text();
-          }
-          
-          console.error('Error del backend:', errorMessage);
-          alert('Error al crear el proyecto: ' + errorMessage);
-        }
-      } catch (error) {
-        console.error('Error de conexión:', error);
-        alert('Error de conexión al intentar crear el proyecto: ' + error.message);
-      }
+      container.appendChild(workIdElement);
     });
   }
-  
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      hideAddProjectModal();
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("add-project-form");
+    const tagInput = document.getElementById("tagInput");
+    const workIdInput = document.getElementById("workIdInput");
+
+    tagInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addTag();
+      }
+    });
+
+    workIdInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addWorkId();
+      }
+    });
+
+    if (form) {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        console.log("➕ [ADD-PROJECT] Intentando crear proyecto");
+
+        // Verificar permisos antes de procesar
+        const hasPermissions = await verifyAdminPermissions();
+        if (!hasPermissions) {
+          alert(
+            "Debe iniciar sesión como administrador para realizar esta acción.",
+          );
+          return;
+        }
+
+        const id = document.getElementById("id").value.trim();
+        const title = document.getElementById("title").value.trim();
+        const description = document.getElementById("description").value.trim();
+        const participantsInput = document
+          .getElementById("participants")
+          .value.trim();
+        const FirstprojectDate =
+          document.getElementById("FirstprojectDate").value;
+
+        if (
+          !id ||
+          !title ||
+          !description ||
+          !participantsInput ||
+          !FirstprojectDate
+        ) {
+          alert("Por favor, complete todos los campos obligatorios");
+          return;
+        }
+
+        const participantsArray = participantsInput
+          .split(",")
+          .map((participant) => participant.trim())
+          .filter((participant) => participant !== "");
+
+        const projectData = {
+          id: id,
+          title: title,
+          description: description,
+          participants: participantsArray,
+          tags: tagsList,
+          FirstprojectDate: FirstprojectDate,
+          SecondprojectDate:
+            document.getElementById("SecondprojectDate").value || null,
+          workIds: workIdsList,
+        };
+
+        try {
+          console.log(
+            "📤 [ADD-PROJECT] Enviando datos del proyecto:",
+            projectData,
+          );
+          console.log(
+            "🔐 [ADD-PROJECT] Headers que se van a enviar:",
+            getAuthHeaders(),
+          );
+
+          const response = await fetch(
+            "http://localhost:8080/api/project/save",
+            {
+              method: "POST",
+              headers: getAuthHeaders(), // Usar headers con JWT en lugar de credentials
+              body: JSON.stringify(projectData),
+            },
+          );
+
+          console.log(
+            "🔐 [ADD-PROJECT] Respuesta del servidor:",
+            response.status,
+          );
+
+          if (response.ok) {
+            alert("Proyecto creado con éxito");
+            form.reset();
+            tagsList = [];
+            workIdsList = [];
+            renderTags();
+            renderWorkIds();
+            hideAddProjectModal();
+            console.log("✅ [ADD-PROJECT] Proyecto creado exitosamente");
+            window.location.reload();
+          } else if (handleAuthError(response)) {
+            return;
+          } else {
+            let errorMessage = "Error desconocido";
+
+            // Manejo específico de errores comunes
+            if (response.status === 409) {
+              errorMessage =
+                "Ya existe un proyecto con ese ID. Por favor, use un ID diferente.";
+            } else if (response.status === 400) {
+              errorMessage =
+                "Datos inválidos. Verifique que todos los campos estén correctos.";
+            } else if (response.status === 500) {
+              errorMessage =
+                "Error interno del servidor. Intente nuevamente más tarde.";
+            } else {
+              try {
+                // Intentar leer como texto primero (más compatible)
+                const responseText = await response.text();
+
+                // Si el texto parece ser JSON, intentar parsearlo
+                if (
+                  responseText.startsWith("{") ||
+                  responseText.startsWith("[")
+                ) {
+                  try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage =
+                      errorData.message || errorData.error || responseText;
+                  } catch {
+                    errorMessage = responseText;
+                  }
+                } else {
+                  errorMessage =
+                    responseText ||
+                    `Error ${response.status}: ${response.statusText}`;
+                }
+              } catch (error) {
+                errorMessage = `Error ${response.status}: ${response.statusText}`;
+              }
+            }
+
+            console.error("❌ [ADD-PROJECT] Error del backend:", errorMessage);
+            alert("Error al crear el proyecto: " + errorMessage);
+          }
+        } catch (error) {
+          console.error("❌ [ADD-PROJECT] Error de conexión:", error);
+          alert(
+            "Error de conexión al intentar crear el proyecto: " + error.message,
+          );
+        }
+      });
     }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        hideAddProjectModal();
+      }
+    });
   });
-});
 </script>

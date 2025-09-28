@@ -81,7 +81,7 @@ const modalId = `modal-${person.orcid}`;
               viewBox="0 0 20 20"
             >
               <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002-2h12a2 2 0 002-2V8.118z" />
             </svg>
             <span class="person-email">{person.email}</span>
           </p>
@@ -128,63 +128,24 @@ const modalId = `modal-${person.orcid}`;
     </div>
   </div>
 
-  <div
-    id={modalId}
-    class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4"
-  >
-    <div
-      class="modal-overlay absolute inset-0 bg-black/50"
-      onclick={`hideModal('${modalId}')`}
-    >
-    </div>
-
-    <div
-      class="relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
-    >
-      <div class="p-6">
-        <h3 class="text-xl font-bold mb-4">Editar {person.name}</h3>
-
-        <form class="space-y-4">
-          <div>
-            <label class="block mb-1 text-sm font-medium">Nombre</label>
-            <input
-              type="text"
-              value={person.name}
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Email</label>
-            <input
-              type="email"
-              value={person.email || ""}
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div class="flex gap-4 pt-4">
-            <button
-              type="button"
-              onclick={`hideModal('${modalId}')`}
-              class="px-4 py-2 border rounded-md hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
-            >
-              Guardar Cambios
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // Función para cargar imágenes de las personas
+    // === SISTEMA DE AUTENTICACIÓN JWT ===
+    
+    function getAuthHeaders() {
+      const token = localStorage.getItem('adminToken');
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      return headers;
+    }
+
+    // === FUNCIONES DE CARGA DE IMÁGENES ===
+    
     function loadPersonImages() {
       const images = document.querySelectorAll("img[data-orcid-image]");
 
@@ -221,31 +182,33 @@ const modalId = `modal-${person.orcid}`;
       });
     }
 
-    // Función para eliminar investigador
-    async function deleteInvestigator(orcid) {
-      try {
-        const response = await fetch(
-          `http://localhost:8080/api/investigators/delete/${orcid}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          },
-        );
+    // === FUNCIÓN DE ELIMINAR (CORREGIDA) ===
+    
+    // Eliminar investigador - requiere token JWT con ROLE_ADMIN
+    async function deleteInvestigator(orcid, name) {
+      if (!confirm(`¿Estás seguro de que deseas eliminar a ${name}? Esta acción no se puede deshacer.`)) {
+        return;
+      }
 
-        if (response.ok) {
+      try {
+        const response = await fetch(`http://localhost:8080/api/investigators/delete/${orcid}`, {
+          method: "DELETE",
+          headers: getAuthHeaders(), 
+        });
+
+        if (response.status === 204) {
           alert("Investigador eliminado correctamente");
           location.reload();
         } else if (response.status === 401 || response.status === 403) {
-          throw new Error("No tiene permisos para realizar esta acción");
+          alert("No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.");
+          window.location.href = '/admin-login';
         } else if (response.status === 404) {
-          console.error("Error 404 - ¿ORCID mal formado?", orcid);
-          throw new Error("Recurso no encontrado. Verifica el ORCID.");
+          console.error("Error 404 - Investigador no encontrado:", orcid);
+          alert("Investigador no encontrado. Es posible que ya haya sido eliminado.");
         } else {
           const errorText = await response.text();
           console.error("Error del servidor:", errorText);
-          throw new Error(
-            "Error al eliminar el investigador: " + response.status,
-          );
+          throw new Error("Error al eliminar el investigador: " + response.status);
         }
       } catch (error) {
         console.error("Error en deleteInvestigator:", error);
@@ -253,68 +216,81 @@ const modalId = `modal-${person.orcid}`;
       }
     }
 
-    // Función para confirmar eliminación
-    function confirmDelete(orcid, name) {
-      if (
-        confirm(
-          `¿Estás seguro de que deseas eliminar a ${name}? Esta acción no se puede deshacer.`,
-        )
-      ) {
-        deleteInvestigator(orcid);
-      }
-    }
-
+    // === CONFIGURACIÓN DE BOTONES ===
+    
     function setupDeleteButtons() {
       const deleteButtons = document.querySelectorAll(".delete-btn");
 
-      deleteButtons.forEach((button, index) => {
+      deleteButtons.forEach((button) => {
+        // Remover event listeners previos para evitar duplicados
+        button.replaceWith(button.cloneNode(true));
+      });
+
+      // Reseleccionar después del clonado
+      const newDeleteButtons = document.querySelectorAll(".delete-btn");
+      
+      newDeleteButtons.forEach((button) => {
         button.addEventListener("click", function () {
           const orcid = this.getAttribute("data-orcid");
           const name = this.getAttribute("data-name");
-
-          if (
-            confirm(
-              `¿Estás seguro de que deseas eliminar a ${name}? Esta acción no se puede deshacer.`,
-            )
-          ) {
-            console.log("Confirmado eliminar, ORCID:", orcid);
-            deleteInvestigator(orcid);
-          }
+          console.log("Eliminar clicked - ORCID:", orcid, "Name:", name);
+          deleteInvestigator(orcid, name);
         });
       });
     }
-    // Función para verificar y mostrar botones de administrador
-    async function checkAndToggleAdminButtons() {
-      try {
-        const response = await fetch(
-          "http://localhost:8080/api/session/check-admin",
-          {
-            credentials: "include",
-          },
-        );
 
-        if (response.ok) {
-          const isAdmin = await response.json();
-          const editButtons = document.querySelectorAll(".edit-btn");
+    // === GESTIÓN DE VISIBILIDAD DE BOTONES ADMIN ===
+    
+    function updateAdminVisibility(isAdmin) {
+      const editButtons = document.querySelectorAll(".edit-btn");
 
-          editButtons.forEach((btn) => {
-            btn.classList.toggle("hidden", !isAdmin);
-          });
+      editButtons.forEach((btn) => {
+        btn.classList.toggle("hidden", !isAdmin);
+      });
 
-          if (isAdmin) {
-            setupDeleteButtons();
-          }
-        }
-      } catch (error) {
-        console.error("Error checking admin status");
+      // Configurar event listeners solo cuando es admin
+      if (isAdmin) {
+        setupDeleteButtons();
       }
     }
+
+    // Verificar estado admin inicial
+    async function checkInitialAdminStatus() {
+      try {
+        const token = localStorage.getItem("adminToken");
+        if (!token) {
+          updateAdminVisibility(false);
+          return;
+        }
+
+        const response = await fetch("http://localhost:8080/api/auth/verify", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          updateAdminVisibility(data.authenticated && data.isAdmin);
+        } else {
+          updateAdminVisibility(false);
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        updateAdminVisibility(false);
+      }
+    }
+
+    // === EVENT LISTENERS ===
     
-    // Event listeners
+    // Escuchar cambios de estado admin desde TopUtility
+    window.addEventListener("adminStatusChanged", (event) => {
+      const { isAdmin } = event.detail;
+      updateAdminVisibility(isAdmin);
+    });
+    
+    // Inicialización
     document.addEventListener("DOMContentLoaded", function () {
       loadPersonImages();
-      checkAndToggleAdminButtons();
-      setInterval(checkAndToggleAdminButtons, 30000);
+      checkInitialAdminStatus();
     });
 
     window.addEventListener("load", loadPersonImages);
@@ -332,6 +308,5 @@ const modalId = `modal-${person.orcid}`;
       opacity: 1;
       pointer-events: auto;
     }
-
   </style>
 </div>

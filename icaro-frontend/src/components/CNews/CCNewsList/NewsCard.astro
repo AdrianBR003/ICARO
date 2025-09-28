@@ -13,16 +13,7 @@ interface Props {
 
 const { news, isAdmin = false } = Astro.props;
 const cardId = `${news.id}`;
-
-// Solo trabajamos con la fecha de publicación
 const publicationDate = news.publicationDate || '';
-
-// Debug: log para ver qué datos llegan
-console.log('🔍 [NewsCard] Datos recibidos:', {
-  id: news.id,
-  publicationDate,
-  fullNews: news
-});
 ---
 
 <div id={cardId} class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 relative flex flex-col md:flex-row">
@@ -54,52 +45,39 @@ console.log('🔍 [NewsCard] Datos recibidos:', {
     </button>
   </div>
 
-  <!-- Contenedor de imagen con carga simplificada -->
+  <!-- Imagen -->
   <div class="flex-shrink-0 w-full md:w-80 bg-white overflow-hidden flex items-center justify-center p-4">
-  <img 
-    src="http://localhost:8080/assets/news/default.png" 
-    alt={`Imagen de la noticia: ${news.title}`}
-    data-news-image={news.id}
-    class="w-full h-48 md:h-full object-contain transition-opacity duration-300 bg-white"
-    loading="lazy" 
-    onerror="this.src='http://localhost:8080/assets/news/default.png'"
-  />
-</div>
+    <img 
+      src="http://localhost:8080/assets/news/default.png" 
+      alt={`Imagen de la noticia: ${news.title}`}
+      data-news-image={news.id}
+      class="w-full h-48 md:h-full object-contain transition-opacity duration-300 bg-white"
+      loading="lazy" 
+      onerror="this.src='http://localhost:8080/assets/news/default.png'"
+    />
+  </div>
 
-
-  <!-- Contenido de la noticia -->
+  <!-- Contenido -->
   <div class="p-6 flex-1 min-w-0">
     <h3 class="text-xl font-bold mb-3 text-gray-900 leading-tight">{news.title}</h3>
 
-    <!-- Campo de Fecha de Publicación -->
-    {publicationDate && (
-      <div class="mb-3 flex items-center text-sm text-gray-700">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#006D38]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <span class="font-medium text-gray-800">Fecha de publicación:</span>
-        <span class="ml-1 text-gray-600">{publicationDate}</span>
-      </div>
-    )}
+    <!-- Fecha -->
+    <div class="mb-3 flex items-center text-sm text-gray-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#006D38]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      <span class="font-medium text-gray-800">Fecha de publicación:</span>
+      <span class="ml-1 text-gray-600">{publicationDate || 'Sin fecha'}</span>
+    </div>
 
-    <!-- Mostrar siempre el campo con placeholder si no hay fecha -->
-    {!publicationDate && (
-      <div class="mb-3 flex items-center text-sm text-gray-500">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <span class="font-medium">Fecha de publicación:</span>
-        <span class="ml-1 italic">Sin fecha</span>
-      </div>
-    )}
-
-    <!-- Descripción completa -->
+    <!-- Descripción -->
     <div class="mb-4">
       <p class="text-gray-600 whitespace-pre-wrap break-words leading-relaxed">
         {news.description}
       </p>
     </div>
 
+    <!-- Enlace -->
     {news.link && (
       <a href={news.link} class="inline-flex items-center text-[#006D38] hover:text-[#005229] font-medium text-sm transition-colors" target="_blank" rel="noopener noreferrer">
         Ver más
@@ -111,128 +89,12 @@ console.log('🔍 [NewsCard] Datos recibidos:', {
   </div>
 </div>
 
-<script is:inline define:vars={{ isAdmin }}>
+<script is:inline>
 // Estado inicial basado en la prop del servidor
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
   const adminButtons = document.getElementById('admin-buttons-${news.id}');
   if (adminButtons) {
     adminButtons.classList.toggle('hidden', !${isAdmin});
-    console.log('🔔 [NewsCard ${news.id}] Estado inicial isAdmin:', ${isAdmin});
   }
-
-  // Escuchar cambios en el estado admin
-  window.addEventListener('adminStatusChanged', (event) => {
-    const { isAdmin: newAdminStatus } = event.detail;
-    const adminButtons = document.getElementById('admin-buttons-${news.id}');
-    if (adminButtons) {
-      adminButtons.classList.toggle('hidden', !newAdminStatus);
-      console.log('🔔 [NewsCard ${news.id}] adminStatusChanged. Nuevo estado:', newAdminStatus);
-    }
-  });
-
-  // Cargar imagen específica para esta noticia
-  loadNewsImage('${news.id}');
 });
-
-// Función para cargar imágenes de las noticias
-function loadNewsImage(newsId) {
-  const img = document.querySelector(`img[data-news-image="${newsId}"]`);
-  if (!img) return;
-
-  // Si ya no es la imagen por defecto, no hacer nada
-  if (!img.src.includes('default.png')) return;
-
-  const extensions = ['webp', 'jpg', 'jpeg', 'png'];
-  let currentIndex = 0;
-
-  function tryExtension() {
-    if (currentIndex >= extensions.length) {
-      return;
-    }
-
-    const imageUrl = `http://localhost:8080/assets/news/${newsId}.${extensions[currentIndex]}`;
-    const testImg = new Image();
-
-    testImg.onload = function () {
-      if (img.src.includes('default.png')) {
-        img.src = imageUrl;
-        console.log(`✅ Imagen cargada: ${newsId}.${extensions[currentIndex]}`);
-      }
-    };
-    
-    testImg.onerror = function () {
-      currentIndex++;
-      tryExtension();
-    };
-    
-    testImg.src = imageUrl;
-  }
-
-  tryExtension();
-}
 </script>
-
-<style is:global>
-.news-card {
-  min-height: fit-content;
-  transition: all 0.3s ease;
-}
-
-.news-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Mejorar la legibilidad del texto largo */
-.text-gray-600 {
-  line-height: 1.6;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-/* Asegurar que el contenido no se desborde */
-.min-w-0 {
-  min-width: 0;
-}
-
-/* Estilos responsive para la imagen */
-@media (max-width: 768px) {
-  .news-card {
-    flex-direction: column;
-  }
-  
-  .flex-shrink-0 {
-    width: 100% !important;
-  }
-}
-
-/* Estilos específicos para la imagen */
-.w-48 {
-  width: 12rem;
-}
-
-.object-cover {
-  object-fit: cover;
-}
-
-/* Padding para la imagen */
-.bg-gray-50 {
-  background-color: #f9fafb;
-}
-
-/* Animaciones suaves */
-.transition-all {
-  transition: all 0.3s ease;
-}
-
-/* Mejoras de accesibilidad */
-button:focus {
-  outline: 2px solid #006D38;
-  outline-offset: 2px;
-}
-
-a:focus {
-  outline: 2px solid #006D38;
-  outline-offset: 2px;
-}
-</style>

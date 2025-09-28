@@ -5,6 +5,7 @@ import com.icaro.icarobackend.model.Work;
 import com.icaro.icarobackend.service.OrcidService;
 import com.icaro.icarobackend.service.WorkService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,9 @@ public class WorkController {
         this.orcidService = orcidService;
     }
 
+    // ---------- METODOS SIN VERIFICACION -------------
+
+
     @GetMapping("/all/{orcid}")
     public ResponseEntity<List<Work>> getAllWorksbyIdOrcid(@PathVariable("orcid") String orcid) {
         return ResponseEntity.ok(workService.getWorksForInvestigator(orcid));
@@ -36,13 +40,18 @@ public class WorkController {
          return ResponseEntity.ok(orcidService.fetchWorks(orcid));
     }
 
+    // ---------- METODOS VERIFICACION -------------
+
+
     @PostMapping("/save")
-    public ResponseEntity<?>  saveWork(@RequestBody Work work) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> saveWork(@RequestBody Work work) {
         this.workService.saveWork(work);
         return  ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/delete/{putCode}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteWork(@PathVariable("putCode") String putCode) {
         this.workService.deleteWork(putCode);
         return ResponseEntity.ok().build();

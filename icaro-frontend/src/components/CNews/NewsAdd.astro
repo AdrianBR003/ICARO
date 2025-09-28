@@ -146,7 +146,137 @@ console.log("isAdmin en NewsAdd:", isAdmin);
 </div>
 
 <script is:inline>
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log('📰 [NewsAdd] Componente cargado');
+    
+    // ============= SISTEMA DE AUTENTICACIÓN JWT =============
+    
+    // Helper para generar headers con token JWT
+    function getAuthHeaders() {
+      const token = localStorage.getItem('adminToken');
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Si existe token, añadir header Authorization con Bearer
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      return headers;
+    }
+    
+    // ============= GESTIÓN DEL ESTADO ADMIN =============
+    let currentAdminStatus = false;
+    
+    // Verificar estado admin con token JWT
+    async function checkAdminStatus() {
+      console.log('🔐 [NewsAdd] Verificando estado admin...');
+      
+      try {
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          console.log('🔐 [NewsAdd] No hay token almacenado');
+          currentAdminStatus = false;
+          updateAdminElements(false);
+          return false;
+        }
+
+        console.log('🔐 [NewsAdd] Token encontrado, verificando...');
+        const response = await fetch('http://localhost:8080/api/auth/verify', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const isAdmin = data.authenticated && data.isAdmin;
+          console.log('🔐 [NewsAdd] Verificación exitosa:', { isAdmin, username: data.username });
+          currentAdminStatus = isAdmin;
+          updateAdminElements(isAdmin);
+          return isAdmin;
+        } else {
+          console.log('🔐 [NewsAdd] Token inválido, status:', response.status);
+          throw new Error('Token inválido');
+        }
+      } catch (error) {
+        console.error('❌ [NewsAdd] Error verificando token:', error);
+        localStorage.removeItem('adminToken');
+        currentAdminStatus = false;
+        updateAdminElements(false);
+        return false;
+      }
+    }
+    
+    // Función para manejar errores de autenticación
+    function handleAuthError(response) {
+      if (response.status === 401 || response.status === 403) {
+        alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
+        localStorage.removeItem('adminToken');
+        currentAdminStatus = false;
+        updateAdminElements(false);
+        window.location.href = '/admin-login';
+        return true;
+      }
+      return false;
+    }
+    
+    // Actualizar elementos admin en la UI
+    function updateAdminElements(isAdmin) {
+      console.log('🎨 [NewsAdd] Actualizando UI admin:', isAdmin);
+      
+      const wrapper = document.getElementById("news-add-wrapper");
+      if (wrapper) {
+        if (isAdmin) {
+          wrapper.classList.remove('hidden');
+        } else {
+          wrapper.classList.add('hidden');
+        }
+      }
+      
+      console.log('✅ [NewsAdd] UI actualizada correctamente');
+    }
+    
+    // Escuchar cambios desde TopUtility
+    window.addEventListener('adminStatusChanged', function(event) {
+      const { isAdmin, source } = event.detail;
+      console.log(`🔄 [NewsAdd] Estado admin cambiado desde ${source}:`, isAdmin);
+      currentAdminStatus = isAdmin;
+      updateAdminElements(isAdmin);
+    });
+    
+    // Inicializar estado admin al cargar la página
+    checkAdminStatus();
+    
+    // Verificar estado cada 5 minutos para detectar tokens expirados
+    setInterval(() => {
+      console.log('⏰ [NewsAdd] Verificación periódica del estado admin');
+      checkAdminStatus();
+    }, 300000);
+
+    // Verificar al volver a la pestaña (detectar cambios en otras pestañas)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        console.log('👁️ [NewsAdd] Tab visible, verificando admin status');
+        checkAdminStatus();
+      }
+    });
+
+    // Escuchar cambios en localStorage (para sincronizar entre pestañas)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'adminToken') {
+        console.log('🔄 [NewsAdd] Token cambiado en localStorage:', e.newValue ? 'Token añadido' : 'Token eliminado');
+        if (e.newValue) {
+          checkAdminStatus();
+        } else {
+          currentAdminStatus = false;
+          updateAdminElements(false);
+        }
+      }
+    });
+
+    // ============= FUNCIONES DE MODAL =============
+    
     const wrapper = document.getElementById("news-add-wrapper");
     const btnAdd = document.getElementById("btn-add-news");
     const modal = document.getElementById("modal-add-news");
@@ -154,40 +284,84 @@ console.log("isAdmin en NewsAdd:", isAdmin);
     const btnCancel = document.getElementById("btn-cancel");
     const form = document.getElementById("form-add-news");
 
-    // Mostrar/ocultar wrapper según cambios globales desde TopUtility
-    window.addEventListener("adminStatusChanged", (event) => {
-      const { isAdmin } = event.detail;
-      wrapper.classList.toggle("hidden", !isAdmin);
-      console.log(
-        "🔔 [NewsAdd] adminStatusChanged escuchado desde TopUtility:",
-        isAdmin,
-      );
-    });
-
     if (!btnAdd || !modal || !form) return;
 
-    const showModal = () => {
-      modal.classList.remove("hidden");
-      document.body.style.overflow = "hidden";
-    };
-    const hideModal = () => {
+    async function showModal() {
+      console.log('➕ [NewsAdd] Intentando mostrar modal');
+      
+      // Verificar permisos ANTES de mostrar el modal
+      if (!currentAdminStatus) {
+        alert('Debe iniciar sesión como administrador para realizar esta acción.');
+        return;
+      }
+
+      // Verificar token válido haciendo una petición al servidor
+      try {
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          throw new Error('No hay token');
+        }
+
+        console.log('🔐 [NewsAdd] Verificando token antes de abrir modal...');
+        const response = await fetch('http://localhost:8080/api/auth/verify', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          throw new Error('Token inválido');
+        }
+
+        const data = await response.json();
+        if (!data.authenticated || !data.isAdmin) {
+          throw new Error('Sin permisos de admin');
+        }
+
+        // Si llegamos aquí, el usuario tiene permisos válidos
+        console.log('✅ [NewsAdd] Permisos verificados, abriendo modal');
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+
+      } catch (error) {
+        console.error('❌ [NewsAdd] Error verificando permisos:', error);
+        alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
+        
+        // Limpiar token inválido y actualizar UI
+        localStorage.removeItem('adminToken');
+        currentAdminStatus = false;
+        updateAdminElements(false);
+      }
+    }
+
+    function hideModal() {
       modal.classList.add("hidden");
       document.body.style.overflow = "";
       form.reset();
-    };
+    }
 
+    // Event listeners para el modal
     btnAdd.onclick = (e) => {
       e.preventDefault();
       showModal();
     };
+    
     if (btnClose) btnClose.onclick = hideModal;
     if (btnCancel) btnCancel.onclick = hideModal;
+    
     modal.onclick = (e) => {
       if (e.target === modal) hideModal();
     };
 
+    // ============= ENVÍO DEL FORMULARIO =============
+    
     form.onsubmit = async (e) => {
       e.preventDefault();
+
+      // Verificar permisos antes de procesar
+      if (!currentAdminStatus) {
+        alert('Debe iniciar sesión como administrador para realizar esta acción.');
+        return;
+      }
+
       const formData = new FormData(form);
       if (
         !formData.get("title") ||
@@ -225,36 +399,75 @@ console.log("isAdmin en NewsAdd:", isAdmin);
       };
 
       try {
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          throw new Error('No hay token');
+        }
+
+        console.log('🔐 [NewsAdd] Verificando token antes de crear...');
+        const verifyResponse = await fetch('http://localhost:8080/api/auth/verify', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!verifyResponse.ok) {
+          throw new Error('Token inválido');
+        }
+
+        const verifyData = await verifyResponse.json();
+        if (!verifyData.authenticated || !verifyData.isAdmin) {
+          throw new Error('Sin permisos de admin');
+        }
+
+        // Si llegamos aquí, el usuario tiene permisos válidos
+        console.log('✅ [NewsAdd] Permisos verificados, creando noticia');
+        console.log('🔐 [NewsAdd] Headers que se van a enviar:', getAuthHeaders());
+
         const response = await fetch("http://localhost:8080/api/news/save", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
+          headers: getAuthHeaders(), // Incluye token JWT
           body: JSON.stringify(newsData),
         });
+
+        console.log('🔐 [NewsAdd] Respuesta del servidor:', response.status);
+
         if (response.ok) {
           hideModal();
           addNotification('success', 'Noticia creada exitosamente.');
           window.location.reload();
+        } else if (handleAuthError(response)) {
+          return;
         } else {
           const errorText = await response.text();
-          notifyError("Error al crear la noticia: " + errorText);
+          console.error('❌ [NewsAdd] Error del servidor:', errorText);
+          addNotification('error', "Error al crear la noticia: " + errorText);
         }
       } catch (error) {
-        notifyError("Error de conexión: " + error.message);
+        console.error('❌ [NewsAdd] Error:', error);
+        
+        if (error.message.includes('Token') || error.message.includes('permisos')) {
+          alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
+          localStorage.removeItem('adminToken');
+          currentAdminStatus = false;
+          updateAdminElements(false);
+        } else {
+          addNotification('error', "Error de conexión: " + error.message);
+        }
       }
     };
 
+    // Cerrar con Escape
     document.onkeydown = (e) => {
       if (e.key === "Escape" && !modal.classList.contains("hidden"))
         hideModal();
     };
-  });
 
-  function addNotification(type, message) {
-    const notifications = JSON.parse(
-      sessionStorage.getItem("notifications") || "[]",
-    );
-    notifications.push({ type, message });
-    sessionStorage.setItem("notifications", JSON.stringify(notifications));
-  }
+    // Función para notificaciones
+    function addNotification(type, message) {
+      const notifications = JSON.parse(
+        sessionStorage.getItem("notifications") || "[]",
+      );
+      notifications.push({ type, message });
+      sessionStorage.setItem("notifications", JSON.stringify(notifications));
+    }
+  });
 </script>
