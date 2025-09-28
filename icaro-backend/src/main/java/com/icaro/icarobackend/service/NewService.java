@@ -32,4 +32,7 @@ public class NewService {
         this.newRepository.deleteById(id);
     }
 
+    public List<New> getHighlightedNews(){
+        return this.newRepository.findByHighlighted(true);
+    }
 }

@@ -38,28 +38,33 @@ public class NewController {
         return ResponseEntity.ok().body(newService.findAll());
     }
 
-    @GetMapping("/check-image/{orcid}")
-    public ResponseEntity<Map<String, Object>> checkImageExists(@PathVariable String orcid) {
+    @GetMapping("/check-image/{id}")
+    public ResponseEntity<Map<String, Object>> checkImageExists(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
 
         String[] extensions = {"jpg", "png", "webp"};
         String foundExtension = null;
 
         for (String ext : extensions) {
-            Path imagePath = Paths.get(uploadDir, "img_" + orcid + "." + ext);
+            Path imagePath = Paths.get(uploadDir, id + "." + ext);
             if (Files.exists(imagePath)) {
                 foundExtension = ext;
                 break;
             }
         }
-
+        log.info("Check image exists for id {}", id);
         response.put("exists", foundExtension != null);
         response.put("extension", foundExtension);
         response.put("imageUrl", foundExtension != null ?
-                "/static/assets/people/img_" + orcid + "." + foundExtension :
-                "/static/assets/people/default.jpg");
+                "/assets/news/" + id + "." + foundExtension :
+                "/assets/news/default.jpg");
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/Hnews")
+    public ResponseEntity<List<New>> getHighlightedNews(){
+        return ResponseEntity.ok().body(newService.getHighlightedNews());
     }
 
     // ---------- METODOS CON VERIFICACION -------------

@@ -1,0 +1,323 @@
+---
+// NewsDelete.astro - Componente para funcionalidad de eliminación
+---
+
+<!-- Modal de confirmación de eliminación -->
+<div
+  id="deleteNewsModal"
+  class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+>
+  <div class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md" onclick="event.stopPropagation()">
+    <div class="p-6">
+      <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.134 16.5c-.77.833.192 2.5 1.732 2.5z"
+          ></path>
+        </svg>
+      </div>
+
+      <h3 class="text-xl font-bold mb-4 text-gray-900 text-center">
+        Confirmar Eliminación
+      </h3>
+
+      <div class="mb-6 text-gray-700 text-center">
+        <p class="mb-3">
+          ¿Está seguro de que desea eliminar la noticia <strong id="deleteNewsTitle" class="text-gray-900"></strong>?
+        </p>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+          <p class="text-sm text-red-800 font-medium">
+            ⚠️ Esta acción eliminará permanentemente:
+          </p>
+          <ul class="text-sm text-red-700 mt-1 list-disc list-inside">
+            <li>Esta noticia</li>
+            <li>Sus imágenes asociadas</li>
+            <li>Sus datos relacionados</li>
+          </ul>
+        </div>
+        <span class="text-sm text-red-600 font-medium">Esta acción no se puede deshacer.</span>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button
+          type="button"
+          id="cancelNewsDeleteBtn"
+          class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex-1 font-medium text-gray-700"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          id="confirmNewsDeleteBtn"
+          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex-1 font-medium"
+        >
+          Sí, Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .modal {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .modal:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-content {
+    transform: scale(0.95);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .modal:not(.hidden) .modal-content {
+    transform: scale(1);
+  }
+</style>
+
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("🔔 [NewsDelete] Componente cargado");
+
+    // ============= CONFIGURACIÓN =============
+    const API_BASE_URL = "http://localhost:8080/api/news";
+    let currentNewsId = null;
+
+    // ============= FUNCIONES DE MODAL =============
+    function showNewsModal() {
+      const modal = document.getElementById("deleteNewsModal");
+      if (modal) {
+        modal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+    }
+
+    function hideNewsDeleteModal() {
+      const modal = document.getElementById("deleteNewsModal");
+      if (modal) {
+        modal.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+      currentNewsId = null;
+    }
+
+    // ============= FUNCIÓN PARA MANEJAR ERRORES DE AUTH =============
+    function handleAuthError(response) {
+      if (response.status === 401 || response.status === 403) {
+        if (window.addNotification) {
+          window.addNotification("error", "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.");
+        }
+        localStorage.removeItem("adminToken");
+        if (window.updateAdminElements) {
+          window.updateAdminElements(false);
+        }
+        window.location.href = "/admin-login";
+        return true;
+      }
+      return false;
+    }
+
+    async function verifyAdminPermissions() {
+      try {
+        const token = localStorage.getItem('adminToken');
+        if (!token) return false;
+
+        const response = await fetch('http://localhost:8080/api/auth/verify', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return data.authenticated && data.isAdmin;
+        } else {
+          localStorage.removeItem('adminToken');
+          return false;
+        }
+      } catch (error) {
+        return false;
+      }
+    }
+
+    // ============= FUNCIÓN DE ELIMINACIÓN PRINCIPAL =============
+    window.deleteNews = async function (newsId, newsTitle = null) {
+      const currentAdminStatus = window.getCurrentAdminStatus?.() || false;
+      
+      if (!currentAdminStatus) {
+        const hasPermissions = await verifyAdminPermissions();
+        if (!hasPermissions) {
+          if (window.addNotification) {
+            window.addNotification("error", "Debe iniciar sesión como administrador para realizar esta acción.");
+          }
+          return;
+        }
+      }
+
+      if (!newsId) {
+        if (window.addNotification) {
+          window.addNotification("error", "Error: No se puede eliminar, falta información de la noticia.");
+        }
+        return;
+      }
+
+      // Guardar datos para la eliminación
+      currentNewsId = newsId;
+      
+      // Actualizar el modal con el título de la noticia
+      const titleElement = document.getElementById("deleteNewsTitle");
+      if (titleElement) {
+        titleElement.textContent = newsTitle || `"${newsId}"`;
+      }
+
+      // Mostrar modal de confirmación
+      showNewsModal();
+    };
+
+    // ============= FUNCIÓN DE ELIMINACIÓN REAL =============
+    async function performNewsDelete(newsId) {
+      try {
+        const authHeaders = window.getAuthHeaders?.() || {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        };
+
+        const response = await fetch(`${API_BASE_URL}/delete/${newsId}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        });
+
+        if (response.ok) {
+          // Quitar elemento sin animación
+          const newsElement = document.getElementById(newsId);
+          if (newsElement) {
+            newsElement.remove();
+          }
+
+          // Limpiar caché de imágenes si está disponible
+          if (window.clearImageCache) {
+            window.clearImageCache(newsId);
+          }
+
+          // Mostrar notificación
+          if (window.addNotification) {
+            window.addNotification("success", "Noticia eliminada exitosamente.");
+          }
+
+          // Recargar página para actualizar la lista
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+          
+        } else if (handleAuthError(response)) {
+          return;
+        } else {
+          let errorMessage = 'Error desconocido';
+          if (response.status === 404) {
+            errorMessage = 'La noticia no existe o ya ha sido eliminada.';
+          } else if (response.status === 409) {
+            errorMessage = 'No se puede eliminar la noticia porque tiene dependencias asociadas.';
+          } else if (response.status === 500) {
+            errorMessage = 'Error interno del servidor. Intente nuevamente más tarde.';
+          } else {
+            try {
+              const responseText = await response.text();
+              if (responseText.startsWith('{') || responseText.startsWith('[')) {
+                try {
+                  const errorData = JSON.parse(responseText);
+                  errorMessage = errorData.message || errorData.error || responseText;
+                } catch {
+                  errorMessage = responseText;
+                }
+              } else {
+                errorMessage = responseText || `Error ${response.status}: ${response.statusText}`;
+              }
+            } catch (error) {
+              errorMessage = `Error ${response.status}: ${response.statusText}`;
+            }
+          }
+          
+          if (window.addNotification) {
+            window.addNotification("error", `No se pudo eliminar la noticia: ${errorMessage}`);
+          }
+        }
+      } catch (error) {
+        console.error("❌ Error:", error);
+        if (window.addNotification) {
+          window.addNotification("error", "Error de conexión al eliminar la noticia: " + error.message);
+        }
+      }
+    }
+
+    // ============= FUNCIÓN PARA LIMPIAR CACHÉ DE IMÁGENES =============
+    window.clearImageCache = function (newsId) {
+      if (window.imageCache && typeof window.imageCache === 'object') {
+        if (newsId) {
+          window.imageCache.delete(newsId);
+        } else {
+          window.imageCache.clear();
+        }
+      }
+    };
+
+    // ============= EVENT LISTENERS PARA MODAL =============
+    
+    // Botón de cancelar
+    const cancelBtn = document.getElementById("cancelNewsDeleteBtn");
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        hideNewsDeleteModal();
+      });
+    }
+
+    // Botón de confirmación
+    const confirmBtn = document.getElementById("confirmNewsDeleteBtn");
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (!currentNewsId) return;
+
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Eliminando...";
+
+        await performNewsDelete(currentNewsId);
+
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Sí, Eliminar";
+        hideNewsDeleteModal();
+      });
+    }
+
+    // Event listener para cerrar modal al hacer click fuera
+    const deleteModal = document.getElementById("deleteNewsModal");
+    if (deleteModal) {
+      deleteModal.addEventListener('click', (e) => {
+        if (e.target === deleteModal) {
+          hideNewsDeleteModal();
+        }
+      });
+    }
+
+    // Event listener para ESC
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        const deleteModal = document.getElementById("deleteNewsModal");
+        if (deleteModal && !deleteModal.classList.contains("hidden")) {
+          hideNewsDeleteModal();
+        }
+      }
+    });
+
+    console.log("✅ [NewsDelete] Inicialización completa");
+  });
+</script>

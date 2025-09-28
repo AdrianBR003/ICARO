@@ -1,0 +1,399 @@
+---
+---
+
+<!-- Modal global de edición -->
+<div id="editModal" class="modal hidden">
+  <div class="modal-overlay"></div>
+
+  <div class="modal-content">
+    <h3 id="modalTitle" class="text-xl font-bold mb-4">Editar Noticia</h3>
+
+    <form id="editForm" class="space-y-4">
+      <input type="hidden" id="editId" />
+
+      <div>
+        <label class="block mb-1 text-sm font-medium">ID de la noticia</label>
+        <input
+          type="text"
+          id="editIdDisplay"
+          readonly
+          class="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+          placeholder="Se generará automáticamente al guardar"
+        />
+        <p class="text-xs text-gray-400 mt-1">
+          Este ID es de solo lectura y se genera automáticamente
+        </p>
+      </div>
+
+      <div>
+        <label class="block mb-1 text-sm font-medium">Título *</label>
+        <input
+          type="text"
+          id="editTitle"
+          required
+          class="w-full px-3 py-2 border rounded-md"
+        />
+      </div>
+
+      <div>
+        <label class="block mb-1 text-sm font-medium">Descripción *</label>
+        <textarea
+          id="editDescription"
+          required
+          class="w-full px-3 py-2 border rounded-md h-40"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block mb-1 text-sm font-medium">Enlace (URL)</label>
+          <input
+            type="url"
+            id="editLink"
+            class="w-full px-3 py-2 border rounded-md"
+            placeholder="https://ejemplo.com"
+          />
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm font-medium"
+            >Fecha de Publicación</label
+          >
+          <input
+            type="date"
+            id="editPublicationDate"
+            class="w-full px-3 py-2 border rounded-md"
+          />
+          <p class="text-xs text-gray-400 mt-1">
+            Fecha en que se publica la noticia
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <label class="flex items-center gap-3 text-sm font-medium cursor-pointer">
+          <input
+            type="checkbox"
+            id="editHighlighted"
+            class="w-4 h-4 text-[#006D38] bg-gray-100 border-gray-300 rounded focus:ring-[#006D38] focus:ring-2"
+          />
+          <span>Noticia Destacada</span>
+        </label>
+        <p class="text-xs text-gray-400 mt-1 ml-7">
+          Las noticias destacadas aparecen en el carrousel del inicio
+        </p>
+      </div>
+
+      <div class="flex gap-4 pt-4">
+        <button
+          type="button"
+          onclick="window.hideModal()"
+          class="px-4 py-2 border rounded-md hover:bg-gray-50"
+          >Cancelar</button
+        >
+        <button
+          type="submit"
+          class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
+          >Guardar</button
+        >
+      </div>
+    </form>
+  </div>
+</div>
+
+<style is:global>
+  /* Sistema de modal unificado y simplificado */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal:not(.hidden) {
+    display: flex;
+  }
+
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 48rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+    position: relative;
+    z-index: 101;
+  }
+
+  /* Scroll locking simple y efectivo */
+  body.modal-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+  }
+</style>
+
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("🔔 [NewsEdit] Componente cargado");
+
+    // ============= CONFIGURACIÓN =============
+    const API_BASE_URL = "http://localhost:8080/api/news";
+    let scrollPosition = 0;
+
+    // ============= SISTEMA DE MODALES =============
+    window.showModal = function () {
+      const modal = document.getElementById("editModal");
+      if (!modal) return;
+
+      // Guardar posición del scroll
+      scrollPosition =
+        window.pageYOffset || document.documentElement.scrollTop;
+
+      // Bloquear scroll
+      document.body.classList.add("modal-open");
+      document.body.style.top = `-${scrollPosition}px`;
+
+      // Mostrar modal
+      modal.classList.remove("hidden");
+
+      // Focus para accesibilidad
+      setTimeout(() => {
+        const firstInput = modal.querySelector(
+          "input, textarea, select, button",
+        );
+        if (firstInput) firstInput.focus();
+      }, 100);
+    };
+
+    window.hideModal = function () {
+      const modal = document.getElementById("editModal");
+      if (!modal) return;
+
+      // Ocultar modal
+      modal.classList.add("hidden");
+
+      // Restaurar scroll después de un pequeño delay
+      setTimeout(() => {
+        document.body.classList.remove("modal-open");
+        document.body.style.top = "";
+        window.scrollTo(0, scrollPosition);
+      }, 50);
+    };
+
+    // Event listeners para cerrar modal
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("modal-overlay")) {
+        window.hideModal();
+      }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        window.hideModal();
+      }
+    });
+
+    // ============= FUNCIÓN DE EDICIÓN =============
+    window.editNews = function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const currentAdminStatus = window.getCurrentAdminStatus?.() || false;
+      
+      if (!currentAdminStatus) {
+        alert(
+          "Debe iniciar sesión como administrador para realizar esta acción.",
+        );
+        return;
+      }
+
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        alert("Sesión expirada. Por favor, inicie sesión nuevamente.");
+        if (window.updateAdminElements) {
+          window.updateAdminElements(false);
+        }
+        return;
+      }
+
+      const button = event.currentTarget;
+      const newsItem = {
+        id: button.getAttribute("data-news-id"),
+        title: button.getAttribute("data-news-title"),
+        description: button.getAttribute("data-news-description"),
+        link: button.getAttribute("data-news-link") || "",
+        publicationDate:
+          button.getAttribute("data-news-publicationdate") || "",
+        highlighted: button.getAttribute("data-news-highlighted") === "true",
+      };
+
+      // Poblar modal
+      document.getElementById("editId").value = newsItem.id || "";
+      document.getElementById("editIdDisplay").value =
+        newsItem.id || window.generateNewsId();
+      document.getElementById("editTitle").value = newsItem.title || "";
+      document.getElementById("editDescription").value =
+        newsItem.description || "";
+      document.getElementById("editLink").value = newsItem.link || "";
+      document.getElementById("editPublicationDate").value =
+        newsItem.publicationDate || "";
+      document.getElementById("editHighlighted").checked = newsItem.highlighted || false;
+
+      document.getElementById("modalTitle").textContent = newsItem.id
+        ? `Editar "${newsItem.title}"`
+        : "Crear Nueva Noticia";
+
+      window.showModal();
+    };
+
+    window.generateNewsId = function () {
+      return `news-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    };
+
+    // ============= FUNCIÓN PARA MANEJAR ERRORES DE AUTH =============
+    function handleAuthError(response) {
+      if (response.status === 401 || response.status === 403) {
+        alert(
+          "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.",
+        );
+        localStorage.removeItem("adminToken");
+        if (window.updateAdminElements) {
+          window.updateAdminElements(false);
+        }
+        window.location.href = "/admin-login";
+        return true;
+      }
+      return false;
+    }
+
+    // ============= GUARDAR NOTICIAS =============
+    async function saveNews(newsData) {
+      const currentAdminStatus = window.getCurrentAdminStatus?.() || false;
+      
+      if (!currentAdminStatus) {
+        alert(
+          "Debe iniciar sesión como administrador para realizar esta acción.",
+        );
+        return false;
+      }
+
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        alert("Sesión expirada. Por favor, inicie sesión nuevamente.");
+        if (window.updateAdminElements) {
+          window.updateAdminElements(false);
+        }
+        return false;
+      }
+
+      try {
+        const authHeaders = window.getAuthHeaders?.() || {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+
+        const isEdit = !!newsData.id && !newsData.id.includes("news-");
+        const url = isEdit
+          ? `${API_BASE_URL}/update`
+          : `${API_BASE_URL}/create`;
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({
+            id: newsData.id,
+            title: newsData.title,
+            description: newsData.description,
+            link: newsData.link || "",
+            publicationDate: newsData.publicationDate || null,
+            highlighted: newsData.highlighted || false,
+          }),
+        });
+
+        if (response.ok) {
+          if (window.addNotification) {
+            window.addNotification("success", "Noticia guardada correctamente");
+          }
+          return true;
+        } else if (handleAuthError(response)) {
+          return false;
+        } else if (response.status === 409) {
+          if (window.addNotification) {
+            window.addNotification("error", "Ya existe una noticia con este ID");
+          }
+          return false;
+        } else {
+          if (window.addNotification) {
+            window.addNotification("error", "Error al guardar la noticia");
+          }
+          return false;
+        }
+      } catch (error) {
+        console.error("❌ Error en saveNews:", error);
+        if (window.addNotification) {
+          window.addNotification("error", "Error de conexión al servidor");
+        }
+        return false;
+      }
+    }
+
+    // ============= EVENT LISTENER PARA FORMULARIO =============
+    document
+      .getElementById("editForm")
+      ?.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const id =
+          document.getElementById("editId").value || window.generateNewsId();
+        const title = document.getElementById("editTitle").value;
+        const description = document.getElementById("editDescription").value;
+        const link = document.getElementById("editLink").value;
+        const publicationDate = document.getElementById(
+          "editPublicationDate",
+        ).value;
+        const highlighted = document.getElementById("editHighlighted").checked;
+
+        if (!title.trim() || !description.trim()) {
+          if (window.addNotification) {
+            window.addNotification("error", "Título y Descripción son obligatorios.");
+          }
+          return;
+        }
+
+        const newsData = {
+          id: id,
+          title: title.trim(),
+          description: description.trim(),
+          link: link.trim(),
+          publicationDate: publicationDate || null,
+          highlighted: highlighted,
+        };
+
+        const success = await saveNews(newsData);
+
+        if (success) {
+          window.hideModal();
+          document.getElementById("editForm").reset();
+
+          // Recargar la página para mostrar los cambios
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+        }
+      });
+
+    console.log("✅ [NewsEdit] Inicialización completa");
+  });
+</script>

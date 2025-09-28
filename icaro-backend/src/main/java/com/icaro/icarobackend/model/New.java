@@ -18,6 +18,7 @@ public class New {
     private String title;
     private String description;
     private String link;
+    private boolean highlighted;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate publicationDate;
 }

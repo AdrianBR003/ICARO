@@ -35,7 +35,7 @@ console.log("isAdmin en NewsAdd:", isAdmin);
     style="background: rgba(0,0,0,0.5);"
   >
     <div
-      class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+      class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
     >
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
@@ -49,7 +49,23 @@ console.log("isAdmin en NewsAdd:", isAdmin);
 
         <form id="form-add-news">
           <div class="space-y-4">
-            <!-- Campos del formulario -->
+            <!-- ID de la noticia -->
+            <div>
+              <label class="block mb-1 text-sm font-medium">ID de la noticia</label>
+              <input
+                type="text"
+                id="newsId"
+                name="id"
+                readonly
+                class="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+                placeholder="Se generará automáticamente"
+              />
+              <p class="text-xs text-gray-400 mt-1">
+                Este ID es de solo lectura y se genera automáticamente
+              </p>
+            </div>
+            
+            <!-- Título -->
             <div>
               <label class="block mb-1 text-sm font-medium">Título *</label>
               <input
@@ -59,84 +75,55 @@ console.log("isAdmin en NewsAdd:", isAdmin);
                 class="w-full px-3 py-2 border rounded-md"
               />
             </div>
+            
+            <!-- Descripción -->
             <div>
-              <label class="block mb-1 text-sm font-medium">Descripción *</label
-              >
+              <label class="block mb-1 text-sm font-medium">Descripción *</label>
               <textarea
                 name="description"
-                rows="3"
+                rows="4"
                 required
                 class="w-full px-3 py-2 border rounded-md"></textarea>
             </div>
+            
+            <!-- Fecha de Publicación -->
             <div>
-              <label class="block mb-1 text-sm font-medium">Participantes</label
-              >
-              <textarea
-                name="participants"
-                rows="2"
-                class="w-full px-3 py-2 border rounded-md"
-                placeholder="Participante1, Participante2"></textarea>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block mb-1 text-sm font-medium"
-                  >Fecha Publicación *</label
-                >
-                <input
-                  type="date"
-                  name="FirstprojectDate"
-                  required
-                  class="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-              <div>
-                <label class="block mb-1 text-sm font-medium"
-                  >Fecha Actualización</label
-                >
-                <input
-                  type="date"
-                  name="SecondprojectDate"
-                  class="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-            </div>
-            <div>
-              <label class="block mb-1 text-sm font-medium">Tags</label>
+              <label class="block mb-1 text-sm font-medium">Fecha de Publicación</label>
               <input
-                type="text"
-                name="tags"
-                class="w-full px-3 py-2 border rounded-md"
-                placeholder="tag1, tag2, tag3"
-              />
-            </div>
-            <div>
-              <label class="block mb-1 text-sm font-medium">URL Imagen</label>
-              <input
-                type="text"
-                name="image"
+                type="date"
+                id="editPublicationDate"
+                name="publicationDate"
                 class="w-full px-3 py-2 border rounded-md"
               />
+              <p class="text-xs text-gray-400 mt-1">
+                Fecha en que se publica la noticia (opcional)
+              </p>
             </div>
+            
+            <!-- Enlace -->
             <div>
-              <label class="block mb-1 text-sm font-medium">Enlace</label>
+              <label class="block mb-1 text-sm font-medium">Enlace (URL)</label>
               <input
-                type="text"
+                type="url"
                 name="link"
                 class="w-full px-3 py-2 border rounded-md"
+                placeholder="https://ejemplo.com"
               />
             </div>
 
+            <!-- Botones -->
             <div class="flex gap-4 pt-4 border-t">
               <button
                 type="button"
                 id="btn-cancel"
-                class="px-4 py-2 border rounded-md">Cancelar</button
-              >
+                class="px-4 py-2 border rounded-md hover:bg-gray-50 flex-1">
+                Cancelar
+              </button>
               <button
                 type="submit"
-                class="px-4 py-2 bg-[#006D38] text-white rounded-md"
-                >Crear</button
-              >
+                class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229] flex-1">
+                Crear Noticia
+              </button>
             </div>
           </div>
         </form>
@@ -150,27 +137,20 @@ console.log("isAdmin en NewsAdd:", isAdmin);
     console.log('📰 [NewsAdd] Componente cargado');
     
     // ============= SISTEMA DE AUTENTICACIÓN JWT =============
-    
-    // Helper para generar headers con token JWT
     function getAuthHeaders() {
       const token = localStorage.getItem('adminToken');
-      
       const headers = {
         'Content-Type': 'application/json'
       };
-      
-      // Si existe token, añadir header Authorization con Bearer
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
-      
       return headers;
     }
     
     // ============= GESTIÓN DEL ESTADO ADMIN =============
     let currentAdminStatus = false;
     
-    // Verificar estado admin con token JWT
     async function checkAdminStatus() {
       console.log('🔐 [NewsAdd] Verificando estado admin...');
       
@@ -208,7 +188,6 @@ console.log("isAdmin en NewsAdd:", isAdmin);
       }
     }
     
-    // Función para manejar errores de autenticación
     function handleAuthError(response) {
       if (response.status === 401 || response.status === 403) {
         alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
@@ -221,7 +200,6 @@ console.log("isAdmin en NewsAdd:", isAdmin);
       return false;
     }
     
-    // Actualizar elementos admin en la UI
     function updateAdminElements(isAdmin) {
       console.log('🎨 [NewsAdd] Actualizando UI admin:', isAdmin);
       
@@ -275,8 +253,22 @@ console.log("isAdmin en NewsAdd:", isAdmin);
       }
     });
 
-    // ============= FUNCIONES DE MODAL =============
+    // ============= FUNCIONES AUXILIARES =============
     
+    // Función para generar ID de 4 dígitos aleatorios
+    function generateNewsId() {
+      const randomId = Math.floor(1000 + Math.random() * 9000).toString(); // Genera número entre 1000-9999
+      const newsIdInput = document.getElementById('newsId');
+      
+      if (newsIdInput) {
+        newsIdInput.value = randomId;
+        console.log('🔢 [NewsAdd] ID generado:', randomId);
+      }
+      
+      return randomId;
+    }
+
+    // ============= FUNCIONES DE MODAL =============
     const wrapper = document.getElementById("news-add-wrapper");
     const btnAdd = document.getElementById("btn-add-news");
     const modal = document.getElementById("modal-add-news");
@@ -289,13 +281,11 @@ console.log("isAdmin en NewsAdd:", isAdmin);
     async function showModal() {
       console.log('➕ [NewsAdd] Intentando mostrar modal');
       
-      // Verificar permisos ANTES de mostrar el modal
       if (!currentAdminStatus) {
         alert('Debe iniciar sesión como administrador para realizar esta acción.');
         return;
       }
 
-      // Verificar token válido haciendo una petición al servidor
       try {
         const token = localStorage.getItem('adminToken');
         if (!token) {
@@ -316,8 +306,11 @@ console.log("isAdmin en NewsAdd:", isAdmin);
           throw new Error('Sin permisos de admin');
         }
 
-        // Si llegamos aquí, el usuario tiene permisos válidos
         console.log('✅ [NewsAdd] Permisos verificados, abriendo modal');
+        
+        // Generar nuevo ID de 4 dígitos aleatorios antes de mostrar el modal
+        generateNewsId();
+        
         modal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
 
@@ -325,7 +318,6 @@ console.log("isAdmin en NewsAdd:", isAdmin);
         console.error('❌ [NewsAdd] Error verificando permisos:', error);
         alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
         
-        // Limpiar token inválido y actualizar UI
         localStorage.removeItem('adminToken');
         currentAdminStatus = false;
         updateAdminElements(false);
@@ -352,50 +344,26 @@ console.log("isAdmin en NewsAdd:", isAdmin);
     };
 
     // ============= ENVÍO DEL FORMULARIO =============
-    
     form.onsubmit = async (e) => {
       e.preventDefault();
 
-      // Verificar permisos antes de procesar
       if (!currentAdminStatus) {
         alert('Debe iniciar sesión como administrador para realizar esta acción.');
         return;
       }
 
       const formData = new FormData(form);
-      if (
-        !formData.get("title") ||
-        !formData.get("description") ||
-        !formData.get("FirstprojectDate")
-      ) {
-        alert("Complete los campos obligatorios");
+      if (!formData.get("title") || !formData.get("description")) {
+        alert("Complete los campos obligatorios (Título y Descripción)");
         return;
       }
 
-      const participants = formData.get("participants")
-        ? formData
-            .get("participants")
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [];
-      const tags = formData.get("tags")
-        ? formData
-            .get("tags")
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : [];
-
       const newsData = {
-        title: formData.get("title"),
-        description: formData.get("description"),
-        participants,
-        FirstprojectDate: formData.get("FirstprojectDate"),
-        SecondprojectDate: formData.get("SecondprojectDate") || null,
-        tags,
-        image: formData.get("image") || null,
-        link: formData.get("link") || null,
+        id: formData.get("id"), // Incluir el ID generado
+        title: formData.get("title").trim(),
+        description: formData.get("description").trim(),
+        publicationDate: formData.get("publicationDate") || null,
+        link: formData.get("link") ? formData.get("link").trim() : null,
       };
 
       try {
@@ -418,17 +386,16 @@ console.log("isAdmin en NewsAdd:", isAdmin);
           throw new Error('Sin permisos de admin');
         }
 
-        // Si llegamos aquí, el usuario tiene permisos válidos
         console.log('✅ [NewsAdd] Permisos verificados, creando noticia');
-        console.log('🔐 [NewsAdd] Headers que se van a enviar:', getAuthHeaders());
+        console.log('📤 [NewsAdd] Datos a enviar:', newsData);
 
-        const response = await fetch("http://localhost:8080/api/news/save", {
+        const response = await fetch("http://localhost:8080/api/news/create", {
           method: "POST",
-          headers: getAuthHeaders(), // Incluye token JWT
+          headers: getAuthHeaders(),
           body: JSON.stringify(newsData),
         });
 
-        console.log('🔐 [NewsAdd] Respuesta del servidor:', response.status);
+        console.log('📥 [NewsAdd] Respuesta del servidor:', response.status);
 
         if (response.ok) {
           hideModal();
@@ -462,38 +429,36 @@ console.log("isAdmin en NewsAdd:", isAdmin);
     };
 
     // Función para notificaciones
+    function addNotification(type, message) {
+      console.log("🔍 addNotification llamado:", { type, message });
+      try {
+        const notifications = JSON.parse(
+          localStorage.getItem("pendingNotifications") || "[]",
+        );
 
-      function addNotification(type, message) {
-        console.log("🔍 addNotification llamado:", { type, message });
-        try {
-          const notifications = JSON.parse(
-            localStorage.getItem("pendingNotifications") || "[]",
-          );
+        const notification = {
+          id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          message,
+          type,
+          duration: 4000,
+          timestamp: Date.now(),
+        };
 
-          const notification = {
-            id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            message,
-            type,
-            duration: 4000,
-            timestamp: Date.now(),
-          };
+        notifications.push(notification);
+        localStorage.setItem(
+          "pendingNotifications",
+          JSON.stringify(notifications),
+        );
 
-          notifications.push(notification);
-          localStorage.setItem(
-            "pendingNotifications",
-            JSON.stringify(notifications),
-          );
+        console.log(
+          "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+          notification,
+        );
 
-          console.log(
-            "💾 Notificación guardada en localStorage para mostrar después de recargar:",
-            notification,
-          );
-
-          return notification.id;
-        } catch (error) {
-          console.error("❌ Error guardando notificación:", error);
-        }
+        return notification.id;
+      } catch (error) {
+        console.error("❌ Error guardando notificación:", error);
       }
-
+    }
   });
 </script>
