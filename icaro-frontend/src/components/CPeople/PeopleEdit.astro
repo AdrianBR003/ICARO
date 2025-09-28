@@ -1,4 +1,5 @@
 ---
+
 ---
 
 <!-- Modal de edición global -->
@@ -88,36 +89,41 @@
 
 <script is:inline>
   // === FUNCIONES DE EDICIÓN ===
-  
+
   async function showEditModal(person) {
-    console.log('✏️ [PEOPLE] Intentando mostrar modal de edición para:', person.name);
-    
+    console.log(
+      "✏️ [PEOPLE] Intentando mostrar modal de edición para:",
+      person.name,
+    );
+
     if (!window.currentAdminStatus) {
-      alert('Debe iniciar sesión como administrador para realizar esta acción.');
+      alert(
+        "Debe iniciar sesión como administrador para realizar esta acción.",
+      );
       return;
     }
 
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem("adminToken");
       if (!token) {
-        throw new Error('No hay token');
+        throw new Error("No hay token");
       }
 
-      console.log('🔐 [PEOPLE] Verificando token antes de abrir modal...');
-      const response = await fetch('http://localhost:8080/api/auth/verify', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      console.log("🔐 [PEOPLE] Verificando token antes de abrir modal...");
+      const response = await fetch("http://localhost:8080/api/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
-        throw new Error('Token inválido');
+        throw new Error("Token inválido");
       }
 
       const data = await response.json();
       if (!data.authenticated || !data.isAdmin) {
-        throw new Error('Sin permisos de admin');
+        throw new Error("Sin permisos de admin");
       }
 
-      console.log('✅ [PEOPLE] Permisos verificados, abriendo modal');
+      console.log("✅ [PEOPLE] Permisos verificados, abriendo modal");
       document.getElementById("editOrcid").value = person.orcid;
       document.getElementById("editName").value = person.name || "";
       document.getElementById("editEmail").value = person.email || "";
@@ -125,14 +131,16 @@
       document.getElementById("editPhone").value = person.phone || "";
       document.getElementById("editOffice").value = person.office || "";
 
-      document.getElementById("modalTitle").textContent = `Editar ${person.name}`;
+      document.getElementById("modalTitle").textContent =
+        `Editar ${person.name}`;
       showModal("editModal");
-
     } catch (error) {
-      console.error('❌ [PEOPLE] Error verificando permisos:', error);
-      alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-      
-      localStorage.removeItem('adminToken');
+      console.error("❌ [PEOPLE] Error verificando permisos:", error);
+      alert(
+        "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.",
+      );
+
+      localStorage.removeItem("adminToken");
       window.currentAdminStatus = false;
       window.updateAdminElements(false);
     }
@@ -151,7 +159,9 @@
     e.preventDefault();
 
     if (!window.currentAdminStatus) {
-      alert('Debe iniciar sesión como administrador para realizar esta acción.');
+      alert(
+        "Debe iniciar sesión como administrador para realizar esta acción.",
+      );
       return;
     }
 
@@ -163,9 +173,12 @@
     const office = document.getElementById("editOffice").value;
 
     try {
-      console.log('✏️ [PEOPLE] Editando investigador:', orcid);
-      console.log('🔐 [PEOPLE] Headers que se van a enviar:', window.getAuthHeaders());
-      
+      console.log("✏️ [PEOPLE] Editando investigador:", orcid);
+      console.log(
+        "🔐 [PEOPLE] Headers que se van a enviar:",
+        window.getAuthHeaders(),
+      );
+
       const response = await fetch(
         `http://localhost:8080/api/investigators/${orcid}`,
         {
@@ -181,22 +194,53 @@
         },
       );
 
-      console.log('🔐 [PEOPLE] Respuesta del servidor:', response.status);
-
       if (response.ok) {
-        alert("Cambios guardados correctamente");
         hideEditModal();
-        location.reload();
+        addNotification("success", "Investigador editado correctamente");
+        window.location.reload();
       } else if (window.handleAuthError(response)) {
         return;
       } else {
         const errorText = await response.text();
-        console.error('❌ [PEOPLE] Error del servidor:', errorText);
         throw new Error("Error al guardar los cambios: " + response.status);
       }
     } catch (error) {
-      console.error('❌ [PEOPLE] Error:', error);
-      alert(error.message || "Error al guardar los cambios");
+      console.error("❌ [PEOPLE] Error:", error);
+      addNotification("error", "Error editando investigador: " + error.message);
     }
   });
+
+  // Notificaciones:
+
+  function addNotification(type, message) {
+    console.log("🔍 addNotification llamado:", { type, message });
+    try {
+      const notifications = JSON.parse(
+        localStorage.getItem("pendingNotifications") || "[]",
+      );
+
+      const notification = {
+        id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        message,
+        type,
+        duration: 4000,
+        timestamp: Date.now(),
+      };
+
+      notifications.push(notification);
+      localStorage.setItem(
+        "pendingNotifications",
+        JSON.stringify(notifications),
+      );
+
+      console.log(
+        "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+        notification,
+      );
+
+      return notification.id;
+    } catch (error) {
+      console.error("❌ Error guardando notificación:", error);
+    }
+  }
 </script>

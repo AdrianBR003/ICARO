@@ -27,8 +27,7 @@ const { person } = Astro.props;
     <!-- Botón Eliminar -->
     <button
       class="edit-btn delete-btn hidden z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm"
-      data-orcid={person.orcid}
-      data-name={person.name}
+      onclick={`document.dispatchEvent(new CustomEvent('deletePerson', {detail: ${JSON.stringify(person)}}))`}
       aria-label="Eliminar"
     >
       <svg
@@ -166,60 +165,6 @@ const { person } = Astro.props;
       });
     }
 
-    // === FUNCIÓN DE ELIMINAR ===
-    
-    async function deleteInvestigator(orcid, name) {
-      if (!confirm(`¿Estás seguro de que deseas eliminar a ${name}? Esta acción no se puede deshacer.`)) {
-        return;
-      }
-
-      try {
-        const response = await fetch(`http://localhost:8080/api/investigators/delete/${orcid}`, {
-          method: "DELETE",
-          headers: window.getAuthHeaders(), 
-        });
-
-        if (response.status === 204) {
-          alert("Investigador eliminado correctamente");
-          location.reload();
-        } else if (response.status === 401 || response.status === 403) {
-          alert("No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.");
-          window.location.href = '/admin-login';
-        } else if (response.status === 404) {
-          console.error("Error 404 - Investigador no encontrado:", orcid);
-          alert("Investigador no encontrado. Es posible que ya haya sido eliminado.");
-        } else {
-          const errorText = await response.text();
-          console.error("Error del servidor:", errorText);
-          throw new Error("Error al eliminar el investigador: " + response.status);
-        }
-      } catch (error) {
-        console.error("Error en deleteInvestigator:", error);
-        alert(error.message || "Error al eliminar el investigador");
-      }
-    }
-
-    // === CONFIGURACIÓN DE BOTONES ===
-    
-    function setupDeleteButtons() {
-      const deleteButtons = document.querySelectorAll(".delete-btn");
-
-      deleteButtons.forEach((button) => {
-        button.replaceWith(button.cloneNode(true));
-      });
-
-      const newDeleteButtons = document.querySelectorAll(".delete-btn");
-      
-      newDeleteButtons.forEach((button) => {
-        button.addEventListener("click", function () {
-          const orcid = this.getAttribute("data-orcid");
-          const name = this.getAttribute("data-name");
-          console.log("Eliminar clicked - ORCID:", orcid, "Name:", name);
-          deleteInvestigator(orcid, name);
-        });
-      });
-    }
-
     // === GESTIÓN DE VISIBILIDAD DE BOTONES ADMIN ===
     
     function updateAdminVisibility(isAdmin) {
@@ -228,10 +173,6 @@ const { person } = Astro.props;
       editButtons.forEach((btn) => {
         btn.classList.toggle("hidden", !isAdmin);
       });
-
-      if (isAdmin) {
-        setupDeleteButtons();
-      }
     }
 
     // Verificar estado admin inicial

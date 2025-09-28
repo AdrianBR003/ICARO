@@ -1,5 +1,5 @@
 ---
-// Componente para el modal de añadir nuevos investigadores
+
 ---
 
 <div class="flex justify-end p-3">
@@ -121,47 +121,49 @@
 
 <script is:inline>
   // === FUNCIONES DE MODAL ===
-  
+
   async function showAddModal() {
-    console.log('➕ [ADD-PEOPLE] Intentando mostrar modal de añadir');
-    
+    console.log("➕ [ADD-PEOPLE] Intentando mostrar modal de añadir");
+
     // Verificar permisos ANTES de mostrar el modal
     if (!window.currentAdminStatus) {
-      alert('Debe iniciar sesión como administrador para realizar esta acción.');
+      alert(
+        "Debe iniciar sesión como administrador para realizar esta acción.",
+      );
       return;
     }
 
     // Verificar token válido haciendo una petición al servidor
     try {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem("adminToken");
       if (!token) {
-        throw new Error('No hay token');
+        throw new Error("No hay token");
       }
 
-      console.log('🔐 [ADD-PEOPLE] Verificando token antes de abrir modal...');
-      const response = await fetch('http://localhost:8080/api/auth/verify', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      console.log("🔐 [ADD-PEOPLE] Verificando token antes de abrir modal...");
+      const response = await fetch("http://localhost:8080/api/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
-        throw new Error('Token inválido');
+        throw new Error("Token inválido");
       }
 
       const data = await response.json();
       if (!data.authenticated || !data.isAdmin) {
-        throw new Error('Sin permisos de admin');
+        throw new Error("Sin permisos de admin");
       }
 
       // Si llegamos aquí, el usuario tiene permisos válidos
-      console.log('✅ [ADD-PEOPLE] Permisos verificados, abriendo modal');
+      console.log("✅ [ADD-PEOPLE] Permisos verificados, abriendo modal");
       showModal("addModal");
-
     } catch (error) {
-      console.error('❌ [ADD-PEOPLE] Error verificando permisos:', error);
-      alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-      
+      console.error("❌ [ADD-PEOPLE] Error verificando permisos:", error);
+      alert(
+        "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.",
+      );
       // Limpiar token inválido y actualizar UI
-      localStorage.removeItem('adminToken');
+      localStorage.removeItem("adminToken");
       if (window.checkAdminStatus) {
         window.checkAdminStatus();
       }
@@ -201,14 +203,16 @@
   window.hideModal = hideModal;
 
   // === OPERACIONES CON BACKEND ===
-  
+
   // Añadir investigador - requiere token JWT con ROLE_ADMIN
   document.getElementById("addForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     // Verificar permisos antes de procesar
     if (!window.currentAdminStatus) {
-      alert('Debe iniciar sesión como administrador para realizar esta acción.');
+      alert(
+        "Debe iniciar sesión como administrador para realizar esta acción.",
+      );
       return;
     }
 
@@ -220,15 +224,17 @@
     const office = document.getElementById("addOffice").value;
 
     try {
-      console.log('➕ [ADD-PEOPLE] Añadiendo investigador:', orcid);
-      
-      const headers = window.getAuthHeaders ? window.getAuthHeaders() : {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-      };
-      
-      console.log('🔐 [ADD-PEOPLE] Headers que se van a enviar:', headers);
-      
+      console.log("➕ [ADD-PEOPLE] Añadiendo investigador:", orcid);
+
+      const headers = window.getAuthHeaders
+        ? window.getAuthHeaders()
+        : {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          };
+
+      console.log("🔐 [ADD-PEOPLE] Headers que se van a enviar:", headers);
+
       const response = await fetch(
         "http://localhost:8080/api/investigators/add",
         {
@@ -245,26 +251,57 @@
         },
       );
 
-      console.log('🔐 [ADD-PEOPLE] Respuesta del servidor:', response.status);
+      console.log("🔐 [ADD-PEOPLE] Respuesta del servidor:", response.status);
 
       if (response.status === 204) {
-        alert("Investigador añadido correctamente");
+        addNotification("success", "Investigador añadido correctamente");
         hideModal("addModal");
-        location.reload();
+        window.location.reload();
       } else if (window.handleAuthError && window.handleAuthError(response)) {
         return;
       } else {
         const errorText = await response.text();
-        console.error('❌ [ADD-PEOPLE] Error del servidor:', errorText);
-        throw new Error(
-          "Error al añadir el investigador: " + response.status,
-        );
+        console.error("❌ [ADD-PEOPLE] Error del servidor:", errorText);
+        throw new Error("Error al añadir el investigador: " + response.status);
       }
     } catch (error) {
-      console.error('❌ [ADD-PEOPLE] Error:', error);
-      alert(error.message || "Error al añadir el investigador");
+      addNotification("error", error.message || "Error al añadir el investigador");
     }
   });
+
+  // Notificaciones:
+
+  function addNotification(type, message) {
+    console.log("🔍 addNotification llamado:", { type, message });
+    try {
+      const notifications = JSON.parse(
+        localStorage.getItem("pendingNotifications") || "[]",
+      );
+
+      const notification = {
+        id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        message,
+        type,
+        duration: 4000,
+        timestamp: Date.now(),
+      };
+
+      notifications.push(notification);
+      localStorage.setItem(
+        "pendingNotifications",
+        JSON.stringify(notifications),
+      );
+
+      console.log(
+        "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+        notification,
+      );
+
+      return notification.id;
+    } catch (error) {
+      console.error("❌ Error guardando notificación:", error);
+    }
+  }
 </script>
 
 <style is:global>

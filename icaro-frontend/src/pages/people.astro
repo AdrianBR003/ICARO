@@ -198,6 +198,40 @@ let people = await fetchInvestigadores();
           }
         }
       });
+
+       // ============= GESTIÓN DE NOTIFICACIONES PENDIENTES =============
+
+      setTimeout(() => {
+        const pendingNotifications = JSON.parse(
+          localStorage.getItem("pendingNotifications") || "[]",
+        );
+        if (pendingNotifications.length > 0) {
+          console.log(
+            `📋 [NEWS] Encontradas ${pendingNotifications.length} notificaciones pendientes en localStorage`,
+          );
+
+          if (
+            window.notificationSystem &&
+            window.notificationSystem.isInitialized
+          ) {
+            console.log(
+              "🔄 [NEWS] Forzando procesamiento de notificaciones pendientes",
+            );
+
+            pendingNotifications.forEach((notification, index) => {
+              setTimeout(() => {
+                window.notificationSystem.notify(
+                  notification.message,
+                  notification.type,
+                  notification.duration,
+                );
+              }, index * 200);
+            });
+
+            localStorage.removeItem("pendingNotifications");
+          }
+        }
+      }, 1000);
     });
   </script>
 </BaseLayout>

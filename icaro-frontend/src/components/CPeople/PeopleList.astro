@@ -1,6 +1,7 @@
 ---
 import PeopleCard from "./PeopleCard.astro";
 import PeopleEdit from "./PeopleEdit.astro";
+import PeopleDelete from "./PeopleDelete.astro";
 
 const { people } = Astro.props;
 ---
@@ -10,11 +11,18 @@ const { people } = Astro.props;
 </div>
 
 <PeopleEdit />
+<PeopleDelete />
 
 <script is:inline>
   // Escuchar eventos desde PersonCard para abrir modal de edición
   document.addEventListener("editPerson", async (e) => {
     console.log('✏️ [PEOPLE] Evento editPerson recibido:', e.detail);
     await window.showEditModal(e.detail);
+  });
+
+  // Escuchar eventos desde PersonCard para eliminar
+  document.addEventListener("deletePerson", async (e) => {
+    console.log('🗑️ [PEOPLE] Evento deletePerson recibido:', e.detail);
+    await window.deletePerson(e.detail);
   });
 </script>
