@@ -472,6 +472,7 @@ const { news, isAdmin = false } = Astro.props;
             }
             imageCache.delete(newsId);
             addNotification("success", "Noticia eliminada exitosamente.");
+            window.location.reload();
           } else if (handleAuthError(response)) {
             return;
           } else {

@@ -462,12 +462,38 @@ console.log("isAdmin en NewsAdd:", isAdmin);
     };
 
     // Función para notificaciones
-    function addNotification(type, message) {
-      const notifications = JSON.parse(
-        sessionStorage.getItem("notifications") || "[]",
-      );
-      notifications.push({ type, message });
-      sessionStorage.setItem("notifications", JSON.stringify(notifications));
-    }
+
+      function addNotification(type, message) {
+        console.log("🔍 addNotification llamado:", { type, message });
+        try {
+          const notifications = JSON.parse(
+            localStorage.getItem("pendingNotifications") || "[]",
+          );
+
+          const notification = {
+            id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            message,
+            type,
+            duration: 4000,
+            timestamp: Date.now(),
+          };
+
+          notifications.push(notification);
+          localStorage.setItem(
+            "pendingNotifications",
+            JSON.stringify(notifications),
+          );
+
+          console.log(
+            "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+            notification,
+          );
+
+          return notification.id;
+        } catch (error) {
+          console.error("❌ Error guardando notificación:", error);
+        }
+      }
+
   });
 </script>

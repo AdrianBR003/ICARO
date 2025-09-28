@@ -40,15 +40,12 @@ const { project, cardId, isAdmin = false } = Astro.props;
       
       // ============= SISTEMA DE AUTENTICACIÓN JWT =============
 
-      // Helper para generar headers con token JWT
       function getAuthHeaders() {
         const token = localStorage.getItem('adminToken');
         
         const headers = {
           'Content-Type': 'application/json'
         };
-        
-        // Si existe token, añadir header Authorization con Bearer
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
         }
@@ -61,8 +58,7 @@ const { project, cardId, isAdmin = false } = Astro.props;
         if (response.status === 401 || response.status === 403) {
           alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
           localStorage.removeItem('adminToken');
-          // Opcional: redirigir al login
-          // window.location.href = '/admin-login';
+          window.location.href = '/admin-login';
           return true;
         }
         return false;
@@ -101,18 +97,12 @@ const { project, cardId, isAdmin = false } = Astro.props;
       const deleteBtn = cardElement.querySelector('.delete-btn');
       if (!deleteBtn) return;
 
-      async function handleDelete() {
-        console.log('🗑️ [DELETE-PROJECT] Intentando eliminar proyecto:', project.id);
-        
-        // Verificar permisos antes de proceder
+      async function handleDelete() {        
         const hasPermissions = await verifyAdminPermissions();
         if (!hasPermissions) {
           alert('Debe iniciar sesión como administrador para realizar esta acción.');
           return;
         }
-
-        console.log('✅ [DELETE-PROJECT] Permisos verificados');
-
         const projectId = project?.id || deleteBtn.getAttribute('data-project-id');
         const projectTitle = project?.title || deleteBtn.getAttribute('data-project-title');
         
@@ -120,11 +110,9 @@ const { project, cardId, isAdmin = false } = Astro.props;
           alert('Error: No se puede eliminar, falta información del proyecto.');
           return;
         }
-
         const confirmed = confirm(`¿Estás seguro de que deseas eliminar el proyecto "${projectTitle}"?\n\nEsta acción no se puede deshacer y eliminará también todas las publicaciones relacionadas.`);
         if (!confirmed) return;
 
-        // Doble confirmación para mayor seguridad
         const doubleConfirmed = confirm(`¡ATENCIÓN!\n\nEstás a punto de eliminar permanentemente:\n- El proyecto: "${projectTitle}"\n- Todas sus publicaciones relacionadas\n- Todos los datos asociados\n\n¿Estás completamente seguro?`);
         if (!doubleConfirmed) return;
 
@@ -140,15 +128,12 @@ const { project, cardId, isAdmin = false } = Astro.props;
           console.log('🔐 [DELETE-PROJECT] Respuesta del servidor:', response.status);
 
           if (response.ok) {
-            alert('Proyecto eliminado correctamente.');
-            console.log('✅ [DELETE-PROJECT] Proyecto eliminado exitosamente');
+            addNotification("success", "Proyecto eliminado correctamente.");
             window.location.reload();
           } else if (handleAuthError(response)) {
             return;
           } else {
             let errorMessage = 'Error desconocido';
-            
-            // Manejo específico de errores comunes
             if (response.status === 404) {
               errorMessage = 'El proyecto no existe o ya ha sido eliminado.';
             } else if (response.status === 409) {
@@ -157,10 +142,8 @@ const { project, cardId, isAdmin = false } = Astro.props;
               errorMessage = 'Error interno del servidor. Intente nuevamente más tarde.';
             } else {
               try {
-                // Intentar leer como texto primero (más compatible)
                 const responseText = await response.text();
                 
-                // Si el texto parece ser JSON, intentar parsearlo
                 if (responseText.startsWith('{') || responseText.startsWith('[')) {
                   try {
                     const errorData = JSON.parse(responseText);
@@ -175,9 +158,8 @@ const { project, cardId, isAdmin = false } = Astro.props;
                 errorMessage = `Error ${response.status}: ${response.statusText}`;
               }
             }
-            
-            console.error('❌ [DELETE-PROJECT] Error del backend:', errorMessage);
-            alert('Error al eliminar el proyecto: ' + errorMessage);
+            addNotification("error", `No se pudo eliminar el proyecto: ${errorMessage}`);
+            window.location.reload();
           }
         } catch (error) {
           console.error('❌ [DELETE-PROJECT] Error de conexión:', error);
@@ -191,6 +173,41 @@ const { project, cardId, isAdmin = false } = Astro.props;
         handleDelete();
       });
     });
+
+    // Notificaciones:
+
+  function addNotification(type, message) {
+    console.log("🔍 addNotification llamado:", { type, message });
+    try {
+      const notifications = JSON.parse(
+        localStorage.getItem("pendingNotifications") || "[]",
+      );
+
+      const notification = {
+        id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        message,
+        type,
+        duration: 4000,
+        timestamp: Date.now(),
+      };
+
+      notifications.push(notification);
+      localStorage.setItem(
+        "pendingNotifications",
+        JSON.stringify(notifications),
+      );
+
+      console.log(
+        "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+        notification,
+      );
+
+      return notification.id;
+    } catch (error) {
+      console.error("❌ Error guardando notificación:", error);
+    }
+  }
+
   </script>
 ) : (
   <p class="text-sm text-gray-500">No se puede eliminar este proyecto.</p>

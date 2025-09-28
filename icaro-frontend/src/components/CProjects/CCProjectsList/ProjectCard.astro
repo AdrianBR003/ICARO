@@ -25,7 +25,6 @@ interface Props {
 const { project, isAdmin = false } = Astro.props;
 const cardId = `project-card-${project.id}`;
 
-// Función para formatear las fechas de yyyy-MM-dd a un formato más legible
 function formatDate(dateString: string | " ... "): string {
   if (!dateString || dateString === " ... ") return " ... ";
   
@@ -56,7 +55,7 @@ const formattedSecondDate = formatDate(project.secondprojectDate);
   <ProjectDelete project={project} cardId={cardId} isAdmin={isAdmin} />
   
   <div class="flex justify-between items-start">
-    <div class="flex-1 pr-16"> <!-- Agregamos padding-right para los botones -->
+    <div class="flex-1 pr-16"> 
       <div class="flex items-center mb-4">
         <span class="bg-[#1D293D] text-white text-xs px-3 py-1 rounded-full font-medium mr-3">
           {formattedFirstDate} / {formattedSecondDate}
@@ -167,7 +166,6 @@ const formattedSecondDate = formatDate(project.secondprojectDate);
 </style>
 
 <script>
-  // Función para alternar la expansión de la tarjeta
   function toggleProjectCard(cardId: string): void {
     const card = document.getElementById(cardId);
     if (card) {
@@ -175,7 +173,6 @@ const formattedSecondDate = formatDate(project.secondprojectDate);
     }
   }
   
-  // Inicialización: Añadir event listeners cuando el DOM esté cargado
   document.addEventListener('DOMContentLoaded', function() {
     const expandButtons = document.querySelectorAll('.expand-btn');
     
@@ -191,6 +188,5 @@ const formattedSecondDate = formatDate(project.secondprojectDate);
     });
   });
 
-  // Hacer la función global para compatibilidad
   (window as any).toggleProjectCard = toggleProjectCard;
 </script>

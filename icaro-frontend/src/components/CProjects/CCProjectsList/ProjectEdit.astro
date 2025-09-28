@@ -5,7 +5,7 @@ export interface Props {
     title: string;
     description: string;
     colaborators: string[];
-    firstprojectDate: string; 
+    firstprojectDate: string;
     secondprojectDate: string;
     [key: string]: any;
   };
@@ -21,7 +21,7 @@ const editBtnId = `edit-btn-${project.id}`;
 <!-- Botón de editar -->
 <button
   id={editBtnId}
-  class={`edit-btn ${isAdmin ? 'flex' : 'hidden'} absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm`}
+  class={`edit-btn ${isAdmin ? "flex" : "hidden"} absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm`}
   data-project-id={project.id}
   data-card-id={cardId}
   aria-label="Editar proyecto"
@@ -33,7 +33,9 @@ const editBtnId = `edit-btn-${project.id}`;
     viewBox="0 0 20 20"
     fill="currentColor"
   >
-    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+    <path
+      d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+    ></path>
   </svg>
 </button>
 
@@ -42,16 +44,27 @@ const editBtnId = `edit-btn-${project.id}`;
   id={modalId}
   class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
 >
-  <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-    <div class="p-6">   
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+  >
+    <div class="p-6">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-xl font-bold">Editar Proyecto</h3>
         <button
           type="button"
           class="close-modal text-gray-500 hover:text-gray-700"
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
       </div>
@@ -60,54 +73,62 @@ const editBtnId = `edit-btn-${project.id}`;
         <input type="hidden" name="projectId" value={project.id} />
 
         <div>
-          <label class="block mb-1 text-sm font-medium">Título del Proyecto *</label>
-          <input 
-            type="text" 
-            name="title" 
-            value={project.title} 
-            required 
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" 
+          <label class="block mb-1 text-sm font-medium"
+            >Título del Proyecto *</label
+          >
+          <input
+            type="text"
+            name="title"
+            value={project.title}
+            required
+            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
           />
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Descripción *</label>
-          <textarea 
-            name="description" 
-            rows="3" 
+          <textarea
+            name="description"
+            rows="3"
             required
             class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
-          >{project.description || ""}</textarea>
+            >{project.description || ""}</textarea
+          >
         </div>
 
         <div>
           <label class="block mb-1 text-sm font-medium">Colaboradores</label>
-          <textarea 
-            name="colaborators" 
-            rows="2" 
+          <textarea
+            name="colaborators"
+            rows="2"
             class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
             placeholder="Colaborador1, Colaborador2, Colaborador3"
-          >{project.colaborators?.join(", ") || ""}</textarea>
+            >{project.colaborators?.join(", ") || ""}</textarea
+          >
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block mb-1 text-sm font-medium">Primera Fecha del Proyecto</label>
-            <input 
-              type="date" 
-              name="firstprojectDate" 
-              value={project.firstprojectDate || ""} 
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" 
+            <label class="block mb-1 text-sm font-medium"
+              >Primera Fecha del Proyecto</label
+            >
+            <input
+              type="date"
+              name="firstprojectDate"
+              value={project.firstprojectDate || ""}
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
             />
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Segunda Fecha del Proyecto</label>
-            <input 
-              type="date" 
-              name="secondprojectDate" 
-              value={project.secondprojectDate || ""} 
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent" 
+            <label class="block mb-1 text-sm font-medium"
+              >Segunda Fecha del Proyecto</label
+            >
+            <input
+              type="date"
+              name="secondprojectDate"
+              value={project.secondprojectDate || ""}
+              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
             />
           </div>
         </div>
@@ -133,30 +154,31 @@ const editBtnId = `edit-btn-${project.id}`;
 
 <script is:inline define:vars={{ modalId, editBtnId, project, isAdmin }}>
   function initializeProjectEditComponent() {
-    
     // ============= SISTEMA DE AUTENTICACIÓN JWT =============
 
     // Helper para generar headers con token JWT
     function getAuthHeaders() {
-      const token = localStorage.getItem('adminToken');
-      
+      const token = localStorage.getItem("adminToken");
+
       const headers = {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       };
-      
+
       // Si existe token, añadir header Authorization con Bearer
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        headers["Authorization"] = `Bearer ${token}`;
       }
-      
+
       return headers;
     }
 
     // Función para manejar errores de autenticación
     function handleAuthError(response) {
       if (response.status === 401 || response.status === 403) {
-        alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-        localStorage.removeItem('adminToken');
+        alert(
+          "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.",
+        );
+        localStorage.removeItem("adminToken");
         // Opcional: redirigir al login
         // window.location.href = '/admin-login';
         return true;
@@ -167,24 +189,24 @@ const editBtnId = `edit-btn-${project.id}`;
     // Verificar si el usuario tiene permisos de admin
     async function verifyAdminPermissions() {
       try {
-        const token = localStorage.getItem('adminToken');
+        const token = localStorage.getItem("adminToken");
         if (!token) {
           return false;
         }
 
-        const response = await fetch('http://localhost:8080/api/auth/verify', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch("http://localhost:8080/api/auth/verify", {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.ok) {
           const data = await response.json();
           return data.authenticated && data.isAdmin;
         } else {
-          localStorage.removeItem('adminToken');
+          localStorage.removeItem("adminToken");
           return false;
         }
       } catch (error) {
-        console.error('❌ [EDIT-PROJECT] Error verificando permisos:', error);
+        console.error("❌ [EDIT-PROJECT] Error verificando permisos:", error);
         return false;
       }
     }
@@ -194,170 +216,246 @@ const editBtnId = `edit-btn-${project.id}`;
     // Buscar el botón directamente por su ID único
     const editBtn = document.getElementById(editBtnId);
     const modal = document.getElementById(modalId);
-    
+
     if (!editBtn || !modal) {
-      console.warn('❌ [EDIT-PROJECT] No se encontraron elementos necesarios:', { editBtn: !!editBtn, modal: !!modal });
+      console.warn(
+        "❌ [EDIT-PROJECT] No se encontraron elementos necesarios:",
+        { editBtn: !!editBtn, modal: !!modal },
+      );
       return;
     }
 
-    const form = modal.querySelector('.project-edit-form');
-    const closeBtn = modal.querySelector('.close-modal');
-    const cancelBtn = modal.querySelector('.cancel-btn');
+    const form = modal.querySelector(".project-edit-form");
+    const closeBtn = modal.querySelector(".close-modal");
+    const cancelBtn = modal.querySelector(".cancel-btn");
 
     if (!form) {
-      console.warn('❌ [EDIT-PROJECT] No se encontró el formulario');
+      console.warn("❌ [EDIT-PROJECT] No se encontró el formulario");
       return;
     }
 
     // Función para abrir el modal
     async function openModal() {
-      console.log('✏️ [EDIT-PROJECT] Intentando abrir modal de edición');
-      
+      console.log("✏️ [EDIT-PROJECT] Intentando abrir modal de edición");
+
       // Verificar permisos antes de abrir el modal
       const hasPermissions = await verifyAdminPermissions();
       if (!hasPermissions) {
-        alert('Debe iniciar sesión como administrador para realizar esta acción.');
+        alert(
+          "Debe iniciar sesión como administrador para realizar esta acción.",
+        );
         return;
       }
 
-      console.log('✅ [EDIT-PROJECT] Permisos verificados, abriendo modal');
-      modal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+      console.log("✅ [EDIT-PROJECT] Permisos verificados, abriendo modal");
+      modal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
     }
 
     // Función para cerrar el modal
     function closeModal() {
-      modal.classList.add('hidden');
-      document.body.style.overflow = '';
-      console.log('❌ [EDIT-PROJECT] Modal cerrado');
+      modal.classList.add("hidden");
+      document.body.style.overflow = "";
+      console.log("❌ [EDIT-PROJECT] Modal cerrado");
     }
 
     // Event listeners
-    editBtn.addEventListener('click', function(e) {
+    editBtn.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
-      console.log('✏️ [EDIT-PROJECT] Botón de editar clickeado');
+      console.log("✏️ [EDIT-PROJECT] Botón de editar clickeado");
       openModal();
     });
 
     if (closeBtn) {
-      closeBtn.addEventListener('click', closeModal);
+      closeBtn.addEventListener("click", closeModal);
     }
 
     if (cancelBtn) {
-      cancelBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener("click", closeModal);
     }
 
     // Cerrar modal al hacer click fuera
-    modal.addEventListener('click', function(e) {
+    modal.addEventListener("click", function (e) {
       if (e.target === modal) {
         closeModal();
       }
     });
 
     // Cerrar con ESC
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !modal.classList.contains("hidden")) {
         closeModal();
       }
     });
 
     // Manejar envío del formulario
-    form.addEventListener('submit', async function(e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
-      
-      console.log('✏️ [EDIT-PROJECT] Intentando actualizar proyecto:', project.id);
-      
+
+      console.log(
+        "✏️ [EDIT-PROJECT] Intentando actualizar proyecto:",
+        project.id,
+      );
+
       // Verificar permisos antes de procesar
       const hasPermissions = await verifyAdminPermissions();
       if (!hasPermissions) {
-        alert('Debe iniciar sesión como administrador para realizar esta acción.');
+        alert(
+          "Debe iniciar sesión como administrador para realizar esta acción.",
+        );
         return;
       }
-      
+
       if (!confirm("¿Estás seguro de que deseas guardar los cambios?")) {
         return;
       }
-      
+
       const formData = new FormData(form);
       const projectData = {
         id: formData.get("projectId"),
         title: formData.get("title"),
         description: formData.get("description"),
-        participants: formData.get("colaborators") ? 
-          formData.get("colaborators").split(",").map(item => item.trim()).filter(Boolean) : [],
+        participants: formData.get("colaborators")
+          ? formData
+              .get("colaborators")
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean)
+          : [],
         firstprojectDate: formData.get("firstprojectDate") || null,
-        secondprojectDate: formData.get("secondprojectDate") || null
+        secondprojectDate: formData.get("secondprojectDate") || null,
       };
 
       try {
-        console.log('📤 [EDIT-PROJECT] Enviando datos de actualización:', projectData);
-        console.log('🔐 [EDIT-PROJECT] Headers que se van a enviar:', getAuthHeaders());
+        console.log(
+          "📤 [EDIT-PROJECT] Enviando datos de actualización:",
+          projectData,
+        );
+        console.log(
+          "🔐 [EDIT-PROJECT] Headers que se van a enviar:",
+          getAuthHeaders(),
+        );
 
-        const response = await fetch("http://localhost:8080/api/project/update", {
-          method: "POST",
-          headers: getAuthHeaders(), // Usar headers con JWT en lugar de credentials
-          body: JSON.stringify(projectData)
-        });
+        const response = await fetch(
+          "http://localhost:8080/api/project/update",
+          {
+            method: "POST",
+            headers: getAuthHeaders(),
+            body: JSON.stringify(projectData),
+          },
+        );
 
-        console.log('🔐 [EDIT-PROJECT] Respuesta del servidor:', response.status);
+        console.log(
+          "🔐 [EDIT-PROJECT] Respuesta del servidor:",
+          response.status,
+        );
 
         if (response.ok) {
-          alert("El proyecto se actualizó correctamente.");
           closeModal();
-          console.log('✅ [EDIT-PROJECT] Proyecto actualizado exitosamente');
+          addNotification("success", "El proyecto se actualizó correctamente.");
           window.location.reload();
         } else if (handleAuthError(response)) {
           return;
         } else {
-          let errorMessage = 'Error desconocido';
-          
+          let errorMessage = "Error desconocido";
+
           // Manejo específico de errores comunes
           if (response.status === 404) {
-            errorMessage = 'El proyecto no existe o no se pudo encontrar.';
+            addNotification("error", "El proyecto no se encontró.");
           } else if (response.status === 409) {
-            errorMessage = 'Conflicto al actualizar el proyecto. Verifique los datos.';
+            addNotification(
+              "error",
+              "Conflicto al actualizar el proyecto. Verifique los datos.",
+            );
           } else if (response.status === 400) {
-            errorMessage = 'Datos inválidos. Verifique que todos los campos estén correctos.';
+            addNotification("error", "El proyecto no se encontró.");
           } else if (response.status === 500) {
-            errorMessage = 'Error interno del servidor. Intente nuevamente más tarde.';
+            addNotification(
+              "error",
+              "Error interno del servidor. Intente nuevamente más tarde.",
+            );
           } else {
             try {
-              // Intentar leer como texto primero (más compatible)
               const responseText = await response.text();
-              
-              // Si el texto parece ser JSON, intentar parsearlo
-              if (responseText.startsWith('{') || responseText.startsWith('[')) {
+
+              if (
+                responseText.startsWith("{") ||
+                responseText.startsWith("[")
+              ) {
                 try {
                   const errorData = JSON.parse(responseText);
-                  errorMessage = errorData.message || errorData.error || responseText;
+                  errorMessage =
+                    errorData.message || errorData.error || responseText;
                 } catch {
                   errorMessage = responseText;
                 }
               } else {
-                errorMessage = responseText || `Error ${response.status}: ${response.statusText}`;
+                errorMessage =
+                  responseText ||
+                  `Error ${response.status}: ${response.statusText}`;
               }
             } catch (error) {
               errorMessage = `Error ${response.status}: ${response.statusText}`;
             }
           }
-          
-          console.error('❌ [EDIT-PROJECT] Error del backend:', errorMessage);
-          alert("Error al actualizar el proyecto: " + errorMessage);
+
+          console.error("❌ [EDIT-PROJECT] Error del backend:", errorMessage);
+          addNotification("error", `No se pudo actualizar el proyecto: ${errorMessage}`);
         }
       } catch (error) {
-        console.error('❌ [EDIT-PROJECT] Error de conexión:', error);
-        alert("Error de conexión al actualizar el proyecto: " + error.message);
+        console.error("❌ [EDIT-PROJECT] Error de conexión:", error);
+        addNotification("error", "Error de conexión al actualizar el proyecto: " + error.message);
       }
     });
 
-    console.log('✅ [EDIT-PROJECT] ProjectEdit inicializado correctamente para:', project.id);
+    console.log(
+      "✅ [EDIT-PROJECT] ProjectEdit inicializado correctamente para:",
+      project.id,
+    );
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeProjectEditComponent);
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initializeProjectEditComponent,
+    );
   } else {
     setTimeout(initializeProjectEditComponent, 50);
+  }
+
+  // Notificaciones:
+
+  function addNotification(type, message) {
+    console.log("🔍 addNotification llamado:", { type, message });
+    try {
+      const notifications = JSON.parse(
+        localStorage.getItem("pendingNotifications") || "[]",
+      );
+
+      const notification = {
+        id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        message,
+        type,
+        duration: 4000,
+        timestamp: Date.now(),
+      };
+
+      notifications.push(notification);
+      localStorage.setItem(
+        "pendingNotifications",
+        JSON.stringify(notifications),
+      );
+
+      console.log(
+        "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+        notification,
+      );
+
+      return notification.id;
+    } catch (error) {
+      console.error("❌ Error guardando notificación:", error);
+    }
   }
 </script>
 
