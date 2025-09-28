@@ -131,18 +131,15 @@ const { work, cardId, isAdmin = false } = Astro.props;
           console.log('🔐 [DELETE-WORK] Respuesta del servidor:', response.status);
 
           if (response.ok) {
-            alert('Publicación eliminada correctamente.');
-            console.log('✅ [DELETE-WORK] Publicación eliminada exitosamente');
+            addNotification("success", 'Publicación eliminada correctamente.');
             window.location.reload();
           } else if (handleAuthError(response)) {
             return;
           } else {
-            console.error('❌ [DELETE-WORK] Error del servidor:', response.status);
-            alert('Error al eliminar la publicación. Por favor, intenta nuevamente.');
+            addNotification("error", 'Error al eliminar la publicación. Por favor, intenta nuevamente.');
           }
         } catch (error) {
-          console.error('❌ [DELETE-WORK] Error de conexión:', error);
-          alert('Error de conexión. Por favor, intenta nuevamente.');
+          addNotification("error", 'Error de conexión. Por favor, intenta nuevamente.');
         }
       }
 
@@ -152,6 +149,39 @@ const { work, cardId, isAdmin = false } = Astro.props;
         handleDelete();
       });
     });
+
+    function addNotification(type, message) {
+    console.log("🔍 addNotification llamado:", { type, message });
+    try {
+      const notifications = JSON.parse(
+        localStorage.getItem("pendingNotifications") || "[]",
+      );
+
+      const notification = {
+        id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        message,
+        type,
+        duration: 4000,
+        timestamp: Date.now(),
+      };
+
+      notifications.push(notification);
+      localStorage.setItem(
+        "pendingNotifications",
+        JSON.stringify(notifications),
+      );
+
+      console.log(
+        "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+        notification,
+      );
+
+      return notification.id;
+    } catch (error) {
+      console.error("❌ Error guardando notificación:", error);
+    }
+  }
+
   </script>
 ) : (
   <p class="text-sm text-gray-500">No se puede eliminar esta publicación.</p>
