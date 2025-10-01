@@ -474,6 +474,7 @@
 
       if (response.ok) {
         projectTitles = await response.json();
+        projectTitles.push("Sin Asignar"); 
         populateProjectSelect();
         console.log(
           "✅ [RESEARCH-ADD] Títulos de proyectos cargados:",
@@ -501,11 +502,9 @@
     const projectSelect = document.getElementById("projectId");
     if (!projectSelect) return;
 
-    // Limpiar opciones existentes
     projectSelect.innerHTML =
       '<option value="">Seleccione un proyecto...</option>';
 
-    // Agregar opciones de proyectos
     projectTitles.forEach((title) => {
       const option = document.createElement("option");
       option.value = title;

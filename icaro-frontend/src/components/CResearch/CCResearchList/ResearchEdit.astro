@@ -194,11 +194,16 @@ const modalId = `modal-${work.id || work.putCode}`;
       console.log('📋 [RESEARCH-EDIT] Cargando títulos de proyectos para edición...');
       
       const response = await fetch('http://localhost:8080/api/project/titles', {
-        headers: getAuthHeaders() // Usar headers con JWT
+        headers: getAuthHeaders() 
       });
       
       if (response.ok) {
         editProjectTitles = await response.json();
+        // Verificar si "No Asignado" existe en el array de títulos
+        const unassignedTitle = "No Asignado";
+        if (!editProjectTitles.includes(unassignedTitle) ||editProjectTitles.isEmpty()) {
+          editProjectTitles.push(unassignedTitle);
+        }
         populateEditProjectSelect(selectElement);
         console.log('✅ [RESEARCH-EDIT] Títulos de proyectos cargados:', editProjectTitles);
       } else if (handleAuthError(response)) {
@@ -211,23 +216,20 @@ const modalId = `modal-${work.id || work.putCode}`;
       console.error('❌ [RESEARCH-EDIT] Error de conexión al cargar proyectos:', error);
       showEditProjectLoadError(selectElement);
     }
+
   }
 
   function populateEditProjectSelect(selectElement) {
     if (!selectElement) return;
     
-    // Guardar el valor actual
     const currentValue = work.projectName || '';
     
-    // Limpiar opciones existentes
     selectElement.innerHTML = '<option value="">Seleccione un proyecto...</option>';
     
-    // Agregar opciones de proyectos
     editProjectTitles.forEach(title => {
       const option = document.createElement('option');
       option.value = title;
       option.textContent = title;
-      // Seleccionar la opción actual si coincide
       if (title === currentValue) {
         option.selected = true;
       }
