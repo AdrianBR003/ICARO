@@ -1,7 +1,6 @@
 ---
 ---
 
-<!-- Modal global de edición -->
 <div id="editModal" class="modal hidden">
   <div class="modal-overlay"></div>
 
@@ -60,7 +59,7 @@
           >
           <input
             type="date"
-            id="editPublicationDate"
+            id="editpublicationDate"
             class="w-full px-3 py-2 border rounded-md"
           />
           <p class="text-xs text-gray-400 mt-1">
@@ -247,7 +246,7 @@
       document.getElementById("editDescription").value =
         newsItem.description || "";
       document.getElementById("editLink").value = newsItem.link || "";
-      document.getElementById("editPublicationDate").value =
+      document.getElementById("editpublicationDate").value =
         newsItem.publicationDate || "";
       document.getElementById("editHighlighted").checked = newsItem.highlighted || false;
 
