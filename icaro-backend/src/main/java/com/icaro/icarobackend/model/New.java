@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Document("news")
 @Data
-@Builder
+@Builder // Se utiliza para crear un constructor cuando hay campos opcionales
 public class New {
 
     @Id
