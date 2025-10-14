@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Document("news")
 @Data
-@Builder
+@Builder // Se utiliza para crear un constructor cuando hay campos opcionales
 public class New {
 
     @Id
@@ -18,6 +18,7 @@ public class New {
     private String title;
     private String description;
     private String link;
+    private boolean highlighted;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate publicationDate;
 }

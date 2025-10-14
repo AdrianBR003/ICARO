@@ -1,6 +1,5 @@
 ---
 const { person } = Astro.props;
-const modalId = `modal-${person.orcid}`;
 ---
 
 <div
@@ -28,8 +27,7 @@ const modalId = `modal-${person.orcid}`;
     <!-- Botón Eliminar -->
     <button
       class="edit-btn delete-btn hidden z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm"
-      data-orcid={person.orcid}
-      data-name={person.name}
+      onclick={`document.dispatchEvent(new CustomEvent('deletePerson', {detail: ${JSON.stringify(person)}}))`}
       aria-label="Eliminar"
     >
       <svg
@@ -128,22 +126,7 @@ const modalId = `modal-${person.orcid}`;
     </div>
   </div>
 
-  <script>
-    // === SISTEMA DE AUTENTICACIÓN JWT ===
-    
-    function getAuthHeaders() {
-      const token = localStorage.getItem('adminToken');
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      return headers;
-    }
-
+  <script is:inline>
     // === FUNCIONES DE CARGA DE IMÁGENES ===
     
     function loadPersonImages() {
@@ -182,63 +165,6 @@ const modalId = `modal-${person.orcid}`;
       });
     }
 
-    // === FUNCIÓN DE ELIMINAR (CORREGIDA) ===
-    
-    // Eliminar investigador - requiere token JWT con ROLE_ADMIN
-    async function deleteInvestigator(orcid, name) {
-      if (!confirm(`¿Estás seguro de que deseas eliminar a ${name}? Esta acción no se puede deshacer.`)) {
-        return;
-      }
-
-      try {
-        const response = await fetch(`http://localhost:8080/api/investigators/delete/${orcid}`, {
-          method: "DELETE",
-          headers: getAuthHeaders(), 
-        });
-
-        if (response.status === 204) {
-          alert("Investigador eliminado correctamente");
-          location.reload();
-        } else if (response.status === 401 || response.status === 403) {
-          alert("No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.");
-          window.location.href = '/admin-login';
-        } else if (response.status === 404) {
-          console.error("Error 404 - Investigador no encontrado:", orcid);
-          alert("Investigador no encontrado. Es posible que ya haya sido eliminado.");
-        } else {
-          const errorText = await response.text();
-          console.error("Error del servidor:", errorText);
-          throw new Error("Error al eliminar el investigador: " + response.status);
-        }
-      } catch (error) {
-        console.error("Error en deleteInvestigator:", error);
-        alert(error.message || "Error al eliminar el investigador");
-      }
-    }
-
-    // === CONFIGURACIÓN DE BOTONES ===
-    
-    function setupDeleteButtons() {
-      const deleteButtons = document.querySelectorAll(".delete-btn");
-
-      deleteButtons.forEach((button) => {
-        // Remover event listeners previos para evitar duplicados
-        button.replaceWith(button.cloneNode(true));
-      });
-
-      // Reseleccionar después del clonado
-      const newDeleteButtons = document.querySelectorAll(".delete-btn");
-      
-      newDeleteButtons.forEach((button) => {
-        button.addEventListener("click", function () {
-          const orcid = this.getAttribute("data-orcid");
-          const name = this.getAttribute("data-name");
-          console.log("Eliminar clicked - ORCID:", orcid, "Name:", name);
-          deleteInvestigator(orcid, name);
-        });
-      });
-    }
-
     // === GESTIÓN DE VISIBILIDAD DE BOTONES ADMIN ===
     
     function updateAdminVisibility(isAdmin) {
@@ -247,11 +173,6 @@ const modalId = `modal-${person.orcid}`;
       editButtons.forEach((btn) => {
         btn.classList.toggle("hidden", !isAdmin);
       });
-
-      // Configurar event listeners solo cuando es admin
-      if (isAdmin) {
-        setupDeleteButtons();
-      }
     }
 
     // Verificar estado admin inicial
@@ -281,7 +202,6 @@ const modalId = `modal-${person.orcid}`;
 
     // === EVENT LISTENERS ===
     
-    // Escuchar cambios de estado admin desde TopUtility
     window.addEventListener("adminStatusChanged", (event) => {
       const { isAdmin } = event.detail;
       updateAdminVisibility(isAdmin);

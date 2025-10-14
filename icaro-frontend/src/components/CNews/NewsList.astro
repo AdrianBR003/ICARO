@@ -1,6 +1,8 @@
 ---
 import NewsCard from "@/components/CNews/CCNewsList/NewsCard.astro";
 import NewsAdd from "@/components/CNews/NewsAdd.astro";
+import NewsEdit from "@/components/CNews/CCNewsList/NewsEdit.astro";
+import NewsDelete from "@/components/CNews/CCNewsList/NewsDelete.astro";
 
 interface News {
   id: string;
@@ -60,148 +62,18 @@ const { news, isAdmin = false } = Astro.props;
     }
   </div>
 
-  <!-- Modal global de edición -->
-  <div
-    id="editModal"
-    class="modal hidden"
-  >
-    <div class="modal-overlay"></div>
-
-    <div class="modal-content">
-      <h3 id="modalTitle" class="text-xl font-bold mb-4">Editar Noticia</h3>
-
-      <form id="editForm" class="space-y-4">
-        <input type="hidden" id="editId" />
-
-        <div>
-          <label class="block mb-1 text-sm font-medium">ID de la noticia</label>
-          <input
-            type="text"
-            id="editIdDisplay"
-            readonly
-            class="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
-            placeholder="Se generará automáticamente al guardar"
-          />
-          <p class="text-xs text-gray-400 mt-1">
-            Este ID es de solo lectura y se genera automáticamente
-          </p>
-        </div>
-
-        <div>
-          <label class="block mb-1 text-sm font-medium">Título *</label>
-          <input
-            type="text"
-            id="editTitle"
-            required
-            class="w-full px-3 py-2 border rounded-md"
-          />
-        </div>
-
-        <div>
-          <label class="block mb-1 text-sm font-medium">Descripción *</label>
-          <textarea
-            id="editDescription"
-            required
-            class="w-full px-3 py-2 border rounded-md h-40"></textarea>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1 text-sm font-medium">Enlace (URL)</label>
-            <input
-              type="url"
-              id="editLink"
-              class="w-full px-3 py-2 border rounded-md"
-              placeholder="https://ejemplo.com"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium"
-              >Fecha de Publicación</label
-            >
-            <input
-              type="date"
-              id="editPublicationDate"
-              class="w-full px-3 py-2 border rounded-md"
-            />
-            <p class="text-xs text-gray-400 mt-1">
-              Fecha en que se publica la noticia
-            </p>
-          </div>
-        </div>
-
-        <div class="flex gap-4 pt-4">
-          <button
-            type="button"
-            onclick="window.hideModal()"
-            class="px-4 py-2 border rounded-md hover:bg-gray-50"
-            >Cancelar</button
-          >
-          <button
-            type="submit"
-            class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
-            >Guardar</button
-          >
-        </div>
-      </form>
-    </div>
-  </div>
-
-<style is:global>
-  /* Sistema de modal unificado y simplificado */
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    background: rgba(0, 0, 0, 0.5);
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  
-  .modal:not(.hidden) {
-    display: flex;
-  }
-  
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: transparent;
-  }
-  
-  .modal-content {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    width: 100%;
-    max-width: 48rem;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 1.5rem;
-    position: relative;
-    z-index: 101;
-  }
-  
-  /* Scroll locking simple y efectivo */
-  body.modal-open {
-    overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
-  }
-</style>
+  <!-- Componentes hijos para funcionalidades específicas -->
+  <NewsEdit />
+  <NewsDelete />
 
   <script is:inline define:vars={{ isAdmin }}>
     document.addEventListener("DOMContentLoaded", function () {
       console.log("🔔 [NewsList] Componente cargado");
 
       // ============= CONFIGURACIÓN =============
-      const API_BASE_URL = "http://localhost:8080/api/news";
       const ASSETS_BASE_URL = "http://localhost:8080/assets/news";
       const imageCache = new Map();
       let currentAdminStatus = false;
-      let scrollPosition = 0;
 
       // ============= SISTEMA DE AUTENTICACIÓN =============
       function getAuthHeaders() {
@@ -220,9 +92,12 @@ const { news, isAdmin = false } = Astro.props;
             return false;
           }
 
-          const response = await fetch("http://localhost:8080/api/auth/verify", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const response = await fetch(
+            "http://localhost:8080/api/auth/verify",
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
 
           if (response.ok) {
             const data = await response.json();
@@ -240,74 +115,14 @@ const { news, isAdmin = false } = Astro.props;
         }
       }
 
-      function handleAuthError(response) {
-        if (response.status === 401 || response.status === 403) {
-          alert("No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.");
-          localStorage.removeItem("adminToken");
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          window.location.href = "/admin-login";
-          return true;
-        }
-        return false;
-      }
-
       function updateAdminElements(isAdmin) {
-        const adminButtons = document.querySelectorAll('[id^="admin-buttons-"]');
-        adminButtons.forEach(button => {
+        const adminButtons = document.querySelectorAll(
+          '[id^="admin-buttons-"]',
+        );
+        adminButtons.forEach((button) => {
           button.classList.toggle("hidden", !isAdmin);
         });
       }
-
-      // ============= SISTEMA DE MODALES =============
-      window.showModal = function () {
-        const modal = document.getElementById('editModal');
-        if (!modal) return;
-
-        // Guardar posición del scroll
-        scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-        
-        // Bloquear scroll
-        document.body.classList.add('modal-open');
-        document.body.style.top = `-${scrollPosition}px`;
-        
-        // Mostrar modal
-        modal.classList.remove('hidden');
-
-        // Focus para accesibilidad
-        setTimeout(() => {
-          const firstInput = modal.querySelector("input, textarea, select, button");
-          if (firstInput) firstInput.focus();
-        }, 100);
-      };
-
-      window.hideModal = function () {
-        const modal = document.getElementById('editModal');
-        if (!modal) return;
-
-        // Ocultar modal
-        modal.classList.add('hidden');
-        
-        // Restaurar scroll después de un pequeño delay
-        setTimeout(() => {
-          document.body.classList.remove('modal-open');
-          document.body.style.top = '';
-          window.scrollTo(0, scrollPosition);
-        }, 50);
-      };
-
-      // Event listeners para cerrar modal
-      document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('modal-overlay')) {
-          window.hideModal();
-        }
-      });
-
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-          window.hideModal();
-        }
-      });
 
       // ============= FUNCIONALIDAD DE IMÁGENES =============
       window.loadNewsImages = function () {
@@ -366,193 +181,28 @@ const { news, isAdmin = false } = Astro.props;
 
       // ============= BÚSQUEDA =============
       function setupSearch() {
-        const searchInput = document.getElementById('search-input');
-        const newsList = document.getElementById('news-list');
+        const searchInput = document.getElementById("search-input");
+        const newsList = document.getElementById("news-list");
 
         if (!searchInput || !newsList) return;
 
         const newsCards = Array.from(newsList.children);
 
-        searchInput.addEventListener('input', (e) => {
+        searchInput.addEventListener("input", (e) => {
           const searchTerm = e.target.value.toLowerCase().trim();
-          
-          newsCards.forEach(card => {
-            const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
-            const description = card.querySelector('.text-gray-600')?.textContent.toLowerCase() || '';
-            const matches = title.includes(searchTerm) || description.includes(searchTerm);
-            card.style.display = matches ? '' : 'none';
+
+          newsCards.forEach((card) => {
+            const title =
+              card.querySelector("h3")?.textContent.toLowerCase() || "";
+            const description =
+              card.querySelector(".text-gray-600")?.textContent.toLowerCase() ||
+              "";
+            const matches =
+              title.includes(searchTerm) || description.includes(searchTerm);
+            card.style.display = matches ? "" : "none";
           });
         });
       }
-
-      // ============= FUNCIONES GLOBALES =============
-      window.editNews = function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (!currentAdminStatus) {
-          alert("Debe iniciar sesión como administrador para realizar esta acción.");
-          return;
-        }
-
-        const token = localStorage.getItem("adminToken");
-        if (!token) {
-          alert("Sesión expirada. Por favor, inicie sesión nuevamente.");
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          return;
-        }
-
-        const button = event.currentTarget;
-        const newsItem = {
-          id: button.getAttribute("data-news-id"),
-          title: button.getAttribute("data-news-title"),
-          description: button.getAttribute("data-news-description"),
-          link: button.getAttribute("data-news-link") || "",
-          publicationDate: button.getAttribute("data-news-publicationdate") || "",
-        };
-
-        // Poblar modal
-        document.getElementById("editId").value = newsItem.id || "";
-        document.getElementById("editIdDisplay").value = newsItem.id || window.generateNewsId();
-        document.getElementById("editTitle").value = newsItem.title || "";
-        document.getElementById("editDescription").value = newsItem.description || "";
-        document.getElementById("editLink").value = newsItem.link || "";
-        document.getElementById("editPublicationDate").value = newsItem.publicationDate || "";
-
-        document.getElementById("modalTitle").textContent = newsItem.id 
-          ? `Editar "${newsItem.title}"` 
-          : "Crear Nueva Noticia";
-
-        window.showModal();
-      };
-
-      window.deleteNews = async function (newsId) {
-        if (!currentAdminStatus) {
-          alert("Debe iniciar sesión como administrador para realizar esta acción.");
-          return;
-        }
-
-        if (!confirm("¿Estás seguro de que quieres eliminar esta noticia?")) {
-          return;
-        }
-
-        try {
-          const token = localStorage.getItem('adminToken');
-          const response = await fetch(`${API_BASE_URL}/delete/${newsId}`, {
-            method: "DELETE",
-            headers: getAuthHeaders(),
-          });
-
-          if (response.ok) {
-            const newsElement = document.getElementById(newsId);
-            if (newsElement) {
-              newsElement.style.opacity = "0";
-              newsElement.style.transform = "translateX(-100%)";
-              setTimeout(() => newsElement.remove(), 300);
-            }
-            imageCache.delete(newsId);
-            addNotification("success", "Noticia eliminada exitosamente.");
-          } else if (handleAuthError(response)) {
-            return;
-          } else {
-            addNotification("error", "Error al eliminar la noticia.");
-          }
-        } catch (error) {
-          console.error("❌ Error:", error);
-          addNotification("error", "Error de conexión al eliminar la noticia.");
-        }
-      };
-
-      window.generateNewsId = function () {
-        return `news-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      };
-
-      // ============= GUARDAR NOTICIAS =============
-      async function saveNews(newsData) {
-        if (!currentAdminStatus) {
-          alert("Debe iniciar sesión como administrador para realizar esta acción.");
-          return false;
-        }
-
-        const token = localStorage.getItem("adminToken");
-        if (!token) {
-          alert("Sesión expirada. Por favor, inicie sesión nuevamente.");
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          return false;
-        }
-
-        try {
-          const isEdit = !!newsData.id && !newsData.id.includes("news-");
-          const url = isEdit ? `${API_BASE_URL}/update` : `${API_BASE_URL}/create`;
-
-          const response = await fetch(url, {
-            method: "POST",
-            headers: getAuthHeaders(),
-            body: JSON.stringify({
-              id: newsData.id,
-              title: newsData.title,
-              description: newsData.description,
-              link: newsData.link || "",
-              publicationDate: newsData.publicationDate || null,
-            }),
-          });
-
-          if (response.ok) {
-            addNotification("success", "Noticia guardada correctamente");
-            return true;
-          } else if (handleAuthError(response)) {
-            return false;
-          } else if (response.status === 409) {
-            addNotification("error", "Ya existe una noticia con este ID");
-            return false;
-          } else {
-            addNotification("error", "Error al guardar la noticia");
-            return false;
-          }
-        } catch (error) {
-          console.error("❌ Error en saveNews:", error);
-          addNotification("error", "Error de conexión al servidor");
-          return false;
-        }
-      }
-
-      // ============= EVENT LISTENERS =============
-      document.getElementById("editForm")?.addEventListener("submit", async function (e) {
-        e.preventDefault();
-
-        const id = document.getElementById("editId").value || window.generateNewsId();
-        const title = document.getElementById("editTitle").value;
-        const description = document.getElementById("editDescription").value;
-        const link = document.getElementById("editLink").value;
-        const publicationDate = document.getElementById("editPublicationDate").value;
-
-        if (!title.trim() || !description.trim()) {
-          addNotification("error", "Título y Descripción son obligatorios.");
-          return;
-        }
-
-        const newsData = {
-          id: id,
-          title: title.trim(),
-          description: description.trim(),
-          link: link.trim(),
-          publicationDate: publicationDate || null,
-        };
-
-        const success = await saveNews(newsData);
-
-        if (success) {
-          window.hideModal();
-          document.getElementById("editForm").reset();
-
-          // Recargar la página para mostrar los cambios
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
-        }
-      });
 
       // ============= OBSERVADOR PARA NUEVAS IMÁGENES =============
       const observer = new MutationObserver((mutations) => {
@@ -568,14 +218,43 @@ const { news, isAdmin = false } = Astro.props;
         observer.observe(newsListElement, { childList: true, subtree: true });
       }
 
-      // ============= INICIALIZACIÓN =============
-      function addNotification(type, message) {
-        const notifications = JSON.parse(
-          sessionStorage.getItem("notifications") || "[]",
-        );
-        notifications.push({ type, message });
-        sessionStorage.setItem("notifications", JSON.stringify(notifications));
+      // ============= NOTIFICACIONES =============
+      window.addNotification = function(type, message) {
+        console.log("🔍 addNotification llamado:", { type, message });
+        try {
+          const notifications = JSON.parse(
+            localStorage.getItem("pendingNotifications") || "[]",
+          );
+
+          const notification = {
+            id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            message,
+            type,
+            duration: 4000,
+            timestamp: Date.now(),
+          };
+
+          notifications.push(notification);
+          localStorage.setItem(
+            "pendingNotifications",
+            JSON.stringify(notifications),
+          );
+
+          console.log(
+            "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+            notification,
+          );
+
+          return notification.id;
+        } catch (error) {
+          console.error("❌ Error guardando notificación:", error);
+        }
       }
+
+      // ============= FUNCIONES GLOBALES COMPARTIDAS =============
+      window.getCurrentAdminStatus = () => currentAdminStatus;
+      window.getAuthHeaders = getAuthHeaders;
+      window.updateAdminElements = updateAdminElements;
 
       // Escuchar cambios de estado admin
       window.addEventListener("adminStatusChanged", function (event) {
@@ -583,12 +262,14 @@ const { news, isAdmin = false } = Astro.props;
         updateAdminElements(currentAdminStatus);
       });
 
-      // Inicializar componentes
+      // ============= INICIALIZACIÓN =============
       checkAdminStatus();
       window.loadNewsImages();
       setupSearch();
 
-      console.log("✅ [NewsList] Inicialización completa con todas las funcionalidades");
+      console.log(
+        "✅ [NewsList] Inicialización completa con todas las funcionalidades",
+      );
     });
   </script>
 </div>

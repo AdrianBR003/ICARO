@@ -127,6 +127,203 @@ const { tagCategories, projectCategories, researchGroups, mostRecentYear } = Ast
   </div>
 </div>
 
+<script is:inline>
+  // ============= FUNCIONALIDAD DE FILTROS =============
+  function initializeFilters() {
+    console.log('🔍 [FILTERS] Inicializando filtros');
+    
+    let visibleItems = 10;
+    const articles = Array.from(document.querySelectorAll(".publication-entry"));
+    const categoryButtons = document.querySelectorAll(".category-btn");
+    let activeFilters = new Set();
+
+    // Event listeners para botones de categoría
+    categoryButtons.forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const category = this.dataset.category;
+        const type = this.dataset.type;
+        const isActive = this.classList.contains("active-filter");
+
+        if (isActive) {
+          // Remover filtro activo
+          if (type === "project") {
+            this.classList.remove(
+              "active-filter",
+              "pl-3",
+              "pr-4",
+              "bg-blue-600",
+              "text-white",
+              "border-blue-600",
+            );
+            this.classList.add(
+              "bg-blue-50",
+              "text-blue-800",
+              "border-blue-200",
+              "hover:bg-blue-100",
+            );
+          } else {
+            this.classList.remove(
+              "active-filter",
+              "pl-3",
+              "pr-4",
+              "bg-[#1D293D]",
+              "text-white",
+              "border-[#1D293D]",
+            );
+            this.classList.add(
+              "bg-white",
+              "text-gray-800",
+              "border-gray-200",
+              "hover:bg-[#1D293D]",
+              "hover:text-white",
+            );
+          }
+          this.querySelector(".close-icon").classList.add("hidden");
+          activeFilters.delete(category);
+        } else {
+          // Activar filtro
+          if (type === "project") {
+            this.classList.add(
+              "active-filter",
+              "pl-3",
+              "pr-4",
+              "bg-blue-600",
+              "text-white",
+              "border-blue-600",
+            );
+            this.classList.remove(
+              "bg-blue-50",
+              "text-blue-800",
+              "border-blue-200",
+              "hover:bg-blue-100",
+            );
+          } else {
+            this.classList.add(
+              "active-filter",
+              "pl-3",
+              "pr-4",
+              "bg-[#1D293D]",
+              "text-white",
+              "border-[#1D293D]",
+            );
+            this.classList.remove(
+              "bg-white",
+              "text-gray-800",
+              "border-gray-200",
+              "hover:bg-[#1D293D]",
+              "hover:text-white",
+            );
+          }
+          this.querySelector(".close-icon").classList.remove("hidden");
+          activeFilters.add(category);
+        }
+
+        updateArticlesDisplay();
+      });
+    });
+
+    // Función para actualizar la visualización de artículos
+    function updateArticlesDisplay() {
+      const yearFilter = document.getElementById("year-filter");
+      const selectedYear = yearFilter ? yearFilter.value : "all";
+      let visibleCount = 0;
+
+      articles.forEach((article) => {
+        const tagsStr = article.getAttribute("data-tags") || "";
+        const tags = tagsStr.split(",").map((t) => t.trim());
+        const projectName = article.getAttribute("data-project-name") || "";
+        const articleYear = article.getAttribute("data-year");
+
+        const allArticleCategories = [...tags];
+        if (projectName && projectName.trim() !== "") {
+          allArticleCategories.push(projectName);
+        }
+
+        let categoryFilterPassed = false;
+
+        if (activeFilters.size === 0) {
+          categoryFilterPassed = true;
+        } else {
+          categoryFilterPassed = Array.from(activeFilters).every((filter) =>
+            allArticleCategories.includes(filter),
+          );
+        }
+
+        const yearFilterPassed =
+          selectedYear === "all" || articleYear === selectedYear;
+
+        const shouldShow =
+          categoryFilterPassed &&
+          yearFilterPassed &&
+          visibleCount < visibleItems;
+
+        article.style.display = shouldShow ? "block" : "none";
+        if (shouldShow) visibleCount++;
+      });
+
+      const loadMoreBtn = document.getElementById("load-more");
+      if (loadMoreBtn) {
+        loadMoreBtn.style.display =
+          visibleCount >= visibleItems ? "inline-block" : "none";
+      }
+    }
+
+    // Event listener para filtro de año
+    const yearFilter = document.getElementById("year-filter");
+    if (yearFilter) {
+      yearFilter.addEventListener("change", updateArticlesDisplay);
+    }
+
+    // Event listener para búsqueda
+    const searchInput = document.getElementById("search-input");
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        const searchTerm = searchInput.value.toLowerCase();
+
+        articles.forEach((article) => {
+          const title =
+            article.querySelector("h3")?.textContent.toLowerCase() || "";
+          const authors =
+            article
+              .querySelector("p.text-sm.text-gray-700")
+              ?.textContent.toLowerCase() || "";
+          const shouldShow =
+            title.includes(searchTerm) || authors.includes(searchTerm);
+          article.style.display = shouldShow ? "block" : "none";
+        });
+      });
+    }
+
+    // Event listener para botón "Mostrar más"
+    const loadMoreBtn = document.getElementById("load-more");
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener("click", () => {
+        visibleItems += 10;
+        updateArticlesDisplay();
+      });
+    }
+
+    // Función para exponer la funcionalidad al scope global
+    window.updateArticlesDisplay = updateArticlesDisplay;
+    window.increaseVisibleItems = () => {
+      visibleItems += 10;
+      updateArticlesDisplay();
+    };
+
+    // Inicializar visualización
+    updateArticlesDisplay();
+    
+    console.log('✅ [FILTERS] Filtros inicializados correctamente');
+  }
+
+  // Inicializar cuando el DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeFilters);
+  } else {
+    initializeFilters();
+  }
+</script>
+
 <style>
   .category-btn {
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);

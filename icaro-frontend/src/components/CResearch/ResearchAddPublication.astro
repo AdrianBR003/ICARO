@@ -1,4 +1,5 @@
 ---
+
 ---
 
 <div id="add-publication-container" class="mb-6 flex justify-center">
@@ -7,12 +8,17 @@
     class="edit-btn hidden bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded items-center gap-2 whitespace-nowrap transition-colors"
     onclick="showAddPublicationModal()"
   >
-    <svg xmlns="http://www.w3.org/2000/svg"
-         class="h-5 w-5 inline-block self-center"
-         viewBox="0 0 20 20"
-         fill="currentColor"
-         aria-hidden="true">
-      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5 inline-block self-center"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        fill-rule="evenodd"
+        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+        clip-rule="evenodd"></path>
     </svg>
 
     <span class="leading-none align-middle">Añadir Publicación</span>
@@ -26,12 +32,13 @@
     <div
       class="modal-overlay absolute inset-0 bg-black/50"
       onclick="hideAddPublicationModal()"
-    ></div>
+    >
+    </div>
 
     <div
       class="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
     >
-      <div class="p-6">   
+      <div class="p-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold">Añadir Nueva Publicación</h3>
           <button
@@ -39,15 +46,26 @@
             onclick="hideAddPublicationModal()"
             class="text-gray-500 hover:text-gray-700"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
         </div>
 
         <form id="add-publication-form" class="space-y-4">
           <div>
-            <label class="block mb-1 text-sm font-medium">PutCode (Identificador Local)</label>
+            <label class="block mb-1 text-sm font-medium"
+              >PutCode (Identificador Local)</label
+            >
             <input
               type="text"
               id="putCode"
@@ -69,7 +87,9 @@
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Descripción/Resumen</label>
+            <label class="block mb-1 text-sm font-medium"
+              >Descripción/Resumen</label
+            >
             <textarea
               id="description"
               name="description"
@@ -86,12 +106,13 @@
               required
               rows="2"
               class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
-              placeholder="Autor1, Autor2, Autor3"
-            ></textarea>
+              placeholder="Autor1, Autor2, Autor3"></textarea>
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">ORCIDs de los Participantes</label>
+            <label class="block mb-1 text-sm font-medium"
+              >ORCIDs de los Participantes</label
+            >
             <textarea
               id="ownerOrcids"
               name="ownerOrcids"
@@ -99,12 +120,21 @@
               class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent"
               placeholder="0000-0000-0000-0000, 0000-0000-0000-0000, ..."
             ></textarea>
-            <p class="text-xs text-gray-500 mt-1">Ingrese los ORCIDs en el mismo orden que los autores, separados por comas</p>
+            <p class="text-xs text-gray-500 mt-1">
+              Ingrese los ORCIDs en el mismo orden que los autores, separados
+              por comas
+            </p>
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Identificadores Externos</label>
-            <div class="flex flex-wrap py-2 px-3 border rounded-md" id="externalIdsContainer"></div>
+            <label class="block mb-1 text-sm font-medium"
+              >Identificadores Externos</label
+            >
+            <div
+              class="flex flex-wrap py-2 px-3 border rounded-md"
+              id="externalIdsContainer"
+            >
+            </div>
             <div class="flex mt-2">
               <input
                 type="text"
@@ -117,17 +147,30 @@
                 onclick="addExternalId()"
                 class="px-3 bg-[#006D38] text-white rounded-r-md hover:bg-[#005229] transition-colors"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
               </button>
             </div>
-            <p class="text-xs text-gray-500 mt-1">Presione Enter o el botón '+' para añadir identificadores</p>
+            <p class="text-xs text-gray-500 mt-1">
+              Presione Enter o el botón '+' para añadir identificadores
+            </p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block mb-1 text-sm font-medium">Fecha de Publicación *</label>
+              <label class="block mb-1 text-sm font-medium"
+                >Fecha de Publicación *</label
+              >
               <input
                 type="date"
                 id="projectDate"
@@ -138,7 +181,9 @@
             </div>
 
             <div>
-              <label class="block mb-1 text-sm font-medium">Nombre del Proyecto</label>
+              <label class="block mb-1 text-sm font-medium"
+                >Nombre del Proyecto</label
+              >
               <div class="relative">
                 <select
                   id="projectId"
@@ -147,11 +192,23 @@
                   class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent appearance-none bg-white"
                 >
                   <option value="">Seleccione un proyecto...</option>
-                  <option value="loading" disabled>Cargando proyectos...</option>
+                  <option value="loading" disabled>Cargando proyectos...</option
+                  >
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                <div
+                  class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
+                >
+                  <svg
+                    class="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"></path>
                   </svg>
                 </div>
               </div>
@@ -159,7 +216,9 @@
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Tipo de Publicación *</label>
+            <label class="block mb-1 text-sm font-medium"
+              >Tipo de Publicación *</label
+            >
             <input
               type="text"
               id="workType"
@@ -171,8 +230,14 @@
           </div>
 
           <div>
-            <label class="block mb-1 text-sm font-medium">Etiquetas Adicionales</label>
-            <div class="flex flex-wrap py-2 px-3 border rounded-md" id="tagsContainer"></div>
+            <label class="block mb-1 text-sm font-medium"
+              >Etiquetas Adicionales</label
+            >
+            <div
+              class="flex flex-wrap py-2 px-3 border rounded-md"
+              id="tagsContainer"
+            >
+            </div>
             <div class="flex mt-2">
               <input
                 type="text"
@@ -185,12 +250,23 @@
                 onclick="addTag()"
                 class="px-3 bg-[#006D38] text-white rounded-r-md hover:bg-[#005229] transition-colors"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
               </button>
             </div>
-            <p class="text-xs text-gray-500 mt-1">Presione Enter o el botón '+' para añadir etiquetas</p>
+            <p class="text-xs text-gray-500 mt-1">
+              Presione Enter o el botón '+' para añadir etiquetas
+            </p>
           </div>
 
           <div>
@@ -226,267 +302,293 @@
 </div>
 
 <script is:inline>
-let tagsList = [];
-let externalIdsList = [];
-let projectTitles = [];
-let currentAdminStatus = false;
+  let tagsList = [];
+  let externalIdsList = [];
+  let projectTitles = [];
+  let currentAdminStatus = false;
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 [RESEARCH-ADD] Componente iniciado');
-  initializeEventListeners();
-  loadProjectTitles();
-  initializeAdminStatus();
-});
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("🚀 [RESEARCH-ADD] Componente iniciado");
+    initializeEventListeners();
+    loadProjectTitles();
+    initializeAdminStatus();
+  });
 
-// ============= SISTEMA DE AUTENTICACIÓN JWT =============
+  // ============= SISTEMA DE AUTENTICACIÓN JWT =============
 
-// Helper para generar headers con token JWT
-function getAuthHeaders() {
-  const token = localStorage.getItem('adminToken');
-  
-  const headers = {
-    'Content-Type': 'application/json'
-  };
-  
-  // Si existe token, añadir header Authorization con Bearer
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  // Helper para generar headers con token JWT
+  function getAuthHeaders() {
+    const token = localStorage.getItem("adminToken");
+
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
+    // Si existe token, añadir header Authorization con Bearer
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return headers;
   }
-  
-  return headers;
-}
 
-// Verificar estado admin con token JWT
-async function checkAdminStatus() {
-  console.log('🔐 [RESEARCH-ADD] Verificando estado admin...');
-  
-  try {
-    const token = localStorage.getItem('adminToken');
-    if (!token) {
-      console.log('🔐 [RESEARCH-ADD] No hay token almacenado');
+  // Verificar estado admin con token JWT
+  async function checkAdminStatus() {
+    console.log("🔐 [RESEARCH-ADD] Verificando estado admin...");
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        console.log("🔐 [RESEARCH-ADD] No hay token almacenado");
+        currentAdminStatus = false;
+        return false;
+      }
+
+      console.log("🔐 [RESEARCH-ADD] Token encontrado, verificando...");
+      const response = await fetch("http://localhost:8080/api/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const isAdmin = data.authenticated && data.isAdmin;
+        console.log("🔐 [RESEARCH-ADD] Verificación exitosa:", {
+          isAdmin,
+          username: data.username,
+        });
+        currentAdminStatus = isAdmin;
+        return isAdmin;
+      } else {
+        console.log(
+          "🔐 [RESEARCH-ADD] Token inválido, status:",
+          response.status,
+        );
+        throw new Error("Token inválido");
+      }
+    } catch (error) {
+      console.error("❌ [RESEARCH-ADD] Error verificando token:", error);
+      localStorage.removeItem("adminToken");
       currentAdminStatus = false;
       return false;
     }
+  }
 
-    console.log('🔐 [RESEARCH-ADD] Token encontrado, verificando...');
-    const response = await fetch('http://localhost:8080/api/auth/verify', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      const isAdmin = data.authenticated && data.isAdmin;
-      console.log('🔐 [RESEARCH-ADD] Verificación exitosa:', { isAdmin, username: data.username });
-      currentAdminStatus = isAdmin;
-      return isAdmin;
-    } else {
-      console.log('🔐 [RESEARCH-ADD] Token inválido, status:', response.status);
-      throw new Error('Token inválido');
+  // Función para manejar errores de autenticación
+  function handleAuthError(response) {
+    if (response.status === 401 || response.status === 403) {
+      alert(
+        "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.",
+      );
+      localStorage.removeItem("adminToken");
+      currentAdminStatus = false;
+      window.location.href = "/admin-login";
+      return true;
     }
-  } catch (error) {
-    console.error('❌ [RESEARCH-ADD] Error verificando token:', error);
-    localStorage.removeItem('adminToken');
-    currentAdminStatus = false;
     return false;
   }
-}
 
-// Función para manejar errores de autenticación
-function handleAuthError(response) {
-  if (response.status === 401 || response.status === 403) {
-    alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-    localStorage.removeItem('adminToken');
-    currentAdminStatus = false;
-    window.location.href = '/admin-login';
-    return true;
-  }
-  return false;
-}
+  // Inicializar estado admin
+  async function initializeAdminStatus() {
+    await checkAdminStatus();
 
-// Inicializar estado admin
-async function initializeAdminStatus() {
-  await checkAdminStatus();
-  
-  // Escuchar cambios desde TopUtility
-  window.addEventListener('adminStatusChanged', function(event) {
-    const { isAdmin, source } = event.detail;
-    console.log(`🔄 [RESEARCH-ADD] Estado admin cambiado desde ${source}:`, isAdmin);
-    currentAdminStatus = isAdmin;
-  });
-  
-  // Verificar al volver a la pestaña
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      console.log('👁️ [RESEARCH-ADD] Tab visible, verificando admin status');
-      checkAdminStatus();
-    }
-  });
+    // Escuchar cambios desde TopUtility
+    window.addEventListener("adminStatusChanged", function (event) {
+      const { isAdmin, source } = event.detail;
+      console.log(
+        `🔄 [RESEARCH-ADD] Estado admin cambiado desde ${source}:`,
+        isAdmin,
+      );
+      currentAdminStatus = isAdmin;
+    });
 
-  // Escuchar cambios en localStorage
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'adminToken') {
-      console.log('🔄 [RESEARCH-ADD] Token cambiado en localStorage:', e.newValue ? 'Token añadido' : 'Token eliminado');
-      if (e.newValue) {
+    // Verificar al volver a la pestaña
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        console.log("👁️ [RESEARCH-ADD] Tab visible, verificando admin status");
         checkAdminStatus();
+      }
+    });
+
+    // Escuchar cambios en localStorage
+    window.addEventListener("storage", (e) => {
+      if (e.key === "adminToken") {
+        console.log(
+          "🔄 [RESEARCH-ADD] Token cambiado en localStorage:",
+          e.newValue ? "Token añadido" : "Token eliminado",
+        );
+        if (e.newValue) {
+          checkAdminStatus();
+        } else {
+          currentAdminStatus = false;
+        }
+      }
+    });
+  }
+
+  // ============= GESTIÓN DE EVENTOS Y UI =============
+
+  function initializeEventListeners() {
+    const tagInput = document.getElementById("tagInput");
+    const externalIdInput = document.getElementById("externalIdInput");
+    const form = document.getElementById("add-publication-form");
+
+    if (tagInput) {
+      tagInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          addTag();
+        }
+      });
+    }
+
+    if (externalIdInput) {
+      externalIdInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          addExternalId();
+        }
+      });
+    }
+
+    if (form) {
+      form.addEventListener("submit", handleFormSubmit);
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        hideAddPublicationModal();
+      }
+    });
+  }
+
+  // ============= GESTIÓN DE PROYECTOS =============
+
+  async function loadProjectTitles() {
+    try {
+      console.log("📋 [RESEARCH-ADD] Cargando títulos de proyectos...");
+
+      // Usar headers con token si está disponible
+      const response = await fetch("http://localhost:8080/api/project/titles", {
+        headers: getAuthHeaders(),
+      });
+
+      if (response.ok) {
+        projectTitles = await response.json();
+        projectTitles.push("Sin Asignar"); 
+        populateProjectSelect();
+        console.log(
+          "✅ [RESEARCH-ADD] Títulos de proyectos cargados:",
+          projectTitles,
+        );
+      } else if (handleAuthError(response)) {
+        return;
       } else {
-        currentAdminStatus = false;
+        console.error(
+          "❌ [RESEARCH-ADD] Error al cargar títulos de proyectos:",
+          response.status,
+        );
+        showProjectLoadError();
       }
-    }
-  });
-}
-
-// ============= GESTIÓN DE EVENTOS Y UI =============
-
-function initializeEventListeners() {
-  const tagInput = document.getElementById('tagInput');
-  const externalIdInput = document.getElementById('externalIdInput');
-  const form = document.getElementById('add-publication-form');
-  
-  if (tagInput) {
-    tagInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addTag();
-      }
-    });
-  }
-  
-  if (externalIdInput) {
-    externalIdInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addExternalId();
-      }
-    });
-  }
-  
-  if (form) {
-    form.addEventListener('submit', handleFormSubmit);
-  }
-  
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      hideAddPublicationModal();
-    }
-  });
-}
-
-// ============= GESTIÓN DE PROYECTOS =============
-
-async function loadProjectTitles() {
-  try {
-    console.log('📋 [RESEARCH-ADD] Cargando títulos de proyectos...');
-    
-    // Usar headers con token si está disponible
-    const response = await fetch('http://localhost:8080/api/project/titles', {
-      headers: getAuthHeaders()
-    });
-    
-    if (response.ok) {
-      projectTitles = await response.json();
-      populateProjectSelect();
-      console.log('✅ [RESEARCH-ADD] Títulos de proyectos cargados:', projectTitles);
-    } else if (handleAuthError(response)) {
-      return;
-    } else {
-      console.error('❌ [RESEARCH-ADD] Error al cargar títulos de proyectos:', response.status);
+    } catch (error) {
+      console.error(
+        "❌ [RESEARCH-ADD] Error de conexión al cargar proyectos:",
+        error,
+      );
       showProjectLoadError();
     }
-  } catch (error) {
-    console.error('❌ [RESEARCH-ADD] Error de conexión al cargar proyectos:', error);
-    showProjectLoadError();
   }
-}
 
-function populateProjectSelect() {
-  const projectSelect = document.getElementById('projectId');
-  if (!projectSelect) return;
-  
-  // Limpiar opciones existentes
-  projectSelect.innerHTML = '<option value="">Seleccione un proyecto...</option>';
-  
-  // Agregar opciones de proyectos
-  projectTitles.forEach(title => {
-    const option = document.createElement('option');
-    option.value = title;
-    option.textContent = title;
-    projectSelect.appendChild(option);
-  });
-}
+  function populateProjectSelect() {
+    const projectSelect = document.getElementById("projectId");
+    if (!projectSelect) return;
 
-function showProjectLoadError() {
-  const projectSelect = document.getElementById('projectId');
-  if (!projectSelect) return;
-  
-  projectSelect.innerHTML = `
+    projectSelect.innerHTML =
+      '<option value="">Seleccione un proyecto...</option>';
+
+    projectTitles.forEach((title) => {
+      const option = document.createElement("option");
+      option.value = title;
+      option.textContent = title;
+      projectSelect.appendChild(option);
+    });
+  }
+
+  function showProjectLoadError() {
+    const projectSelect = document.getElementById("projectId");
+    if (!projectSelect) return;
+
+    projectSelect.innerHTML = `
     <option value="">Error al cargar proyectos</option>
     <option value="" disabled>Intente recargar la página</option>
   `;
-}
-
-function generatePutCode() {
-  return Math.floor(10000000 + Math.random() * 90000000).toString();
-}
-
-// ============= GESTIÓN DEL MODAL =============
-
-async function showAddPublicationModal() {
-  console.log('🔍 [RESEARCH-ADD] Intentando mostrar modal');
-  
-  // Verificar estado admin actual
-  const isAdmin = await checkAdminStatus();
-  
-  if (!isAdmin) {
-    alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-    console.log('🚫 [RESEARCH-ADD] Sin permisos admin');
-    return;
   }
-  
-  console.log('✅ [RESEARCH-ADD] Mostrando modal');
-  document.getElementById('putCode').value = generatePutCode();
-  document.getElementById('add-publication-modal').classList.remove('hidden');
-  document.body.style.overflow = 'hidden'; 
-  
-  // Recargar proyectos si no se han cargado o si han pasado más de 5 minutos
-  if (projectTitles.length === 0) {
-    loadProjectTitles();
+
+  function generatePutCode() {
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
   }
-}
 
-function hideAddPublicationModal() {
-  console.log('🔄 [RESEARCH-ADD] Ocultando modal');
-  document.getElementById('add-publication-modal').classList.add('hidden');
-  document.body.style.overflow = ''; 
-}
+  // ============= GESTIÓN DEL MODAL =============
 
-// ============= GESTIÓN DE TAGS Y IDS EXTERNOS =============
+  async function showAddPublicationModal() {
+    console.log("🔍 [RESEARCH-ADD] Intentando mostrar modal");
 
-function addTag() {
-  const tagInput = document.getElementById('tagInput');
-  const tag = tagInput.value.trim();
-  
-  if (tag && !tagsList.includes(tag)) {
-    tagsList.push(tag);
+    // Verificar estado admin actual
+    const isAdmin = await checkAdminStatus();
+
+    if (!isAdmin) {
+      alert(
+        "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.",
+      );
+      console.log("🚫 [RESEARCH-ADD] Sin permisos admin");
+      return;
+    }
+
+    console.log("✅ [RESEARCH-ADD] Mostrando modal");
+    document.getElementById("putCode").value = generatePutCode();
+    document.getElementById("add-publication-modal").classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    // Recargar proyectos si no se han cargado o si han pasado más de 5 minutos
+    if (projectTitles.length === 0) {
+      loadProjectTitles();
+    }
+  }
+
+  function hideAddPublicationModal() {
+    console.log("🔄 [RESEARCH-ADD] Ocultando modal");
+    document.getElementById("add-publication-modal").classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  // ============= GESTIÓN DE TAGS Y IDS EXTERNOS =============
+
+  function addTag() {
+    const tagInput = document.getElementById("tagInput");
+    const tag = tagInput.value.trim();
+
+    if (tag && !tagsList.includes(tag)) {
+      tagsList.push(tag);
+      renderTags();
+      tagInput.value = "";
+    }
+  }
+
+  function removeTag(tag) {
+    tagsList = tagsList.filter((t) => t !== tag);
     renderTags();
-    tagInput.value = '';
   }
-}
 
-function removeTag(tag) {
-  tagsList = tagsList.filter(t => t !== tag);
-  renderTags();
-}
+  function renderTags() {
+    const container = document.getElementById("tagsContainer");
+    if (!container) return;
 
-function renderTags() {
-  const container = document.getElementById('tagsContainer');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  tagsList.forEach(tag => {
-    const tagElement = document.createElement('div');
-    tagElement.className = 'inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2';
-    tagElement.innerHTML = `
+    container.innerHTML = "";
+
+    tagsList.forEach((tag) => {
+      const tagElement = document.createElement("div");
+      tagElement.className =
+        "inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2";
+      tagElement.innerHTML = `
       ${tag}
       <button type="button" onclick="removeTag('${tag}')" class="ml-1 text-gray-500 hover:text-gray-700">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -494,36 +596,37 @@ function renderTags() {
         </svg>
       </button>
     `;
-    container.appendChild(tagElement);
-  });
-}
-
-function addExternalId() {
-  const idInput = document.getElementById('externalIdInput');
-  const id = idInput.value.trim();
-  
-  if (id && !externalIdsList.includes(id)) {
-    externalIdsList.push(id);
-    renderExternalIds();
-    idInput.value = '';
+      container.appendChild(tagElement);
+    });
   }
-}
 
-function removeExternalId(id) {
-  externalIdsList = externalIdsList.filter(i => i !== id);
-  renderExternalIds();
-}
+  function addExternalId() {
+    const idInput = document.getElementById("externalIdInput");
+    const id = idInput.value.trim();
 
-function renderExternalIds() {
-  const container = document.getElementById('externalIdsContainer');
-  if (!container) return;
-  
-  container.innerHTML = '';
-  
-  externalIdsList.forEach(id => {
-    const idElement = document.createElement('div');
-    idElement.className = 'inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2';
-    idElement.innerHTML = `
+    if (id && !externalIdsList.includes(id)) {
+      externalIdsList.push(id);
+      renderExternalIds();
+      idInput.value = "";
+    }
+  }
+
+  function removeExternalId(id) {
+    externalIdsList = externalIdsList.filter((i) => i !== id);
+    renderExternalIds();
+  }
+
+  function renderExternalIds() {
+    const container = document.getElementById("externalIdsContainer");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    externalIdsList.forEach((id) => {
+      const idElement = document.createElement("div");
+      idElement.className =
+        "inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2";
+      idElement.innerHTML = `
       ${id}
       <button type="button" onclick="removeExternalId('${id}')" class="ml-1 text-gray-500 hover:text-gray-700">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -531,95 +634,140 @@ function renderExternalIds() {
         </svg>
       </button>
     `;
-    container.appendChild(idElement);
-  });
-}
-
-// ============= ENVÍO DE FORMULARIO (REQUIERE ADMIN) =============
-
-async function handleFormSubmit(e) {
-  e.preventDefault();
-  
-  // Verificar permisos antes de procesar
-  if (!currentAdminStatus) {
-    alert('Debe iniciar sesión como administrador para realizar esta acción.');
-    return;
-  }
-  
-  const title = document.getElementById('title').value.trim();
-  const participantsInput = document.getElementById('participants').value.trim();
-  const projectDate = document.getElementById('projectDate').value;
-  const workType = document.getElementById('workType').value.trim();
-  
-  if (!title || !participantsInput || !projectDate || !workType) {
-    alert('Por favor, complete todos los campos obligatorios');
-    return;
-  }
-  
-  const participantsArray = participantsInput
-    .split(',')
-    .map(participant => participant.trim())
-    .filter(participant => participant !== '');
-  
-  const orcidsInput = document.getElementById('ownerOrcids').value.trim();
-  const orcidsArray = orcidsInput ? 
-    orcidsInput.split(',')
-      .map(orcid => orcid.trim())
-      .filter(orcid => orcid !== '') : [];
-  
-  const selectedProject = document.getElementById('projectId').value;
-  
-  const publicationData = {
-    putCode: document.getElementById('putCode').value.trim(),
-    title: title,
-    description: document.getElementById('description').value.trim(),
-    participants: participantsArray,
-    ownerOrcids: orcidsArray,
-    externalIds: externalIdsList,
-    projectDate: projectDate,
-    projectId: selectedProject || null,
-    tags: [workType, ...tagsList],
-    link: document.getElementById('link').value.trim() || ''
-  };
-  
-  try {
-    console.log('📤 [RESEARCH-ADD] Enviando datos:', publicationData);
-    
-    const response = await fetch('http://localhost:8080/api/works/save', {
-      method: 'POST',
-      headers: getAuthHeaders(), // Usar headers con JWT
-      body: JSON.stringify(publicationData)
+      container.appendChild(idElement);
     });
-    
-    if (response.ok) {
-      alert('Publicación añadida con éxito');
-      document.getElementById('add-publication-form').reset();
-      tagsList = [];
-      externalIdsList = [];
-      renderTags();
-      renderExternalIds();
-      // Resetear el select a la opción por defecto
-      document.getElementById('projectId').selectedIndex = 0;
-      hideAddPublicationModal();
-      console.log('✅ [RESEARCH-ADD] Publicación guardada exitosamente');
-      window.location.reload();
-    } else if (handleAuthError(response)) {
-      return;
-    } else {
-      let errorMessage = 'Error desconocido';
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.message || JSON.stringify(errorData);
-      } catch {
-        errorMessage = await response.text();
-      }
-      
-      console.error('❌ [RESEARCH-ADD] Error del backend:', errorMessage);
-      alert('Error al añadir la publicación: ' + errorMessage);
-    }
-  } catch (error) {
-    console.error('❌ [RESEARCH-ADD] Error de conexión:', error);
-    alert('Error de conexión al intentar añadir la publicación: ' + error.message);
   }
-}
+
+  // ============= ENVÍO DE FORMULARIO (REQUIERE ADMIN) =============
+
+  async function handleFormSubmit(e) {
+    e.preventDefault();
+
+    // Verificar permisos antes de procesar
+    if (!currentAdminStatus) {
+      alert(
+        "Debe iniciar sesión como administrador para realizar esta acción.",
+      );
+      return;
+    }
+
+    const title = document.getElementById("title").value.trim();
+    const participantsInput = document
+      .getElementById("participants")
+      .value.trim();
+    const projectDate = document.getElementById("projectDate").value;
+    const workType = document.getElementById("workType").value.trim();
+
+    if (!title || !participantsInput || !projectDate || !workType) {
+      alert("Por favor, complete todos los campos obligatorios");
+      return;
+    }
+
+    const participantsArray = participantsInput
+      .split(",")
+      .map((participant) => participant.trim())
+      .filter((participant) => participant !== "");
+
+    const orcidsInput = document.getElementById("ownerOrcids").value.trim();
+    const orcidsArray = orcidsInput
+      ? orcidsInput
+          .split(",")
+          .map((orcid) => orcid.trim())
+          .filter((orcid) => orcid !== "")
+      : [];
+
+    const selectedProject = document.getElementById("projectId").value;
+
+    const publicationData = {
+      putCode: document.getElementById("putCode").value.trim(),
+      title: title,
+      description: document.getElementById("description").value.trim(),
+      participants: participantsArray,
+      ownerOrcids: orcidsArray,
+      externalIds: externalIdsList,
+      projectDate: projectDate,
+      projectId: selectedProject || null,
+      tags: [workType, ...tagsList],
+      link: document.getElementById("link").value.trim() || "",
+    };
+
+    try {
+      console.log("📤 [RESEARCH-ADD] Enviando datos:", publicationData);
+
+      const response = await fetch("http://localhost:8080/api/works/save", {
+        method: "POST",
+        headers: getAuthHeaders(), // Usar headers con JWT
+        body: JSON.stringify(publicationData),
+      });
+
+      if (response.ok) {
+        alert("Publicación añadida con éxito");
+        document.getElementById("add-publication-form").reset();
+        tagsList = [];
+        externalIdsList = [];
+        renderTags();
+        renderExternalIds();
+        document.getElementById("projectId").selectedIndex = 0;
+        hideAddPublicationModal();
+        addNotification(
+          "success",
+          `Publicación "${title}" añadida exitosamente.`,
+        );
+        window.location.reload();
+      } else if (handleAuthError(response)) {
+        return;
+      } else {
+        let errorMessage = "Error desconocido";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || JSON.stringify(errorData);
+        } catch {
+          errorMessage = await response.text();
+        }
+
+        console.error("❌ [RESEARCH-ADD] Error del backend:", errorMessage);
+        addNotification(
+          "error",
+          `Error al añadir publicación: ${errorMessage}`,
+        );
+      }
+    } catch (error) {
+      console.error("❌ [RESEARCH-ADD] Error de conexión:", error);
+      addNotification("error", "Error de conexión al servidor");
+    }
+  }
+
+  // Notificaciones:
+
+  function addNotification(type, message) {
+    console.log("🔍 addNotification llamado:", { type, message });
+    try {
+      const notifications = JSON.parse(
+        localStorage.getItem("pendingNotifications") || "[]",
+      );
+
+      const notification = {
+        id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        message,
+        type,
+        duration: 4000,
+        timestamp: Date.now(),
+      };
+
+      notifications.push(notification);
+      localStorage.setItem(
+        "pendingNotifications",
+        JSON.stringify(notifications),
+      );
+
+      console.log(
+        "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+        notification,
+      );
+
+      return notification.id;
+    } catch (error) {
+      console.error("❌ Error guardando notificación:", error);
+    }
+  }
 </script>

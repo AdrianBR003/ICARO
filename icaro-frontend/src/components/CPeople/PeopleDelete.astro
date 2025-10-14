@@ -1,0 +1,308 @@
+---
+
+---
+
+<!-- Modal de confirmación de eliminación global -->
+<div
+  id="deleteModal"
+  class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+  onclick="if (event.target === this) hideDeleteModal()"
+>
+  <div
+    class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md"
+  >
+    <div class="p-6">
+      <div
+        class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full"
+      >
+        <svg
+          class="w-6 h-6 text-red-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.134 16.5c-.77.833.192 2.5 1.732 2.5z"
+          ></path>
+        </svg>
+      </div>
+
+      <h3 class="text-xl font-bold mb-4 text-gray-900 text-center">
+        Confirmar Eliminación
+      </h3>
+
+      <p class="mb-6 text-gray-700 text-center">
+        ¿Está seguro de que desea eliminar a <strong
+          id="deletePersonName"
+          class="text-gray-900"></strong>?
+        <br />
+        <span class="text-sm text-red-600 font-medium"
+          >Esta acción no se puede deshacer.</span
+        >
+      </p>
+
+      <div class="flex gap-3 pt-4">
+        <button
+          type="button"
+          onclick="hideDeleteModal()"
+          class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex-1 font-medium text-gray-700"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          id="confirmDeleteBtn"
+          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex-1 font-medium"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  // === FUNCIONES DE ELIMINACIÓN ===
+
+  let personToDelete = null;
+
+  async function deletePerson(person) {
+    console.log("🗑️ [PEOPLE] Intentando eliminar persona:", person);
+
+    // Verificar que tenemos los datos necesarios
+    if (!person || !person.orcid) {
+      console.error("❌ [PEOPLE] Datos de persona inválidos:", person);
+      alert("Error: Datos de persona inválidos");
+      return;
+    }
+
+    if (!window.currentAdminStatus) {
+      alert(
+        "Debe iniciar sesión como administrador para realizar esta acción.",
+      );
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        throw new Error("No hay token");
+      }
+
+      console.log("🔐 [PEOPLE] Verificando token antes de mostrar modal...");
+      const response = await fetch("http://localhost:8080/api/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error("Token inválido");
+      }
+
+      const data = await response.json();
+      if (!data.authenticated || !data.isAdmin) {
+        throw new Error("Sin permisos de admin");
+      }
+
+      console.log(
+        "✅ [PEOPLE] Permisos verificados, mostrando modal de confirmación",
+      );
+
+      // Guardar la persona para eliminar
+      personToDelete = person;
+
+      // Mostrar modal de confirmación
+      document.getElementById("deletePersonName").textContent =
+        person.name || person.givenNames || "Usuario";
+      showModal("deleteModal");
+    } catch (error) {
+      console.error("❌ [PEOPLE] Error verificando permisos:", error);
+      alert(
+        "No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.",
+      );
+
+      localStorage.removeItem("adminToken");
+      window.currentAdminStatus = false;
+      if (window.updateAdminElements) {
+        window.updateAdminElements(false);
+      }
+    }
+  }
+
+  function hideDeleteModal() {
+    hideModal("deleteModal");
+    personToDelete = null;
+  }
+
+  // Función para mostrar modal (debe estar disponible globalmente)
+  function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.remove("hidden");
+      // Prevenir scroll del body
+      document.body.style.overflow = "hidden";
+    }
+  }
+
+  // Función para ocultar modal (debe estar disponible globalmente)
+  function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add("hidden");
+      // Restaurar scroll del body
+      document.body.style.overflow = "";
+    }
+  }
+
+  // Hacer funciones disponibles globalmente
+  window.deletePerson = deletePerson;
+  window.hideDeleteModal = hideDeleteModal;
+  if (!window.showModal) window.showModal = showModal;
+  if (!window.hideModal) window.hideModal = hideModal;
+
+  // Confirmar eliminación
+  document.addEventListener("DOMContentLoaded", function () {
+    const confirmBtn = document.getElementById("confirmDeleteBtn");
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", async () => {
+        if (!personToDelete) {
+          console.error("❌ [PEOPLE] No hay persona para eliminar");
+          return;
+        }
+
+        if (!window.currentAdminStatus) {
+          alert(
+            "Debe iniciar sesión como administrador para realizar esta acción.",
+          );
+          return;
+        }
+
+        // Deshabilitar botón durante la operación
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Eliminando...";
+
+        try {
+          console.log(
+            "🗑️ [PEOPLE] Eliminando investigador:",
+            personToDelete.orcid,
+          );
+
+          const token = localStorage.getItem("adminToken");
+          if (!token) {
+            throw new Error("No hay token de autenticación");
+          }
+
+          const headers = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          };
+
+          console.log("🔐 [PEOPLE] Headers que se van a enviar:", headers);
+
+          const response = await fetch(
+            `http://localhost:8080/api/investigators/delete/${personToDelete.orcid}`,
+            {
+              method: "DELETE",
+              headers: headers,
+            },
+          );
+
+          if (response.ok) {
+            addNotification("success", "Investigador eliminado correctamente");
+            hideDeleteModal();
+            location.reload();
+          } else if (response.status === 401 || response.status === 403) {
+            // Manejar errores de autenticación
+            addNotification("error", "Error de autenticación");
+            localStorage.removeItem("adminToken");
+            window.currentAdminStatus = false;
+            if (window.updateAdminElements) {
+              window.updateAdminElements(false);
+            }
+            alert("Sesión expirada. Por favor, inicie sesión nuevamente.");
+          } else {
+            const errorText = await response.text();
+            console.error("❌ [PEOPLE] Error del servidor:", errorText);
+            throw new Error(
+              `Error al eliminar el investigador: ${response.status} - ${errorText}`,
+            );
+          }
+        } catch (error) {
+          addNotification("error", error.message || "Error al eliminar el investigador");
+        } finally {
+          // Rehabilitar botón
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = "Eliminar";
+        }
+      });
+    }
+  });
+
+  // Manejar cierre con ESC
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      const deleteModal = document.getElementById("deleteModal");
+      if (deleteModal && !deleteModal.classList.contains("hidden")) {
+        hideDeleteModal();
+      }
+    }
+  });
+
+  // Notificaciones:
+
+  function addNotification(type, message) {
+    console.log("🔍 addNotification llamado:", { type, message });
+    try {
+      const notifications = JSON.parse(
+        localStorage.getItem("pendingNotifications") || "[]",
+      );
+
+      const notification = {
+        id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        message,
+        type,
+        duration: 4000,
+        timestamp: Date.now(),
+      };
+
+      notifications.push(notification);
+      localStorage.setItem(
+        "pendingNotifications",
+        JSON.stringify(notifications),
+      );
+
+      console.log(
+        "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+        notification,
+      );
+
+      return notification.id;
+    } catch (error) {
+      console.error("❌ Error guardando notificación:", error);
+    }
+  }
+</script>
+
+<style is:global>
+  .modal {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .modal:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-content {
+    transform: scale(0.95);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .modal:not(.hidden) .modal-content {
+    transform: scale(1);
+  }
+</style>

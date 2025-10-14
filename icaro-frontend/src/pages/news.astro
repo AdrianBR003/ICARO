@@ -6,11 +6,9 @@ import TopUtility from "@/components/CCommon/TopUtility.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
 import NewsList from "@/components/CNews/NewsList.astro";
 import "@/styles/index.css";
-import imagedefault from "@/assets/imagedefault.webp";
 
 let newsData = [];
 
-// Fetch de noticias (SSR)
 try {
   const API_BASE = import.meta.env.API_URL || 'http://localhost:8080';
   const res = await fetch(`${API_BASE}/api/news/all`);
@@ -18,15 +16,9 @@ try {
 } catch {
   console.error('❌ [NEWS] Error fetch news');
   newsData = [{
-    id: '1',
-    title: "Noticia de prueba",
-    description: "Esta es una noticia de prueba...",
-    link: "/news/1",
-    publicationDate: "2024-01-15"
   }];
 }
 
-// Formatear noticias para coincidir con el modelo del backend
 const formattedNews = newsData.map(item => ({
   id: item.id?.toString() || '1',
   title: item.title || 'Sin título',
@@ -35,7 +27,7 @@ const formattedNews = newsData.map(item => ({
   publicationDate: item.publicationDate || null
 }));
 
-let isAdmin = false; // siempre false en SSR
+let isAdmin = false; 
 ---
 
 <BaseLayout>
@@ -111,25 +103,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
   
-  function handleAuthError(response) {
-    if (response.status === 401 || response.status === 403) {
-      alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-      localStorage.removeItem('adminToken');
-      currentAdminStatus = false;
-      window.location.href = '/admin-login';
-      return true;
-    }
-    return false;
-  }
-  
-  // Escuchar cambios desde TopUtility
   window.addEventListener('adminStatusChanged', function(event) {
     const { isAdmin, source } = event.detail;
     console.log(`🔄 [NEWS] Estado admin cambiado desde ${source}:`, isAdmin);
     currentAdminStatus = isAdmin;
   });
   
-  // Inicializar estado admin al cargar la página
   checkAdminStatus();
   
   // Verificar estado cada 5 minutos para detectar tokens expirados
@@ -155,18 +134,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Mostrar notificación de éxito si viene de creación
-  const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
-  notifications.forEach(n => {
-    if (n.type === 'success') {
-      // Puedes implementar un sistema de notificaciones toast aquí
-      console.log('✅ Notificación:', n.message);
+  // ============= GESTIÓN DE NOTIFICACIONES PENDIENTES =============
+
+  setTimeout(() => {
+  const pendingNotifications = JSON.parse(localStorage.getItem('pendingNotifications') || '[]');
+  if (pendingNotifications.length > 0) {
+    console.log(`📋 [NEWS] Encontradas ${pendingNotifications.length} notificaciones pendientes en localStorage`);
+    
+    if (window.notificationSystem && window.notificationSystem.isInitialized) {
+      console.log('🔄 [NEWS] Forzando procesamiento de notificaciones pendientes');
+      
+      pendingNotifications.forEach((notification, index) => {
+        setTimeout(() => {
+          window.notificationSystem.notify(notification.message, notification.type, notification.duration);
+        }, index * 200);
+      });
+      
+      localStorage.removeItem('pendingNotifications');
     }
-  });
-  sessionStorage.removeItem('notifications');
+  }
+}, 1000);
+
 });
 
-// Función global para recargar noticias si es necesario
 window.refreshNews = function() {
   window.location.reload();
 };

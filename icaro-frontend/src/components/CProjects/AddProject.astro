@@ -487,21 +487,17 @@ const { isAdmin } = Astro.props;
               body: JSON.stringify(projectData),
             },
           );
-
-          console.log(
-            "🔐 [ADD-PROJECT] Respuesta del servidor:",
-            response.status,
-          );
-
           if (response.ok) {
-            alert("Proyecto creado con éxito");
             form.reset();
             tagsList = [];
             workIdsList = [];
             renderTags();
             renderWorkIds();
             hideAddProjectModal();
-            console.log("✅ [ADD-PROJECT] Proyecto creado exitosamente");
+            addNotification(
+              "success",
+              `Proyecto "${title}" creado exitosamente.`,
+            );
             window.location.reload();
           } else if (handleAuthError(response)) {
             return;
@@ -520,10 +516,7 @@ const { isAdmin } = Astro.props;
                 "Error interno del servidor. Intente nuevamente más tarde.";
             } else {
               try {
-                // Intentar leer como texto primero (más compatible)
                 const responseText = await response.text();
-
-                // Si el texto parece ser JSON, intentar parsearlo
                 if (
                   responseText.startsWith("{") ||
                   responseText.startsWith("[")
@@ -563,4 +556,38 @@ const { isAdmin } = Astro.props;
       }
     });
   });
+
+  // Notificaciones:
+
+  function addNotification(type, message) {
+    console.log("🔍 addNotification llamado:", { type, message });
+    try {
+      const notifications = JSON.parse(
+        localStorage.getItem("pendingNotifications") || "[]",
+      );
+
+      const notification = {
+        id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        message,
+        type,
+        duration: 4000,
+        timestamp: Date.now(),
+      };
+
+      notifications.push(notification);
+      localStorage.setItem(
+        "pendingNotifications",
+        JSON.stringify(notifications),
+      );
+
+      console.log(
+        "💾 Notificación guardada en localStorage para mostrar después de recargar:",
+        notification,
+      );
+
+      return notification.id;
+    } catch (error) {
+      console.error("❌ Error guardando notificación:", error);
+    }
+  }
 </script>

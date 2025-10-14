@@ -41,6 +41,11 @@ public class WorkService {
         log.info("Saving work: {}", work);
         // Llega el projectId como el nombre del proyecto, por lo que tenemos que hacer la conversión
         String title = work.getProjectId();
+        if(title.isEmpty()){
+            log.info("Proyecto sin asignar");
+            work.setProjectId("Sin asignar");
+            this.workRepository.save(work);
+        }
         log.info("Buscando con projectId='{}' (length={})", title, title.length());
         Project p = this.projectRepository.findByTitle(title);
         if(p == null){

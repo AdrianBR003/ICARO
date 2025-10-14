@@ -3,20 +3,18 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
 import Header from "@/components/CCommon/Header.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
-import PersonCard from "@/components/CPeople/PersonCard.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
+import AddPeople from "@/components/CPeople/AddPeople.astro";
+import PeopleList from "@/components/CPeople/PeopleList.astro";
 import "@/styles/index.css";
 
 const fetchInvestigadores = async () => {
   try {
     const res = await fetch("http://localhost:8080/api/investigators/all");
-
     if (!res.ok) {
       throw new Error(`Error HTTP: ${res.status}`);
     }
-
     const invs = await res.json();
-
     return invs.map((inv) => ({
       name: inv.givenNames || "",
       email: inv.email || "",
@@ -43,218 +41,15 @@ let people = await fetchInvestigadores();
   <section class="mt-10 max-w-full bg-white shadow-md">
     <NavBar />
   </section>
-
   <section
     class="w-full content-wrap bg-white shadow-md
            max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-10"
   >
     <CTitle Title="People" />
-
-    <div class="flex justify-end p-3">
-      <button
-        id="addButton"
-        class="hidden bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded flex items-center edit-btn"
-        onclick="showAddModal()"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 mr-2"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-            clip-rule="evenodd"></path>
-        </svg>
-        Añadir Investigador
-      </button>
-    </div>
-    <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
-      {people.map((person) => <PersonCard person={person} />)}
-    </div>
+    
+    <AddPeople />
+    <PeopleList people={people} />
   </section>
-
-  <!-- Modal para añadir nuevo investigador -->
-  <div
-    id="addModal"
-    class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 fade-in"
-  >
-    <div
-      class="modal-overlay absolute inset-0 bg-black/50"
-      onclick="hideModal('addModal')"
-    >
-    </div>
-
-    <div
-      class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
-    >
-      <div class="p-6">
-        <h3 class="text-xl font-bold mb-4">Añadir Nuevo Investigador</h3>
-
-        <form id="addForm" class="space-y-4">
-          <div>
-            <label class="block mb-1 text-sm font-medium">ORCID</label>
-            <input
-              id="addOrcid"
-              type="text"
-              class="w-full px-3 py-2 border rounded-md"
-              required
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium"
-              >Nombre y Apellidos</label
-            >
-            <input
-              id="addName"
-              type="text"
-              class="w-full px-3 py-2 border rounded-md"
-              required
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Email</label>
-            <input
-              id="addEmail"
-              type="email"
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Rol</label>
-            <input
-              id="addRole"
-              type="text"
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Teléfono</label>
-            <input
-              id="addPhone"
-              type="text"
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Oficina</label>
-            <input
-              id="addOffice"
-              type="text"
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div class="flex gap-4 pt-4">
-            <button
-              type="button"
-              onclick="hideModal('addModal')"
-              class="px-4 py-2 border rounded-md hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
-            >
-              Guardar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal de edición global -->
-  <div
-    id="editModal"
-    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
-    onclick="if (event.target === this) hideEditModal()"
-  >
-    <div
-      class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto"
-    >
-      <div class="p-6">
-        <h3 id="modalTitle" class="text-xl font-bold mb-4">
-          Editar Investigador
-        </h3>
-
-        <form id="editForm" class="space-y-4">
-          <input type="hidden" id="editOrcid" />
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Nombre</label>
-            <input
-              type="text"
-              id="editName"
-              required
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Email</label>
-            <input
-              type="email"
-              id="editEmail"
-              required
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Role</label>
-            <input
-              type="text"
-              id="editRole"
-              required
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Teléfono</label>
-            <input
-              type="text"
-              id="editPhone"
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label class="block mb-1 text-sm font-medium">Oficina</label>
-            <input
-              type="text"
-              id="editOffice"
-              class="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div class="flex gap-4 pt-4">
-            <button
-              type="button"
-              onclick="hideEditModal()"
-              class="px-4 py-2 border rounded-md hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229]"
-            >
-              Guardar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 
   <script is:inline>
     document.addEventListener("DOMContentLoaded", function () {
@@ -262,15 +57,12 @@ let people = await fetchInvestigadores();
       
       // ============= SISTEMA DE AUTENTICACIÓN JWT =============
       
-      // Helper para generar headers con token JWT
       function getAuthHeaders() {
         const token = localStorage.getItem('adminToken');
-        
         const headers = {
           'Content-Type': 'application/json'
         };
         
-        // Si existe token, añadir header Authorization con Bearer
         if (token) {
           headers['Authorization'] = `Bearer ${token}`;
         }
@@ -281,7 +73,6 @@ let people = await fetchInvestigadores();
       // ============= GESTIÓN DEL ESTADO ADMIN =============
       let currentAdminStatus = false;
       
-      // Verificar estado admin con token JWT
       async function checkAdminStatus() {
         console.log('🔐 [PEOPLE] Verificando estado admin...');
         
@@ -293,18 +84,18 @@ let people = await fetchInvestigadores();
             updateAdminElements(false);
             return false;
           }
-
           console.log('🔐 [PEOPLE] Token encontrado, verificando...');
           const response = await fetch('http://localhost:8080/api/auth/verify', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
-
           if (response.ok) {
             const data = await response.json();
             const isAdmin = data.authenticated && data.isAdmin;
             console.log('🔐 [PEOPLE] Verificación exitosa:', { isAdmin, username: data.username });
             currentAdminStatus = isAdmin;
             updateAdminElements(isAdmin);
+            // Actualizar la referencia global
+            window.currentAdminStatus = isAdmin;
             return isAdmin;
           } else {
             console.log('🔐 [PEOPLE] Token inválido, status:', response.status);
@@ -315,16 +106,17 @@ let people = await fetchInvestigadores();
           localStorage.removeItem('adminToken');
           currentAdminStatus = false;
           updateAdminElements(false);
+          window.currentAdminStatus = false;
           return false;
         }
       }
       
-      // Función para manejar errores de autenticación
       function handleAuthError(response) {
         if (response.status === 401 || response.status === 403) {
           alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
           localStorage.removeItem('adminToken');
           currentAdminStatus = false;
+          window.currentAdminStatus = false;
           updateAdminElements(false);
           window.location.href = '/admin-login';
           return true;
@@ -332,11 +124,9 @@ let people = await fetchInvestigadores();
         return false;
       }
       
-      // Actualizar elementos admin en la UI
       function updateAdminElements(isAdmin) {
         console.log('🎨 [PEOPLE] Actualizando UI admin:', isAdmin);
         
-        // Botón de añadir investigador
         const addButton = document.getElementById("addButton");
         if (addButton) {
           if (isAdmin) {
@@ -348,7 +138,6 @@ let people = await fetchInvestigadores();
           }
         }
         
-        // Todos los botones de editar en PersonCard
         const editButtons = document.querySelectorAll(".edit-btn");
         editButtons.forEach((btn) => {
           if (isAdmin) {
@@ -363,32 +152,40 @@ let people = await fetchInvestigadores();
         console.log('✅ [PEOPLE] UI actualizada correctamente');
       }
       
+      // Hacer funciones disponibles globalmente
+      window.getAuthHeaders = getAuthHeaders;
+      window.currentAdminStatus = currentAdminStatus;
+      window.checkAdminStatus = checkAdminStatus;
+      window.handleAuthError = handleAuthError;
+      window.updateAdminElements = updateAdminElements;
+      // Función para obtener el estado actual (importante para los hijos)
+      window.getCurrentAdminStatus = () => window.currentAdminStatus;
+      
       // Escuchar cambios desde TopUtility
       window.addEventListener('adminStatusChanged', function(event) {
         const { isAdmin, source } = event.detail;
         console.log(`🔄 [PEOPLE] Estado admin cambiado desde ${source}:`, isAdmin);
         currentAdminStatus = isAdmin;
+        window.currentAdminStatus = isAdmin;
         updateAdminElements(isAdmin);
       });
       
       // Inicializar estado admin al cargar la página
       checkAdminStatus();
       
-      // Verificar estado cada 5 minutos para detectar tokens expirados
+      // Verificar estado cada 5 minutos
       setInterval(() => {
         console.log('⏰ [PEOPLE] Verificación periódica del estado admin');
         checkAdminStatus();
       }, 300000);
-
-      // Verificar al volver a la pestaña (detectar cambios en otras pestañas)
+      
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           console.log('👁️ [PEOPLE] Tab visible, verificando admin status');
           checkAdminStatus();
         }
       });
-
-      // Escuchar cambios en localStorage (para sincronizar entre pestañas)
+      
       window.addEventListener('storage', (e) => {
         if (e.key === 'adminToken') {
           console.log('🔄 [PEOPLE] Token cambiado en localStorage:', e.newValue ? 'Token añadido' : 'Token eliminado');
@@ -396,276 +193,45 @@ let people = await fetchInvestigadores();
             checkAdminStatus();
           } else {
             currentAdminStatus = false;
+            window.currentAdminStatus = false;
             updateAdminElements(false);
           }
         }
       });
 
-      // === FUNCIONES DE MODAL (CORREGIDAS) ===
-      
-      async function showEditModal(person) {
-        console.log('✏️ [PEOPLE] Intentando mostrar modal de edición para:', person.name);
-        
-        // Verificar permisos ANTES de mostrar el modal
-        if (!currentAdminStatus) {
-          alert('Debe iniciar sesión como administrador para realizar esta acción.');
-          return;
-        }
+       // ============= GESTIÓN DE NOTIFICACIONES PENDIENTES =============
 
-        // Verificar token válido haciendo una petición al servidor
-        try {
-          const token = localStorage.getItem('adminToken');
-          if (!token) {
-            throw new Error('No hay token');
-          }
-
-          console.log('🔐 [PEOPLE] Verificando token antes de abrir modal...');
-          const response = await fetch('http://localhost:8080/api/auth/verify', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-
-          if (!response.ok) {
-            throw new Error('Token inválido');
-          }
-
-          const data = await response.json();
-          if (!data.authenticated || !data.isAdmin) {
-            throw new Error('Sin permisos de admin');
-          }
-
-          // Si llegamos aquí, el usuario tiene permisos válidos
-          console.log('✅ [PEOPLE] Permisos verificados, abriendo modal');
-          document.getElementById("editOrcid").value = person.orcid;
-          document.getElementById("editName").value = person.name || "";
-          document.getElementById("editEmail").value = person.email || "";
-          document.getElementById("editRole").value = person.role || "";
-          document.getElementById("editPhone").value = person.phone || "";
-          document.getElementById("editOffice").value = person.office || "";
-
-          document.getElementById("modalTitle").textContent = `Editar ${person.name}`;
-          showModal("editModal");
-
-        } catch (error) {
-          console.error('❌ [PEOPLE] Error verificando permisos:', error);
-          alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-          
-          // Limpiar token inválido y actualizar UI
-          localStorage.removeItem('adminToken');
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          // Opcional: redirigir al login
-          window.location.href = '/admin-login';
-        }
-      }
-
-      function hideEditModal() {
-        hideModal("editModal");
-      }
-
-      async function showAddModal() {
-        console.log('➕ [PEOPLE] Intentando mostrar modal de añadir');
-        
-        // Verificar permisos ANTES de mostrar el modal
-        if (!currentAdminStatus) {
-          alert('Debe iniciar sesión como administrador para realizar esta acción.');
-          return;
-        }
-
-        // Verificar token válido haciendo una petición al servidor
-        try {
-          const token = localStorage.getItem('adminToken');
-          if (!token) {
-            throw new Error('No hay token');
-          }
-
-          console.log('🔐 [PEOPLE] Verificando token antes de abrir modal...');
-          const response = await fetch('http://localhost:8080/api/auth/verify', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-
-          if (!response.ok) {
-            throw new Error('Token inválido');
-          }
-
-          const data = await response.json();
-          if (!data.authenticated || !data.isAdmin) {
-            throw new Error('Sin permisos de admin');
-          }
-
-          // Si llegamos aquí, el usuario tiene permisos válidos
-          console.log('✅ [PEOPLE] Permisos verificados, abriendo modal');
-          showModal("addModal");
-
-        } catch (error) {
-          console.error('❌ [PEOPLE] Error verificando permisos:', error);
-          alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-          
-          // Limpiar token inválido y actualizar UI
-          localStorage.removeItem('adminToken');
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          
-          // Opcional: redirigir al login
-          // window.location.href = '/admin-login';
-        }
-      }
-
-      function showModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-          modal.classList.remove("hidden");
-          setTimeout(() => {
-            modal.style.opacity = "1";
-            const modalContent = modal.querySelector(".modal-content");
-            if (modalContent) {
-              modalContent.style.transform = "translateY(0)";
-            }
-          }, 10);
-        }
-      }
-
-      function hideModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-          modal.style.opacity = "0";
-          const modalContent = modal.querySelector(".modal-content");
-          if (modalContent) {
-            modalContent.style.transform = "translateY(20px)";
-          }
-          setTimeout(() => {
-            modal.classList.add("hidden");
-          }, 200);
-        }
-      }
-
-      // Hacer funciones disponibles globalmente
-      window.showEditModal = showEditModal;
-      window.showAddModal = showAddModal;
-      window.hideModal = hideModal;
-      window.hideEditModal = hideEditModal; 
-
-      // === OPERACIONES CON BACKEND (REQUIEREN ADMIN) ===
-      
-      // Editar investigador - requiere token JWT con ROLE_ADMIN
-      document.getElementById("editForm")?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        // Verificar permisos antes de procesar
-        if (!currentAdminStatus) {
-          alert('Debe iniciar sesión como administrador para realizar esta acción.');
-          return;
-        }
-
-        const orcid = document.getElementById("editOrcid").value;
-        const name = document.getElementById("editName").value;
-        const email = document.getElementById("editEmail").value;
-        const role = document.getElementById("editRole").value;
-        const phone = document.getElementById("editPhone").value;
-        const office = document.getElementById("editOffice").value;
-
-        try {
-          console.log('✏️ [PEOPLE] Editando investigador:', orcid);
-          console.log('🔐 [PEOPLE] Headers que se van a enviar:', getAuthHeaders());
-          
-          const response = await fetch(
-            `http://localhost:8080/api/investigators/${orcid}`,
-            {
-              method: "PUT",
-              headers: getAuthHeaders(), // Incluye token JWT
-              body: JSON.stringify({
-                givenNames: name,
-                email: email,
-                role: role,
-                phone: phone,
-                office: office,
-              }),
-            },
+      setTimeout(() => {
+        const pendingNotifications = JSON.parse(
+          localStorage.getItem("pendingNotifications") || "[]",
+        );
+        if (pendingNotifications.length > 0) {
+          console.log(
+            `📋 [NEWS] Encontradas ${pendingNotifications.length} notificaciones pendientes en localStorage`,
           );
 
-          console.log('🔐 [PEOPLE] Respuesta del servidor:', response.status);
-
-          if (response.ok) {
-            alert("Cambios guardados correctamente");
-            hideEditModal();
-            location.reload();
-          } else if (handleAuthError(response)) {
-            return;
-          } else {
-            const errorText = await response.text();
-            console.error('❌ [PEOPLE] Error del servidor:', errorText);
-            throw new Error("Error al guardar los cambios: " + response.status);
-          }
-        } catch (error) {
-          console.error('❌ [PEOPLE] Error:', error);
-          alert(error.message || "Error al guardar los cambios");
-        }
-      });
-
-      // Añadir investigador - requiere token JWT con ROLE_ADMIN
-      document.getElementById("addForm")?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        // Verificar permisos antes de procesar
-        if (!currentAdminStatus) {
-          alert('Debe iniciar sesión como administrador para realizar esta acción.');
-          return;
-        }
-
-        const orcid = document.getElementById("addOrcid").value;
-        const givenNames = document.getElementById("addName").value;
-        const email = document.getElementById("addEmail").value;
-        const role = document.getElementById("addRole").value;
-        const phone = document.getElementById("addPhone").value;
-        const office = document.getElementById("addOffice").value;
-
-        try {
-          console.log('➕ [PEOPLE] Añadiendo investigador:', orcid);
-          console.log('🔐 [PEOPLE] Headers que se van a enviar:', getAuthHeaders());
-          
-          const response = await fetch(
-            "http://localhost:8080/api/investigators/add",
-            {
-              method: "POST",
-              headers: getAuthHeaders(), // Incluye token JWT
-              body: JSON.stringify({
-                orcid: orcid,
-                givenNames: givenNames,
-                email: email,
-                role: role,
-                phone: phone,
-                office: office,
-              }),
-            },
-          );
-
-          console.log('🔐 [PEOPLE] Respuesta del servidor:', response.status);
-
-          if (response.status === 204) {
-            alert("Investigador añadido correctamente");
-            hideModal("addModal");
-            location.reload();
-          } else if (handleAuthError(response)) {
-            return;
-          } else {
-            const errorText = await response.text();
-            console.error('❌ [PEOPLE] Error del servidor:', errorText);
-            throw new Error(
-              "Error al añadir el investigador: " + response.status,
+          if (
+            window.notificationSystem &&
+            window.notificationSystem.isInitialized
+          ) {
+            console.log(
+              "🔄 [NEWS] Forzando procesamiento de notificaciones pendientes",
             );
-          }
-        } catch (error) {
-          console.error('❌ [PEOPLE] Error:', error);
-          alert(error.message || "Error al añadir el investigador");
-        }
-      });
 
-      // === EVENT LISTENERS ===
-      
-      // Escuchar eventos desde PersonCard para abrir modal de edición
-      document.addEventListener("editPerson", async (e) => {
-        console.log('✏️ [PEOPLE] Evento editPerson recibido:', e.detail);
-        await showEditModal(e.detail);
-      });
+            pendingNotifications.forEach((notification, index) => {
+              setTimeout(() => {
+                window.notificationSystem.notify(
+                  notification.message,
+                  notification.type,
+                  notification.duration,
+                );
+              }, index * 200);
+            });
+
+            localStorage.removeItem("pendingNotifications");
+          }
+        }
+      }, 1000);
     });
   </script>
 </BaseLayout>
