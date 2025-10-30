@@ -1,8 +1,12 @@
 package com.icaro.icarobackend.controller;
 
+import com.icaro.icarobackend.dto.NewsDTO;
 import com.icaro.icarobackend.model.New;
 import com.icaro.icarobackend.service.NewService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +42,24 @@ public class NewController {
         return ResponseEntity.ok().body(newService.findAll());
     }
 
+    // Devuelve la información del page seleccionado
+    @GetMapping("/page")
+    public Page<New> getAllNews(Pageable pageable) {
+        return newService.findPage(pageable);
+    }
+
+    // Devuelve la informacion de un New en caso de que no esté en el page.
+    @GetMapping("/search")
+    public ResponseEntity<Page<NewsDTO>> searchNews(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<NewsDTO> results = newService.searchNews(query, pageable);
+        return ResponseEntity.ok(results);
+    }
+    
     @GetMapping("/check-image/{id}")
     public ResponseEntity<Map<String, Object>> checkImageExists(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();

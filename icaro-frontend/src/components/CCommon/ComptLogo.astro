@@ -2,10 +2,12 @@
 import LogoEPSL from '@/assets/logoepsl.webp';
 import LogoUJA  from '@/assets/logouja.webp';
 ---
-<div style="display: flex; align-items: center; gap: 16px;">
+
+<div class="flex items-center gap-3 sm:gap-4">
   <img
     src={LogoEPSL.src}
     alt="EPSL Logo"
+    class="w-16 sm:w-20 md:w-24 h-auto"
     width="100"
     height="auto"
     loading="lazy"
@@ -13,6 +15,7 @@ import LogoUJA  from '@/assets/logouja.webp';
   <img
     src={LogoUJA.src}
     alt="UJA Logo"
+    class="w-20 sm:w-24 md:w-28 h-auto"
     width="120"
     height="auto"
     loading="lazy"

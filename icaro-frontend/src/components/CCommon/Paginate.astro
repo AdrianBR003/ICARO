@@ -1,0 +1,153 @@
+---
+interface Props {
+  totalPages: number;
+  currentPage: number;
+  baseURL: string;
+}
+
+const { totalPages, currentPage, baseURL } = Astro.props;
+
+const cleanBaseURL = baseURL.split('?')[0];
+
+// Generar array de páginas para mostrar
+const getPageNumbers = () => {
+  const pages = [];
+  const maxVisible = 5;
+  
+  if (totalPages <= maxVisible) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 4, '...', totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+    } else {
+      pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+    }
+  }
+  
+  return pages;
+};
+
+const pages = getPageNumbers();
+const prevPage = currentPage > 1 ? `${cleanBaseURL}?page=${currentPage - 1}` : null;
+const nextPage = currentPage < totalPages ? `${cleanBaseURL}?page=${currentPage + 1}` : null;
+--- 
+
+{totalPages > 1 && (
+  <nav class="flex justify-center items-center gap-2 my-12" aria-label="Paginación">
+    {prevPage ? (
+      <button 
+        class="page-btn page-arrow"
+        aria-label="Página anterior"
+        onclick={`window.location.href='${prevPage}'`}
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+    ) : (
+      <button class="page-btn page-arrow page-disabled" disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+    )}
+
+    {pages.map((page) => (
+      page === '...' ? (
+        <span class="page-dots">...</span>
+      ) : page === currentPage ? (
+        <button class="page-btn page-current" disabled>
+          {page}
+        </button>
+      ) : (
+        <button 
+          class="page-btn"
+          onclick={`window.location.href='${cleanBaseURL}?page=${page}'`}
+          aria-label={`Ir a página ${page}`}
+        >
+          {page}
+        </button>
+      )
+    ))}
+
+    {nextPage ? (
+      <button 
+        class="page-btn page-arrow"
+        aria-label="Página siguiente"
+        onclick={`window.location.href='${nextPage}'`}
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    ) : (
+      <button class="page-btn page-arrow page-disabled" disabled>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    )}
+  </nav>
+)}
+
+<style>
+  .page-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #475569;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .page-btn:hover:not(.page-disabled):not(.page-current) {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+  }
+
+  .page-current {
+    background: #3b4f6b;
+    border-color: #3b4f6b;
+    color: white;
+    cursor: default;
+  }
+
+  .page-arrow {
+    min-width: 2.5rem;
+  }
+
+  .page-disabled {
+    color: #cbd5e1;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .page-disabled:hover {
+    background: white;
+    border-color: #e2e8f0;
+  }
+
+  .page-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    color: #94a3b8;
+    font-weight: 500;
+    user-select: none;
+  }
+</style>

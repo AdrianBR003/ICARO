@@ -8,7 +8,7 @@ import AddPeople from "@/components/CPeople/AddPeople.astro";
 import PeopleList from "@/components/CPeople/PeopleList.astro";
 import "@/styles/index.css";
 import type { Investigator } from "@/types/investigator";
-import { getAllInvestigators } from "@/services/investigators";
+import { getAllInvestigators } from "@/services/investigatorsService";
 
 
 const people: Investigator[] = await getAllInvestigators(); 

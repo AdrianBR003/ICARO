@@ -3,273 +3,92 @@ import NewsCard from "@/components/CNews/CCNewsList/NewsCard.astro";
 import NewsAdd from "@/components/CNews/NewsAdd.astro";
 import NewsEdit from "@/components/CNews/CCNewsList/NewsEdit.astro";
 import NewsDelete from "@/components/CNews/CCNewsList/NewsDelete.astro";
-
-interface News {
-  id: string;
-  title: string;
-  description: string;
-  publicationDate?: string;
-  link?: string;
-}
+import type { News } from "@/types/news";
+import SearchFilter from "../CCommon/SearchFilter.astro";
 
 interface Props {
   news: News[];
-  isAdmin?: boolean;
 }
 
-const { news, isAdmin = false } = Astro.props;
+const { news } = Astro.props;
 ---
 
 <div id="news-list-container">
-  <NewsAdd isAdmin={isAdmin} />
+  <NewsAdd />
 
-  <div class="mb-6">
-    <div class="relative max-w-md mx-auto">
-      <input
-        type="text"
-        id="search-input"
-        placeholder="Buscar noticias..."
-        class="w-full px-4 py-2 pl-10 pr-4 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent transition-all"
-      />
-      <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-        <svg
-          class="w-5 h-5 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </div>
-    </div>
+  <div class="w-full max-w-custom mb-3 relative">
+    <SearchFilter
+      inputId="news-search"
+      placeholder="Buscar noticias por título o descripción..."
+    />
+    <!-- Las sugerencias se inyectarán aquí dinámicamente -->
   </div>
 
+  <!-- Lista de noticias con data-news-id para identificación -->
   <div class="space-y-6" id="news-list">
     {
-      news.map((newsItem, index) => {
-        const validatedNews = {
-          ...newsItem,
-          id: newsItem.id || `news-${index}`,
-          title: newsItem.title || "Sin título",
-          description: newsItem.description || "Sin descripción",
-        };
-        return <NewsCard news={validatedNews} isAdmin={isAdmin} />;
-      })
+      news.map((newsItem) => (
+        <article class="news-card-item" data-news-id={newsItem.id}>
+          <NewsCard news={newsItem} />
+        </article>
+      ))
     }
+    {news.length === 0 && (
+      <p class="text-gray-500">No hay noticias disponibles.</p>
+    )}
   </div>
 
-  <!-- Componentes hijos para funcionalidades específicas -->
+  <!-- Mensaje cuando no hay resultados -->
+  <p id="no-news-results" style="display: none;">
+    No se encontraron resultados.
+  </p>
+
   <NewsEdit />
   <NewsDelete />
 
-  <script is:inline define:vars={{ isAdmin }}>
+  <script>
+    import { createImageLoader } from "@/utils/imageLoaderFactory";
+    import { setupAdvancedSearch } from "@/utils/searchFilter";
+
     document.addEventListener("DOMContentLoaded", function () {
-      console.log("🔔 [NewsList] Componente cargado");
-
-      // ============= CONFIGURACIÓN =============
-      const ASSETS_BASE_URL = "http://localhost:8080/assets/news";
-      const imageCache = new Map();
-      let currentAdminStatus = false;
-
-      // ============= SISTEMA DE AUTENTICACIÓN =============
-      function getAuthHeaders() {
-        const token = localStorage.getItem("adminToken");
-        const headers = { "Content-Type": "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        return headers;
-      }
-
-      async function checkAdminStatus() {
-        try {
-          const token = localStorage.getItem("adminToken");
-          if (!token) {
-            currentAdminStatus = false;
-            updateAdminElements(false);
-            return false;
-          }
-
-          const response = await fetch(
-            "http://localhost:8080/api/auth/verify",
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            },
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            currentAdminStatus = data.authenticated && data.isAdmin;
-            updateAdminElements(currentAdminStatus);
-            return currentAdminStatus;
-          } else {
-            throw new Error("Token inválido");
-          }
-        } catch (error) {
-          localStorage.removeItem("adminToken");
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          return false;
-        }
-      }
-
-      function updateAdminElements(isAdmin) {
-        const adminButtons = document.querySelectorAll(
-          '[id^="admin-buttons-"]',
-        );
-        adminButtons.forEach((button) => {
-          button.classList.toggle("hidden", !isAdmin);
-        });
-      }
-
-      // ============= FUNCIONALIDAD DE IMÁGENES =============
-      window.loadNewsImages = function () {
-        const images = document.querySelectorAll("img[data-news-image]");
-
-        images.forEach((img) => {
-          const newsId = img.getAttribute("data-news-image");
-          if (!newsId) return;
-
-          if (img.dataset.imageLoaded === "true") return;
-
-          if (imageCache.has(newsId)) {
-            const cachedUrl = imageCache.get(newsId);
-            if (cachedUrl) {
-              img.src = cachedUrl;
-              img.dataset.imageLoaded = "true";
-            }
-            return;
-          }
-
-          loadNewsImage(newsId, img);
-        });
-      };
-
-      function loadNewsImage(newsId, imgElement) {
-        const extensions = ["webp", "jpg", "jpeg", "png"];
-        let currentIndex = 0;
-
-        function tryNextExtension() {
-          if (currentIndex >= extensions.length) {
-            imageCache.set(newsId, null);
-            return;
-          }
-
-          const ext = extensions[currentIndex];
-          const imageUrl = `${ASSETS_BASE_URL}/${newsId}.${ext}`;
-
-          const testImg = new Image();
-
-          testImg.onload = function () {
-            imgElement.src = imageUrl;
-            imgElement.dataset.imageLoaded = "true";
-            imageCache.set(newsId, imageUrl);
-          };
-
-          testImg.onerror = function () {
-            currentIndex++;
-            tryNextExtension();
-          };
-
-          testImg.src = imageUrl;
-        }
-
-        tryNextExtension();
-      }
-
-      // ============= BÚSQUEDA =============
-      function setupSearch() {
-        const searchInput = document.getElementById("search-input");
-        const newsList = document.getElementById("news-list");
-
-        if (!searchInput || !newsList) return;
-
-        const newsCards = Array.from(newsList.children);
-
-        searchInput.addEventListener("input", (e) => {
-          const searchTerm = e.target.value.toLowerCase().trim();
-
-          newsCards.forEach((card) => {
-            const title =
-              card.querySelector("h3")?.textContent.toLowerCase() || "";
-            const description =
-              card.querySelector(".text-gray-600")?.textContent.toLowerCase() ||
-              "";
-            const matches =
-              title.includes(searchTerm) || description.includes(searchTerm);
-            card.style.display = matches ? "" : "none";
-          });
-        });
-      }
-
-      // ============= OBSERVADOR PARA NUEVAS IMÁGENES =============
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-            setTimeout(() => window.loadNewsImages(), 100);
-          }
-        });
+      // Cargar imágenes de las noticias
+      const newsImageLoader = createImageLoader({
+        basePath: "http://localhost:8080/assets/news",
+        dataAttribute: "data-news-image",
       });
 
-      const newsListElement = document.getElementById("news-list");
-      if (newsListElement) {
-        observer.observe(newsListElement, { childList: true, subtree: true });
-      }
+      newsImageLoader.loadImages();
+      newsImageLoader.setupObserver("news-list");
 
-      // ============= NOTIFICACIONES =============
-      window.addNotification = function(type, message) {
-        console.log("🔍 addNotification llamado:", { type, message });
-        try {
-          const notifications = JSON.parse(
-            localStorage.getItem("pendingNotifications") || "[]",
-          );
-
-          const notification = {
-            id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            message,
-            type,
-            duration: 4000,
-            timestamp: Date.now(),
-          };
-
-          notifications.push(notification);
-          localStorage.setItem(
-            "pendingNotifications",
-            JSON.stringify(notifications),
-          );
-
-          console.log(
-            "💾 Notificación guardada en localStorage para mostrar después de recargar:",
-            notification,
-          );
-
-          return notification.id;
-        } catch (error) {
-          console.error("❌ Error guardando notificación:", error);
-        }
-      }
-
-      // ============= FUNCIONES GLOBALES COMPARTIDAS =============
-      window.getCurrentAdminStatus = () => currentAdminStatus;
-      window.getAuthHeaders = getAuthHeaders;
-      window.updateAdminElements = updateAdminElements;
-
-      // Escuchar cambios de estado admin
-      window.addEventListener("adminStatusChanged", function (event) {
-        currentAdminStatus = event.detail.isAdmin;
-        updateAdminElements(currentAdminStatus);
+      // Configurar búsqueda avanzada con sugerencias y navegación
+      setupAdvancedSearch({
+        inputId: "news-search", // ID del input de búsqueda
+        containerId: "news-list", // Contenedor de las noticias
+        itemSelector: ".news-card-item", // Selector de cada tarjeta
+        titleSelector: "h3", // Selector del título dentro de la tarjeta
+        descriptionSelector: ".text-gray-600", // Selector de la descripción
+        noResultsId: "no-news-results", // Elemento para mensajes
+        searchEndpoint: "http://localhost:8080/api/news/search", // Endpoint de búsqueda en backend
+        baseUrl: window.location.pathname, // URL base para navegación
+        debounceMs: 500, // Esperar 500ms antes de buscar en backend
       });
-
-      // ============= INICIALIZACIÓN =============
-      checkAdminStatus();
-      window.loadNewsImages();
-      setupSearch();
-
-      console.log(
-        "✅ [NewsList] Inicialización completa con todas las funcionalidades",
-      );
     });
   </script>
+
+  <style>
+    .relative {
+      position: relative;
+    }
+
+    #no-news-results {
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+      font-size: 0.875rem;
+      background: #f8fafc;
+      border-radius: 0.5rem;
+      border: 1px dashed #cbd5e1;
+      margin-top: 1rem;
+    }
+  </style>
 </div>

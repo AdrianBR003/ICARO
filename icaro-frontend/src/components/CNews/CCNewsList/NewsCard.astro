@@ -1,19 +1,9 @@
 ---
-interface Props {
-  news: {
-    id: string;
-    title: string;
-    description: string;
-    publicationDate?: string;
-    link?: string;
-    [key: string]: any;
-  };
-  isAdmin: boolean;
-}
 
-const { news, isAdmin = false } = Astro.props;
+const { news } = Astro.props;
 const cardId = `${news.id}`;
 const publicationDate = news.publicationDate || '';
+const isAdmin = false; 
 ---
 
 <div id={cardId} class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 relative flex flex-col md:flex-row">
@@ -94,7 +84,7 @@ const publicationDate = news.publicationDate || '';
 document.addEventListener('DOMContentLoaded', function() {
   const adminButtons = document.getElementById('admin-buttons-${news.id}');
   if (adminButtons) {
-    adminButtons.classList.toggle('hidden', !${isAdmin});
+    adminButtons.classList.toggle('hidden', {isAdmin});
   }
 });
 </script>
