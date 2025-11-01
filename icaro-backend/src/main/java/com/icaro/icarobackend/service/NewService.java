@@ -76,6 +76,10 @@ public class NewService {
         newRepository.save(n);
     }
 
+    public boolean checkId(String id) {
+        return this.newRepository.findById(id).isPresent();
+    }
+
     public Optional<New> findById(String id) {
         return this.newRepository.findById(id);
     }

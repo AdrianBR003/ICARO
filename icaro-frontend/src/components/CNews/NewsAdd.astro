@@ -1,33 +1,21 @@
 ---
-const isAdmin = false; 
 ---
 
-<!-- Siempre en el DOM, oculto si no es admin -->
-<div id="news-add-wrapper" class={isAdmin ? "" : "hidden"}>
-  <div class="mb-6 flex justify-center">
-    <button
-      id="btn-add-news"
-      class="bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded flex items-center transition-colors"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 mr-2"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-          clip-rule="evenodd"></path>
-      </svg>
-      Añadir Noticia
-    </button>
-  </div>
+<div class="admin-control hidden mb-4 flex justify-center">
+  
+  <button
+    id="btn-add-news"
+    class="bg-[#006D38] hover:bg-[#005229] text-white font-bold py-2 px-4 rounded flex items-center transition-colors"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
+    </svg>
+    Añadir Noticia
+  </button>
 
-  <!-- Modal -->
   <div
     id="modal-add-news"
-    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 text-left"
     style="background: rgba(0,0,0,0.5);"
   >
     <div
@@ -43,25 +31,28 @@ const isAdmin = false;
           >
         </div>
 
-        <form id="form-add-news">
+        <form id="form-add-news" novalidate>
           <div class="space-y-4">
-            <!-- ID de la noticia -->
+            
             <div>
-              <label class="block mb-1 text-sm font-medium">ID de la noticia</label>
-              <input
-                type="text"
-                id="newsId"
-                name="id"
-                readonly
-                class="w-full px-3 py-2 border rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
-                placeholder="Se generará automáticamente"
-              />
-              <p class="text-xs text-gray-400 mt-1">
-                Este ID es de solo lectura y se genera automáticamente
+              <label class="block mb-1 text-sm font-medium">ID de la noticia *</label>
+              <div class="flex space-x-2">
+                <input
+                  type="text"
+                  id="newsId"
+                  name="id"
+                  required
+                  class="w-full px-3 py-2 border rounded-md focus:ring-2 focus:outline-none transition-colors"
+                  placeholder="Clic en 'Generar' o escriba un ID"
+                />
+                <button type="button" id="btn-generate-id" class="px-3 py-2 text-sm bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 whitespace-nowrap">Generar ID</button>
+                <button type="button" id="btn-verify-id" class="px-3 py-2 text-sm bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200">Verificar</button>
+              </div>
+              <p id="id-status" class="text-xs text-gray-400 mt-1">
+                Un ID único es requerido. Genere uno o escriba el suyo.
               </p>
             </div>
             
-            <!-- Título -->
             <div>
               <label class="block mb-1 text-sm font-medium">Título *</label>
               <input
@@ -72,7 +63,6 @@ const isAdmin = false;
               />
             </div>
             
-            <!-- Descripción -->
             <div>
               <label class="block mb-1 text-sm font-medium">Descripción *</label>
               <textarea
@@ -82,12 +72,10 @@ const isAdmin = false;
                 class="w-full px-3 py-2 border rounded-md"></textarea>
             </div>
             
-            <!-- Fecha de Publicación -->
             <div>
               <label class="block mb-1 text-sm font-medium">Fecha de Publicación</label>
               <input
                 type="date"
-                id="editPublicationDate"
                 name="publicationDate"
                 class="w-full px-3 py-2 border rounded-md"
               />
@@ -96,7 +84,6 @@ const isAdmin = false;
               </p>
             </div>
             
-            <!-- Enlace -->
             <div>
               <label class="block mb-1 text-sm font-medium">Enlace (URL)</label>
               <input
@@ -107,7 +94,6 @@ const isAdmin = false;
               />
             </div>
 
-            <!-- Botones -->
             <div class="flex gap-4 pt-4 border-t">
               <button
                 type="button"
@@ -128,333 +114,7 @@ const isAdmin = false;
   </div>
 </div>
 
-<script is:inline>
-  document.addEventListener("DOMContentLoaded", function () {
-    console.log('📰 [NewsAdd] Componente cargado');
-    
-    // ============= SISTEMA DE AUTENTICACIÓN JWT =============
-    function getAuthHeaders() {
-      const token = localStorage.getItem('adminToken');
-      const headers = {
-        'Content-Type': 'application/json'
-      };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      return headers;
-    }
-    
-    // ============= GESTIÓN DEL ESTADO ADMIN =============
-    let currentAdminStatus = false;
-    
-    async function checkAdminStatus() {
-      console.log('🔐 [NewsAdd] Verificando estado admin...');
-      
-      try {
-        const token = localStorage.getItem('adminToken');
-        if (!token) {
-          console.log('🔐 [NewsAdd] No hay token almacenado');
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          return false;
-        }
-
-        console.log('🔐 [NewsAdd] Token encontrado, verificando...');
-        const response = await fetch('http://localhost:8080/api/auth/verify', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const isAdmin = data.authenticated && data.isAdmin;
-          console.log('🔐 [NewsAdd] Verificación exitosa:', { isAdmin, username: data.username });
-          currentAdminStatus = isAdmin;
-          updateAdminElements(isAdmin);
-          return isAdmin;
-        } else {
-          console.log('🔐 [NewsAdd] Token inválido, status:', response.status);
-          throw new Error('Token inválido');
-        }
-      } catch (error) {
-        console.error('❌ [NewsAdd] Error verificando token:', error);
-        localStorage.removeItem('adminToken');
-        currentAdminStatus = false;
-        updateAdminElements(false);
-        return false;
-      }
-    }
-    
-    function handleAuthError(response) {
-      if (response.status === 401 || response.status === 403) {
-        alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-        localStorage.removeItem('adminToken');
-        currentAdminStatus = false;
-        updateAdminElements(false);
-        window.location.href = '/admin-login';
-        return true;
-      }
-      return false;
-    }
-    
-    function updateAdminElements(isAdmin) {
-      console.log('🎨 [NewsAdd] Actualizando UI admin:', isAdmin);
-      
-      const wrapper = document.getElementById("news-add-wrapper");
-      if (wrapper) {
-        if (isAdmin) {
-          wrapper.classList.remove('hidden');
-        } else {
-          wrapper.classList.add('hidden');
-        }
-      }
-      
-      console.log('✅ [NewsAdd] UI actualizada correctamente');
-    }
-    
-    // Escuchar cambios desde TopUtility
-    window.addEventListener('adminStatusChanged', function(event) {
-      const { isAdmin, source } = event.detail;
-      console.log(`🔄 [NewsAdd] Estado admin cambiado desde ${source}:`, isAdmin);
-      currentAdminStatus = isAdmin;
-      updateAdminElements(isAdmin);
-    });
-    
-    // Inicializar estado admin al cargar la página
-    checkAdminStatus();
-    
-    // Verificar estado cada 5 minutos para detectar tokens expirados
-    setInterval(() => {
-      console.log('⏰ [NewsAdd] Verificación periódica del estado admin');
-      checkAdminStatus();
-    }, 300000);
-
-    // Verificar al volver a la pestaña (detectar cambios en otras pestañas)
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        console.log('👁️ [NewsAdd] Tab visible, verificando admin status');
-        checkAdminStatus();
-      }
-    });
-
-    // Escuchar cambios en localStorage (para sincronizar entre pestañas)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'adminToken') {
-        console.log('🔄 [NewsAdd] Token cambiado en localStorage:', e.newValue ? 'Token añadido' : 'Token eliminado');
-        if (e.newValue) {
-          checkAdminStatus();
-        } else {
-          currentAdminStatus = false;
-          updateAdminElements(false);
-        }
-      }
-    });
-
-    // ============= FUNCIONES AUXILIARES =============
-    
-    // Función para generar ID de 4 dígitos aleatorios
-    function generateNewsId() {
-      const randomId = Math.floor(1000 + Math.random() * 9000).toString(); // Genera número entre 1000-9999
-      const newsIdInput = document.getElementById('newsId');
-      
-      if (newsIdInput) {
-        newsIdInput.value = randomId;
-        console.log('🔢 [NewsAdd] ID generado:', randomId);
-      }
-      
-      return randomId;
-    }
-
-    // ============= FUNCIONES DE MODAL =============
-    const wrapper = document.getElementById("news-add-wrapper");
-    const btnAdd = document.getElementById("btn-add-news");
-    const modal = document.getElementById("modal-add-news");
-    const btnClose = document.getElementById("btn-close-modal");
-    const btnCancel = document.getElementById("btn-cancel");
-    const form = document.getElementById("form-add-news");
-
-    if (!btnAdd || !modal || !form) return;
-
-    async function showModal() {
-      console.log('➕ [NewsAdd] Intentando mostrar modal');
-      
-      if (!currentAdminStatus) {
-        alert('Debe iniciar sesión como administrador para realizar esta acción.');
-        return;
-      }
-
-      try {
-        const token = localStorage.getItem('adminToken');
-        if (!token) {
-          throw new Error('No hay token');
-        }
-
-        console.log('🔐 [NewsAdd] Verificando token antes de abrir modal...');
-        const response = await fetch('http://localhost:8080/api/auth/verify', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-          throw new Error('Token inválido');
-        }
-
-        const data = await response.json();
-        if (!data.authenticated || !data.isAdmin) {
-          throw new Error('Sin permisos de admin');
-        }
-
-        console.log('✅ [NewsAdd] Permisos verificados, abriendo modal');
-        
-        // Generar nuevo ID de 4 dígitos aleatorios antes de mostrar el modal
-        generateNewsId();
-        
-        modal.classList.remove("hidden");
-        document.body.style.overflow = "hidden";
-
-      } catch (error) {
-        console.error('❌ [NewsAdd] Error verificando permisos:', error);
-        alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-        
-        localStorage.removeItem('adminToken');
-        currentAdminStatus = false;
-        updateAdminElements(false);
-      }
-    }
-
-    function hideModal() {
-      modal.classList.add("hidden");
-      document.body.style.overflow = "";
-      form.reset();
-    }
-
-    // Event listeners para el modal
-    btnAdd.onclick = (e) => {
-      e.preventDefault();
-      showModal();
-    };
-    
-    if (btnClose) btnClose.onclick = hideModal;
-    if (btnCancel) btnCancel.onclick = hideModal;
-    
-    modal.onclick = (e) => {
-      if (e.target === modal) hideModal();
-    };
-
-    // ============= ENVÍO DEL FORMULARIO =============
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-
-      if (!currentAdminStatus) {
-        alert('Debe iniciar sesión como administrador para realizar esta acción.');
-        return;
-      }
-
-      const formData = new FormData(form);
-      if (!formData.get("title") || !formData.get("description")) {
-        alert("Complete los campos obligatorios (Título y Descripción)");
-        return;
-      }
-
-      const newsData = {
-        id: formData.get("id"), // Incluir el ID generado
-        title: formData.get("title").trim(),
-        description: formData.get("description").trim(),
-        publicationDate: formData.get("publicationDate") || null,
-        link: formData.get("link") ? formData.get("link").trim() : null,
-      };
-
-      try {
-        const token = localStorage.getItem('adminToken');
-        if (!token) {
-          throw new Error('No hay token');
-        }
-
-        console.log('🔐 [NewsAdd] Verificando token antes de crear...');
-        const verifyResponse = await fetch('http://localhost:8080/api/auth/verify', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!verifyResponse.ok) {
-          throw new Error('Token inválido');
-        }
-
-        const verifyData = await verifyResponse.json();
-        if (!verifyData.authenticated || !verifyData.isAdmin) {
-          throw new Error('Sin permisos de admin');
-        }
-
-        console.log('✅ [NewsAdd] Permisos verificados, creando noticia');
-        console.log('📤 [NewsAdd] Datos a enviar:', newsData);
-
-        const response = await fetch("http://localhost:8080/api/news/create", {
-          method: "POST",
-          headers: getAuthHeaders(),
-          body: JSON.stringify(newsData),
-        });
-
-        console.log('📥 [NewsAdd] Respuesta del servidor:', response.status);
-
-        if (response.ok) {
-          hideModal();
-          addNotification('success', 'Noticia creada exitosamente.');
-          window.location.reload();
-        } else if (handleAuthError(response)) {
-          return;
-        } else {
-          const errorText = await response.text();
-          console.error('❌ [NewsAdd] Error del servidor:', errorText);
-          addNotification('error', "Error al crear la noticia: " + errorText);
-        }
-      } catch (error) {
-        console.error('❌ [NewsAdd] Error:', error);
-        
-        if (error.message.includes('Token') || error.message.includes('permisos')) {
-          alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-          localStorage.removeItem('adminToken');
-          currentAdminStatus = false;
-          updateAdminElements(false);
-        } else {
-          addNotification('error', "Error de conexión: " + error.message);
-        }
-      }
-    };
-
-    // Cerrar con Escape
-    document.onkeydown = (e) => {
-      if (e.key === "Escape" && !modal.classList.contains("hidden"))
-        hideModal();
-    };
-
-    // Función para notificaciones
-    function addNotification(type, message) {
-      console.log("🔍 addNotification llamado:", { type, message });
-      try {
-        const notifications = JSON.parse(
-          localStorage.getItem("pendingNotifications") || "[]",
-        );
-
-        const notification = {
-          id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-          message,
-          type,
-          duration: 4000,
-          timestamp: Date.now(),
-        };
-
-        notifications.push(notification);
-        localStorage.setItem(
-          "pendingNotifications",
-          JSON.stringify(notifications),
-        );
-
-        console.log(
-          "💾 Notificación guardada en localStorage para mostrar después de recargar:",
-          notification,
-        );
-
-        return notification.id;
-      } catch (error) {
-        console.error("❌ Error guardando notificación:", error);
-      }
-    }
-  });
+<script>
+  import { initializeAddModal } from '@/utils/news/addModal.ts';
+  initializeAddModal();
 </script>

@@ -25,7 +25,8 @@ const { news } = Astro.props;
   </div>
 
   <!-- Lista de noticias con data-news-id para identificación -->
-  <div class="space-y-6" id="news-list">
+<div id="news-list-container">
+  <NewsAdd /> <div class="space-y-6" id="news-list">
     {
       news.map((newsItem) => (
         <article class="news-card-item" data-news-id={newsItem.id}>
@@ -33,10 +34,7 @@ const { news } = Astro.props;
         </article>
       ))
     }
-    {news.length === 0 && (
-      <p class="text-gray-500">No hay noticias disponibles.</p>
-    )}
-  </div>
+    </div>
 
   <!-- Mensaje cuando no hay resultados -->
   <p id="no-news-results" style="display: none;">
@@ -49,8 +47,12 @@ const { news } = Astro.props;
   <script>
     import { createImageLoader } from "@/utils/imageLoaderFactory";
     import { setupAdvancedSearch } from "@/utils/searchFilter";
+    import { initializeAdminUI } from "@/utils/adminUI";
 
     document.addEventListener("DOMContentLoaded", function () {
+
+    initializeAdminUI();
+    
       // Cargar imágenes de las noticias
       const newsImageLoader = createImageLoader({
         basePath: "http://localhost:8080/assets/news",

@@ -36,6 +36,10 @@ public class NewController {
 
     // ---------- METODOS SIN VERIFICACION -------------
 
+    @GetMapping("/check/{id}")
+    public ResponseEntity<Boolean> checkId(@PathVariable String id){
+        return ResponseEntity.ok().body(newService.checkId(id));
+    }
 
     @GetMapping("/all")
     public ResponseEntity<List<New>> findAll(){
