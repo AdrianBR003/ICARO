@@ -20,13 +20,16 @@ const { news } = Astro.props;
     <SearchFilter
       inputId="news-search"
       placeholder="Buscar noticias por título o descripción..."
+      baseURL={Astro.url.pathname}
     />
-    <!-- Las sugerencias se inyectarán aquí dinámicamente -->
   </div>
+  <!-- Las sugerencias se inyectarán aquí dinámicamente -->
+</div>
 
-  <!-- Lista de noticias con data-news-id para identificación -->
+<!-- Lista de noticias con data-news-id para identificación -->
 <div id="news-list-container">
-  <NewsAdd /> <div class="space-y-6" id="news-list">
+  <NewsAdd />
+  <div class="space-y-6" id="news-list">
     {
       news.map((newsItem) => (
         <article class="news-card-item" data-news-id={newsItem.id}>
@@ -34,7 +37,7 @@ const { news } = Astro.props;
         </article>
       ))
     }
-    </div>
+  </div>
 
   <!-- Mensaje cuando no hay resultados -->
   <p id="no-news-results" style="display: none;">
@@ -50,9 +53,8 @@ const { news } = Astro.props;
     import { initializeAdminUI } from "@/utils/adminUI";
 
     document.addEventListener("DOMContentLoaded", function () {
+      initializeAdminUI();
 
-    initializeAdminUI();
-    
       // Cargar imágenes de las noticias
       const newsImageLoader = createImageLoader({
         basePath: "http://localhost:8080/assets/news",
@@ -67,7 +69,7 @@ const { news } = Astro.props;
         inputId: "news-search", // ID del input de búsqueda
         containerId: "news-list", // Contenedor de las noticias
         itemSelector: ".news-card-item", // Selector de cada tarjeta
-        titleSelector: "h3", // Selector del título dentro de la tarjeta
+        titleSelector: "h3", 
         descriptionSelector: ".text-gray-600", // Selector de la descripción
         noResultsId: "no-news-results", // Elemento para mensajes
         searchEndpoint: "http://localhost:8080/api/news/search", // Endpoint de búsqueda en backend

@@ -1,14 +1,18 @@
 ---
+
 interface Props {
   inputId: string;
   placeholder?: string;
+  baseURL: string;
 }
 
-const { inputId, placeholder = "Buscar..." } = Astro.props;
+const { inputId, placeholder = "Buscar...", baseURL } = Astro.props;
+
+const query = Astro.url.searchParams.get("query") || "";
 ---
 
 <div class="mb-10">
-  <div class="relative max-w-full">
+  <form class="relative max-w-full" method="GET" role="search">
     <span
       class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500"
     >
@@ -24,10 +28,62 @@ const { inputId, placeholder = "Buscar..." } = Astro.props;
           clip-rule="evenodd"></path>
       </svg>
     </span>
+
     <input
-      id={inputId} type="search"
-      placeholder={placeholder}
-      class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
-    />
-  </div>
+      id={inputId}
+      type="search"
+      name="query"
+      value={query} placeholder={placeholder}
+      class="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
+      />
+
+    {query && (
+      <a
+        href={baseURL}
+        class="search-clear-btn"
+        aria-label="Eliminar búsqueda"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          class="w-5 h-5"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+            clip-rule="evenodd"
+          ></path>
+        </svg>
+      </a>
+    )}
+  </form>
 </div>
+
+<style>
+  .search-clear-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding-left: 0.75rem;  /* 12px */
+    padding-right: 1rem; /* 16px */
+    color: #9ca3af; /* text-gray-400 */
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .search-clear-btn:hover {
+    color: #374151; /* text-gray-700 */
+  }
+
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
+</style>

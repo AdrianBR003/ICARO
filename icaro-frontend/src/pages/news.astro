@@ -43,8 +43,8 @@ console.log(`[NEWS PAGE] Loaded page ${currentPage} of ${totalPages}`);
     <Paginate
       totalPages={totalPages}
       currentPage={currentPage}
-      baseURL={Astro.url.pathname}
-    /> 
+      astroURL={Astro.url}
+    />
   </section>
 </BaseLayout>
 
