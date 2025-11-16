@@ -17,8 +17,6 @@ public interface NewRepository extends MongoRepository<New, String> {
 
     List<New> findAllByOrderByPublicationDateDesc();
 
-    // --- MÉTODOS DE PAGINACIÓN CORREGIDOS (USAR ESTOS) ---
-
     /**
      * Busca usando @Query Y AÑADE EL SORT DENTRO DE LA QUERY.
      * El Pageable solo se usará para la paginación (página/tamaño).

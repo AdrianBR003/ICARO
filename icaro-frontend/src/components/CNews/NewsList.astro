@@ -1,98 +1,140 @@
 ---
+// NewsList.astro - Versión refactorizada y limpia
+
 import NewsCard from "@/components/CNews/CCNewsList/NewsCard.astro";
 import NewsAdd from "@/components/CNews/NewsAdd.astro";
 import NewsEdit from "@/components/CNews/CCNewsList/NewsEdit.astro";
 import NewsDelete from "@/components/CNews/CCNewsList/NewsDelete.astro";
+import SearchFilter from "@/components/CCommon/SearchFilter.astro";
 import type { News } from "@/types/news";
-import SearchFilter from "../CCommon/SearchFilter.astro";
 
 interface Props {
   news: News[];
 }
 
 const { news } = Astro.props;
+const hasQuery = Astro.url.searchParams.has("query");
 ---
 
-<div id="news-list-container">
+<div id="news-page-wrapper">
+  <!-- Botón de añadir (solo visible para admin) -->
   <NewsAdd />
 
-  <div class="w-full max-w-custom mb-3 relative">
+  <!-- Buscador SSR -->
+  <div class="w-full max-w-custom mb-6 relative">
     <SearchFilter
       inputId="news-search"
       placeholder="Buscar noticias por título o descripción..."
       baseURL={Astro.url.pathname}
     />
   </div>
-  <!-- Las sugerencias se inyectarán aquí dinámicamente -->
-</div>
 
-<!-- Lista de noticias con data-news-id para identificación -->
-<div id="news-list-container">
-  <NewsAdd />
-  <div class="space-y-6" id="news-list">
-    {
-      news.map((newsItem) => (
+  <!-- Lista de noticias -->
+  {news.length > 0 ? (
+    <div id="news-list-container" class="space-y-6">
+      {news.map((newsItem) => (
         <article class="news-card-item" data-news-id={newsItem.id}>
           <NewsCard news={newsItem} />
         </article>
-      ))
-    }
-  </div>
+      ))}
+    </div>
+  ) : (
+    <div class="empty-state">
+      <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p class="empty-message">
+        {hasQuery 
+          ? "No se encontraron noticias con ese término de búsqueda"
+          : "No hay noticias disponibles en este momento"
+        }
+      </p>
+      {hasQuery && (
+        <a href={Astro.url.pathname} class="empty-link">
+          Ver todas las noticias
+        </a>
+      )}
+    </div>
+  )}
 
-  <!-- Mensaje cuando no hay resultados -->
-  <p id="no-news-results" style="display: none;">
-    No se encontraron resultados.
-  </p>
-
+  <!-- Modales (ocultos, se manejan con JS) -->
   <NewsEdit />
   <NewsDelete />
-
-  <script>
-    import { createImageLoader } from "@/utils/imageLoaderFactory";
-    import { setupAdvancedSearch } from "@/utils/searchFilter";
-    import { initializeAdminUI } from "@/utils/adminUI";
-
-    document.addEventListener("DOMContentLoaded", function () {
-      initializeAdminUI();
-
-      // Cargar imágenes de las noticias
-      const newsImageLoader = createImageLoader({
-        basePath: "http://localhost:8080/assets/news",
-        dataAttribute: "data-news-image",
-      });
-
-      newsImageLoader.loadImages();
-      newsImageLoader.setupObserver("news-list");
-
-      // Configurar búsqueda avanzada con sugerencias y navegación
-      setupAdvancedSearch({
-        inputId: "news-search", // ID del input de búsqueda
-        containerId: "news-list", // Contenedor de las noticias
-        itemSelector: ".news-card-item", // Selector de cada tarjeta
-        titleSelector: "h3", 
-        descriptionSelector: ".text-gray-600", // Selector de la descripción
-        noResultsId: "no-news-results", // Elemento para mensajes
-        searchEndpoint: "http://localhost:8080/api/news/search", // Endpoint de búsqueda en backend
-        baseUrl: window.location.pathname, // URL base para navegación
-        debounceMs: 500, // Esperar 500ms antes de buscar en backend
-      });
-    });
-  </script>
-
-  <style>
-    .relative {
-      position: relative;
-    }
-
-    #no-news-results {
-      text-align: center;
-      padding: 2rem;
-      color: #64748b;
-      font-size: 0.875rem;
-      background: #f8fafc;
-      border-radius: 0.5rem;
-      border: 1px dashed #cbd5e1;
-      margin-top: 1rem;
-    }
-  </style>
 </div>
+
+<script>
+  import { createImageLoader } from "@/utils/general/imageLoaderFactory";
+  import { initializeAdminUI } from "@/utils/general/adminUI";
+  import { setupAdvancedSearch } from "@/utils/general/searchFilter";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    
+    // 1. Inicializar UI de administrador
+    initializeAdminUI();
+
+    // 2. Cargar imágenes lazy
+    const newsImageLoader = createImageLoader({
+      basePath: "http://localhost:8080/assets/news",
+      dataAttribute: "data-news-image",
+    });
+
+    newsImageLoader.loadImages();
+    newsImageLoader.setupObserver("news-list-container");
+
+    // 3. Configurar búsqueda con sugerencias
+    setupAdvancedSearch({
+      inputId: "news-search",
+      searchEndpoint: "http://localhost:8080/api/news/search",
+      baseUrl: window.location.pathname,
+      debounceMs: 300,
+    });
+
+    // 4. TODO: Aquí irá la inicialización de modales
+    // initializeModalController();
+  });
+</script>
+
+<style>
+  .space-y-6 > * + * {
+    margin-top: 1.5rem;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+
+  .empty-icon {
+    width: 4rem;
+    height: 4rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+  }
+
+  .empty-message {
+    font-size: 1.125rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+    max-width: 28rem;
+  }
+
+  .empty-link {
+    color: #06b6d4;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+
+  .empty-link:hover {
+    color: #0891b2;
+    text-decoration: underline;
+  }
+
+  .max-w-custom {
+    max-width: 1200px;
+  }
+</style>

@@ -43,7 +43,6 @@ export async function fetchNewsPage(
   url.searchParams.append("size", size.toString());
   // El 'sort' lo añade el backend por defecto
 
-  console.log(`[NewsService] Fetching: ${url.toString()}`);
 
   try {
     const res = await fetch(url.toString());
@@ -68,9 +67,7 @@ export async function fetchNewsPage(
  * Obtiene TODAS las noticias en una sola llamada.
  */
 export async function fetchAllNews(): Promise<News[]> {
-  const url = `${API_BASE}/api/news/all`;
-  console.log(`[NewsService] Fetching (all): ${url}`);
-  
+  const url = `${API_BASE}/api/news/all`;  
   try {
     const res = await fetch(url);
     if (!res.ok) {
@@ -103,8 +100,6 @@ export async function searchNews(
   url.searchParams.append("query", query);
   url.searchParams.append("page", page.toString());
   url.searchParams.append("size", size.toString());
-
-  console.log(`[NewsService] Searching: ${url.toString()}`);
 
   try {
     const res = await fetch(url.toString());

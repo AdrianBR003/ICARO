@@ -11,11 +11,6 @@ import "@/styles/index.css";
 import type { News } from "@/types/news";
 import Paginate from "@/components/CCommon/Paginate.astro";
 import { loadNewsPages } from "@/utils/news/newsPageLoader";
-
-console.log(`[NEWS PAGE] Full URL: ${Astro.url.href}`);
-console.log(`[NEWS PAGE] Pathname: ${Astro.url.pathname}`);
-console.log(`[NEWS PAGE] Search params: ${Astro.url.search}`);
-
 const { news, totalPages, currentPage } = await loadNewsPages(Astro.url);
 
 console.log(`[NEWS PAGE] Loaded page ${currentPage} of ${totalPages}`);

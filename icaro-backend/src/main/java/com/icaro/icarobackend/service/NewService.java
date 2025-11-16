@@ -39,20 +39,10 @@ public class NewService {
                 pageable.getPageSize(),
                 pageable.getSort()
         );
-
-        // 1. Se crea la query vacía (equivale a "{}")
         Query query = new Query();
-
-        // 2. Se aplica el Pageable (skip, limit, sort)
         query.with(pageable);
-
-        // 3. Se imprime la query exacta que se enviará a Mongo
         logger.info("[Servicio findPage] Query ENVIADA a Mongo: {}", query.toString());
-
-        // 4. Se ejecuta la búsqueda
         List<New> list = mongoTemplate.find(query, New.class);
-
-        // 5. Se imprimen los resultados crudos recibidos
         logger.info("[Servicio findPage] Datos RECIBIDOS (List<New>): {} elementos", list.size());
 
         if (!list.isEmpty()) {
@@ -62,15 +52,12 @@ public class NewService {
             logger.info("[Servicio findPage] Títulos recibidos: [{}]", titulos);
         }
 
-        // 6. Se crea el objeto Page
-        // (Se usa una función lambda para el 'count' para que solo se ejecute si es necesario)
         Page<New> resultPage = PageableExecutionUtils.getPage(
                 list,
                 pageable,
                 () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), New.class)
         );
 
-        // 7. (LOG NUEVO) Se imprime el Page final que se devuelve al Controller
         logger.info("[Servicio findPage] Page DEVUELTO: Página {}, Total Páginas {}, Total Elementos {}",
                 resultPage.getNumber(), // <-- ¡Este es el número CRÍTICO!
                 resultPage.getTotalPages(),
@@ -81,64 +68,47 @@ public class NewService {
         return resultPage;
     }
 
-    /**
-     * (REESCRITO CON MONGO TEMPLATE + LOGS DETALLADOS)
-     */
     public Page<New> searchNews(String textQuery, Pageable pageable) {
         logger.info("-------------------- INICIO searchNews --------------------");
-        logger.info("[Servicio searchNews] Pageable RECIBIDO: Página {}, Tamaño {}, Sort {}",
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                pageable.getSort()
-        );
-        logger.info("[Servicio searchNews] Query: {}", textQuery);
+        logger.info("[Servicio searchNews] Query original: {}", textQuery);
 
-        // 1. Criterio de búsqueda
+        // 👇 NUEVO: Escapar caracteres especiales de regex
+        String escapedQuery = escapeRegexCharacters(textQuery);
+        logger.info("[Servicio searchNews] Query escapada: {}", escapedQuery);
+
         Criteria criteria = new Criteria().orOperator(
-                Criteria.where("title").regex(textQuery, "i"),
-                Criteria.where("description").regex(textQuery, "i")
+                Criteria.where("title").regex(escapedQuery, "i"),
+                Criteria.where("description").regex(escapedQuery, "i")
         );
 
-        // 2. Query con criterio
         Query query = new Query(criteria);
-
-        // 3. Se aplica Pageable
         query.with(pageable);
 
-        // 4. (LOG NUEVO)
-        logger.info("[Servicio searchNews] Query ENVIADA a Mongo: {}", query.toString());
-
-        // 5. Ejecutar
         List<New> list = mongoTemplate.find(query, New.class);
 
-        // 6. (LOG NUEVO)
-        logger.info("[Servicio searchNews] Datos RECIBIDOS (List<New>): {} elementos", list.size());
-        if (!list.isEmpty()) {
-            String titulos = list.stream()
-                    .map(New::getTitle)
-                    .collect(Collectors.joining(", "));
-            logger.info("[Servicio searchNews] Títulos recibidos: [{}]", titulos);
-        }
-
-        // 7. Crear Page
         Page<New> resultPage = PageableExecutionUtils.getPage(
                 list,
                 pageable,
                 () -> mongoTemplate.count(Query.of(query).limit(-1).skip(-1), New.class)
         );
 
-        // 8. (LOG NUEVO)
-        logger.info("[Servicio searchNews] Page DEVUELTO: Página {}, Total Páginas {}, Total Elementos {}",
-                resultPage.getNumber(), // <-- ¡Número CRÍTICO!
-                resultPage.getTotalPages(),
-                resultPage.getTotalElements()
-        );
+        logger.info("[Servicio searchNews] Page DEVUELTO: {} elementos", resultPage.getTotalElements());
         logger.info("-------------------- FIN searchNews --------------------");
 
         return resultPage;
     }
 
-    // --- MÉTODOS SIMPLES (usan el Repositorio) ---
+    private String escapeRegexCharacters(String input) {
+        String[] specialChars = {"\\", "^", "$", ".", "|", "?", "*", "+", "(", ")", "[", "]", "{", "}"};
+
+        String result = input;
+        for (String specialChar : specialChars) {
+            result = result.replace(specialChar, "\\" + specialChar);
+        }
+
+        return result;
+    }
+
 
     public List<New> findAll() {
         logger.info("Servicio: findAll (todas las noticias)");

@@ -1,4 +1,3 @@
-// Se importa tanto el fetch normal como el de búsqueda
 import { fetchNewsPage, searchNews } from "@/services/newsService";
 import type { News, NewsPage } from "@/types/news";
 
@@ -29,27 +28,17 @@ export async function loadNewsPages(astroUrl: URL): Promise<NewsPageData> {
   // La página que se pide a Spring Boot (base 0)
   const springBootPage = Math.max(0, userPage - 1); 
 
-  console.log(`[Loader] URL params: ${astroUrl.search}`);
-  console.log(`[Loader] User page (display): ${userPage}`);
-  console.log(`[Loader] Spring Boot page (API): ${springBootPage}`);
-
   try {
     let newsPageData: NewsPage; // Se declara una variable para guardar la respuesta
 
     if (query && query.trim() !== "") {
       // --- Caso Búsqueda ---
-      console.log(`[Loader] Modo: BÚSQUEDA. Query: "${query}"`);
       newsPageData = await searchNews(query, springBootPage, 5);
     } else {
       // --- Caso Paginación Normal ---
-      console.log(`[Loader] Modo: PAGINACIÓN NORMAL.`);
       newsPageData = await fetchNewsPage(springBootPage, 5);
     }
 
-    // --- 4. Procesar la respuesta (igual para ambos casos) ---
-    console.log(`[Loader] Received ${newsPageData.content.length} news items`);
-    console.log(`[Loader] Total pages from API: ${newsPageData.totalPages}`);
-    
     return {
       news: newsPageData.content,
       totalPages: newsPageData.totalPages,
