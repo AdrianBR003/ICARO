@@ -1,46 +1,73 @@
-import { adminState } from "@/stores/auth";
 
-const API_BASE = "http://localhost:8080/api";
+import { modalActions } from "@/stores/modalStore";
+import { 
+  createNews, 
+  checkIdExists, 
+  generateUniqueId,
+  type CreateNewsData 
+} from "@/services/news/newsAddService";
+
 let scrollPosition = 0;
 
-function showModal() {
+/**
+ * Muestra el modal de añadir
+ */
+export function showAddModal() {
   const modal = document.getElementById("modal-add-news");
   if (!modal) return;
+
+  // Generar ID automáticamente al abrir
   generateAndVerifyId();
+
+  // Guardar posición de scroll
   scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
   document.body.classList.add("modal-open");
   document.body.style.top = `-${scrollPosition}px`;
+
+  // Mostrar modal
   modal.classList.remove("hidden");
+
+  // Enfocar primer input
   const firstInput = modal.querySelector('input[name="title"]') as HTMLElement;
   if (firstInput) firstInput.focus();
 }
 
-function hideModal() {
+/**
+ * Oculta el modal de añadir
+ */
+export function hideAddModal() {
   const modal = document.getElementById("modal-add-news");
   const form = document.getElementById("form-add-news") as HTMLFormElement;
+  
   if (!modal || !form) return;
+
+  // Ocultar modal
   modal.classList.add("hidden");
+
+  // Restaurar scroll
   document.body.classList.remove("modal-open");
   document.body.style.top = "";
   window.scrollTo(0, scrollPosition);
+
+  // Limpiar formulario
   form.reset();
   resetIdField();
+
+  // Cerrar en el store
+  modalActions.close();
 }
 
-// --- LÓGICA DE ID ---
-function generateId(): string {
-  const num = Math.floor(Math.random() * 10000);
-  // Rellena con 0 -> 001
-  return num.toString().padStart(4, "0");
-}
+// ============= LÓGICA DE ID =============
 
-function setIdStatus(
-  status: "loading" | "valid" | "invalid" | "idle",
-  message: string
-) {
+type IdStatus = "loading" | "valid" | "invalid" | "idle";
+
+function setIdStatus(status: IdStatus, message: string) {
   const statusEl = document.getElementById("id-status");
-  const inputEl = document.getElementById("newsId");
+  const inputEl = document.getElementById("newsId") as HTMLInputElement;
+  
   if (!statusEl || !inputEl) return;
+
+  // Limpiar clases previas
   inputEl.classList.remove(
     "border-[#006D38]",
     "border-red-500",
@@ -49,23 +76,27 @@ function setIdStatus(
   );
   statusEl.classList.remove("text-[#006D38]", "text-red-600", "text-gray-500");
 
+  // Aplicar nuevas clases según el estado
   switch (status) {
     case "loading":
-      statusEl.innerHTML = `Verificando...`;
+      statusEl.textContent = "Verificando...";
       statusEl.className = "text-gray-500 text-xs";
       break;
+
     case "valid":
-      statusEl.innerHTML = `✓ ${message}`;
+      statusEl.textContent = `✓ ${message}`;
       statusEl.className = "text-[#006D38] text-xs";
       inputEl.classList.add("border-[#006D38]", "focus:ring-[#006D38]");
       break;
+
     case "invalid":
-      statusEl.innerHTML = `✕ ${message}`;
+      statusEl.textContent = `✕ ${message}`;
       statusEl.className = "text-red-600 text-xs";
       inputEl.classList.add("border-red-500", "focus:ring-red-500");
       break;
+
     default:
-      statusEl.innerHTML = message;
+      statusEl.textContent = message;
       statusEl.className = "text-gray-400 text-xs mt-1";
       break;
   }
@@ -74,52 +105,22 @@ function setIdStatus(
 function resetIdField() {
   const inputEl = document.getElementById("newsId") as HTMLInputElement;
   if (inputEl) inputEl.value = "";
-  setIdStatus(
-    "idle",
-    "Un ID único es requerido. Genere uno o escriba el suyo."
-  );
-}
-
-async function checkIdExists(id: string): Promise<boolean> {
-  try {
-    const response = await fetch(
-      `${API_BASE}/news/check/${encodeURIComponent(id)}`
-    );
-
-    if (response.ok) {
-      const exists = await response.json();
-      return exists;
-    }
-
-    if (response.status === 404) {
-      return false;
-    }
-
-    console.error("Error del servidor al verificar ID:", response.status);
-    return true;
-  } catch (error) {
-    console.error("Error de red al verificar ID:", error);
-    return true;
-  }
+  setIdStatus("idle", "Un ID único es requerido. Genere uno o escriba el suyo.");
 }
 
 async function generateAndVerifyId() {
   const inputEl = document.getElementById("newsId") as HTMLInputElement;
   if (!inputEl) return;
-  let newId = "";
-  let isUnique = false;
-  let attempts = 0;
+
   setIdStatus("loading", "Generando ID único...");
-  while (!isUnique && attempts < 5) {
-    attempts++;
-    newId = generateId();
-    const exists = await checkIdExists(newId);
-    isUnique = !exists;
-  }
-  inputEl.value = newId;
-  if (isUnique) {
+
+  const newId = await generateUniqueId();
+
+  if (newId) {
+    inputEl.value = newId;
     setIdStatus("valid", "ID único generado.");
   } else {
+    inputEl.value = "";
     setIdStatus("invalid", "No se pudo generar un ID. Intente de nuevo.");
   }
 }
@@ -127,20 +128,24 @@ async function generateAndVerifyId() {
 async function handleVerifyClick() {
   const inputEl = document.getElementById("newsId") as HTMLInputElement;
   if (!inputEl) return;
+
   const id = inputEl.value.trim();
+
+  // Validaciones
   if (!id) {
     setIdStatus("invalid", "El ID no puede estar vacío.");
     return;
   }
+
   if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
-    setIdStatus(
-      "invalid",
-      "ID solo puede contener letras, números, guiones y guiones bajos."
-    );
+    setIdStatus("invalid", "ID solo puede contener letras, números, guiones y guiones bajos.");
     return;
   }
+
   setIdStatus("loading", `Verificando '${id}'...`);
+
   const exists = await checkIdExists(id);
+
   if (exists) {
     setIdStatus("invalid", "Este ID ya está en uso.");
   } else {
@@ -148,127 +153,99 @@ async function handleVerifyClick() {
   }
 }
 
-// --- LÓGICA DE FORMULARIO ---
+// ============= SUBMIT DEL FORMULARIO =============
+
 async function handleFormSubmit(event: Event) {
   event.preventDefault();
-  if (!adminState.get().isAdmin) {
-    alert("Debe iniciar sesión como administrador.");
-    return;
-  }
+
+  // Obtener funciones globales de adminUI
   const getAuthHeaders = (window as any).getAuthHeaders;
   const addNotification = (window as any).addNotification;
-  if (
-    typeof getAuthHeaders !== "function" ||
-    typeof addNotification !== "function"
-  ) {
-    console.error(
-      "Funciones de adminUI (getAuthHeaders, addNotification) no encontradas."
-    );
+
+  if (!getAuthHeaders || !addNotification) {
+    console.error("[addModal] Funciones de adminUI no encontradas");
     alert("Error de inicialización. Refresque la página.");
     return;
   }
+
   const form = event.target as HTMLFormElement;
   const formData = new FormData(form);
+
+  // Validar campos obligatorios
   const id = (formData.get("id") as string)?.trim();
   const title = (formData.get("title") as string)?.trim();
   const description = (formData.get("description") as string)?.trim();
+
   if (!id || !title || !description) {
     addNotification("error", "ID, Título y Descripción son obligatorios.");
     return;
   }
+
+  // Verificar ID una última vez
   setIdStatus("loading", "Verificando ID final...");
   const idExists = await checkIdExists(id);
+
   if (idExists) {
     setIdStatus("invalid", "Este ID ya está en uso. Genere uno nuevo.");
-    addNotification(
-      "error",
-      "El ID ya existe. Por favor, genere o escriba uno nuevo."
-    );
+    addNotification("error", "El ID ya existe. Por favor, genere o escriba uno nuevo.");
     return;
   }
-  const newsData = {
-    id: id,
-    title: title,
-    description: description,
-    publicationDate: formData.get("publicationDate") || null,
+
+  // Preparar datos
+  const newsData: CreateNewsData = {
+    id,
+    title,
+    description,
+    publicationDate: formData.get("publicationDate") as string || null,
     link: (formData.get("link") as string)?.trim() || null,
   };
-  try {
-    const response = await fetch(`${API_BASE}/news/create`, {
-      method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify(newsData),
-    });
-    if (response.ok) {
-      addNotification("success", "Noticia creada exitosamente.");
-      hideModal();
-      window.location.reload();
-    } else {
-      const errorText = await response.text();
-      addNotification("error", `Error al crear: ${errorText}`);
-    }
-  } catch (error) {
-    console.error("Error creando noticia:", error);
-    addNotification("error", "Error de conexión al crear la noticia.");
+
+  // Llamar al servicio
+  const result = await createNews(newsData, getAuthHeaders());
+
+  if (result.success) {
+    addNotification("success", result.message);
+    hideAddModal();
+    
+    // Recargar página para mostrar la nueva noticia
+    setTimeout(() => window.location.reload(), 500);
+  } else {
+    addNotification("error", `Error al crear: ${result.message}`);
   }
 }
 
-// --- INICIALIZADOR PRINCIPAL ---
+// ============= INICIALIZACIÓN =============
+
 export function initializeAddModal() {
   const btnAdd = document.getElementById("btn-add-news");
-  const modal = document.getElementById("modal-add-news");
   const btnClose = document.getElementById("btn-close-modal");
   const btnCancel = document.getElementById("btn-cancel");
   const form = document.getElementById("form-add-news");
   const btnGenerateId = document.getElementById("btn-generate-id");
   const btnVerifyId = document.getElementById("btn-verify-id");
   const idInput = document.getElementById("newsId");
-  if (
-    !btnAdd ||
-    !modal ||
-    !form ||
-    !btnClose ||
-    !btnCancel ||
-    !btnGenerateId ||
-    !btnVerifyId ||
-    !idInput
-  ) {
-    console.warn(
-      "[NewsAdd] Faltan elementos del modal. La inicialización puede fallar."
-    );
+
+  if (!btnAdd || !form || !btnClose || !btnCancel || !btnGenerateId || !btnVerifyId || !idInput) {
+    console.warn("[addModal] Faltan elementos del DOM");
     return;
   }
-  btnAdd.onclick = (e) => {
-    e.preventDefault();
-    if (adminState.get().isAdmin) {
-      showModal();
-    } else {
-      alert("Debe iniciar sesión como administrador.");
-    }
-  };
-  btnClose.onclick = hideModal;
-  btnCancel.onclick = hideModal;
-  modal.onclick = (e) => {
-    if (e.target === modal) hideModal();
-  };
-  document.onkeydown = (e) => {
-    if (e.key === "Escape" && !modal.classList.contains("hidden")) hideModal();
-  };
+
+  // Event listeners
+  btnClose.onclick = hideAddModal;
+  btnCancel.onclick = hideAddModal;
   form.onsubmit = handleFormSubmit;
   btnGenerateId.onclick = generateAndVerifyId;
   btnVerifyId.onclick = handleVerifyClick;
+
   idInput.addEventListener("input", () => {
-    setIdStatus(
-      "idle",
-      "El ID ha sido modificado. Verifique su disponibilidad."
-    );
+    setIdStatus("idle", "El ID ha sido modificado. Verifique su disponibilidad.");
   });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modal.classList.contains("hidden")) {
-      hideModal();
-    }
-  });
+  console.log("✅ [addModal] Inicializado");
+}
 
-  console.log("✅ [NewsAdd] Modal listo.");
+// Exponer funciones al window para modalController
+if (typeof window !== 'undefined') {
+  (window as any).showAddModal = showAddModal;
+  (window as any).hideAddModal = hideAddModal;
 }

@@ -1,25 +1,26 @@
-package com.icaro.icarobackend.controller; // Asegúrate que el package sea correcto
+package com.icaro.icarobackend.controller;
 
-// Imports para el Sort.Order
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 
 import com.icaro.icarobackend.model.New;
 import com.icaro.icarobackend.service.NewService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/news")
 public class NewController {
 
-    private static final Logger logger = LoggerFactory.getLogger(NewController.class);
 
     private final NewService newService;
 
@@ -27,9 +28,22 @@ public class NewController {
         this.newService = newService;
     }
 
+    // ---------- METODOS SIN VERIFICACION -------------
+
+
     @GetMapping("/all")
-    public ResponseEntity<List<New>> findAll(){
+    public ResponseEntity<List<New>> findAll() {
         return ResponseEntity.ok().body(newService.findAll());
+    }
+
+    @GetMapping("/check/{id}")
+    public ResponseEntity<Boolean> checkNewsId(@PathVariable String id) {
+        boolean exists = newService.findById(id).isPresent();
+        if (exists) {
+            return ResponseEntity.ok(true);
+        } else {
+            return ResponseEntity.status(404).body(false);
+        }
     }
 
     /**
@@ -37,33 +51,21 @@ public class NewController {
      */
     @GetMapping("/page")
     public Page<New> getAllNews(Pageable pageable) {
-        // Log de la petición de entrada
-        logger.info("--- REQUEST /page ---");
-        logger.info("Página solicitada: {}", pageable.getPageNumber());
-        logger.info("Tamaño de página: {}", pageable.getPageSize());
-        logger.info("Ordenación (entrante): {}", pageable.getSort());
-        logger.info("---------------------");
-
-        // Se comprueba si el cliente (frontend) ha solicitado un orden
         if (pageable.getSort().isUnsorted()) {
-
-            // (CORREGIDO)
-            // Se crea una ordenación ESTABLE de 2 niveles:
-            // 1. Por fecha (DESC)
-            // 2. Por ID (DESC) para romper empates
             Sort stableSort = Sort.by(
                     Order.desc("publicationDate"),
-                    Order.desc("id") // O Order.asc("id"), como prefieras
+                    Order.desc("id")
             );
 
             pageable = PageRequest.of(
                     pageable.getPageNumber(),
                     pageable.getPageSize(),
-                    stableSort // Se usa la ordenación estable
+                    stableSort
             );
         }
         return newService.findPage(pageable);
     }
+
 
     /**
      * Devuelve una página (Page<New>) de resultados de búsqueda.
@@ -72,29 +74,54 @@ public class NewController {
     public ResponseEntity<Page<New>> searchNews(
             @RequestParam String query,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) { // 50 era mucho, 10 o 50 está bien
-
-        logger.info("--- REQUEST /search ---");
-        logger.info("Query: {}", query);
-        logger.info("Página solicitada: {}", page);
-        logger.info("Tamaño de página: {}", size);
-        logger.info("-----------------------");
-
-        // (CORREGIDO)
-        // Se crea la ordenación ESTABLE también para la búsqueda
+            @RequestParam(defaultValue = "10") int size) {
         Sort stableSort = Sort.by(
                 Order.desc("publicationDate"),
                 Order.desc("id")
         );
-
         Pageable pageable = PageRequest.of(
                 page,
                 size,
-                stableSort // Se usa la ordenación estable
+                stableSort
         );
 
         Page<New> results = newService.searchNews(query, pageable);
 
         return ResponseEntity.ok(results);
+    }
+
+
+
+    // ---------- METODOS CON VERIFICACION -------------
+
+
+    @PostMapping("/add")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<New> addNew(@RequestBody New newData) {
+        if (this.newService.addNew(newData)) {
+            return new ResponseEntity<>(newData, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(newData, HttpStatus.CONFLICT);
+        }
+    }
+
+    @PostMapping("/update")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<New> update(@RequestBody New news) {
+        if (this.newService.updateNew(news)) {
+            return new ResponseEntity<>(news, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+    }
+
+    @DeleteMapping("/delete/{newsId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<New> delete(@PathVariable("newsId") String newsId) {
+        if(this.newService.deleteNew(newsId)){
+            return new ResponseEntity<>(HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { fetchNewsPage, searchNews } from "@/services/newsService";
+import { fetchNewsPage, searchNews } from "@/services/news/newsService";
 import type { News, NewsPage } from "@/types/news";
 
 export interface NewsPageData {

@@ -1,6 +1,4 @@
 ---
-// NewsCard.astro - Versión refactorizada sin onclick inline
-
 import type { News } from "@/types/news";
 
 interface Props {
@@ -16,7 +14,6 @@ const publicationDate = news.publicationDate?.toString() || "";
   id={cardId}
   class="news-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 relative flex flex-col md:flex-row"
 >
-  <!-- Botones de admin (ocultos por defecto) -->
   <div
     id={`admin-buttons-${news.id}`}
     class="absolute top-3 right-3 flex flex-col gap-2 admin-control hidden z-20"
@@ -43,6 +40,7 @@ const publicationDate = news.publicationDate?.toString() || "";
     </button>
 
     <button
+      type="button"
       class="delete-btn p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm border border-gray-200"
       data-news-id={news.id}
       data-news-title={news.title}
@@ -107,29 +105,31 @@ const publicationDate = news.publicationDate?.toString() || "";
       </p>
     </div>
 
-    {news.link && (
-      <a
-        href={news.link}
-        class="inline-flex items-center text-[#006D38] hover:text-[#005229] font-medium text-sm transition-colors"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Ver más
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4 ml-1"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+    {
+      news.link && (
+        <a
+          href={news.link}
+          class="inline-flex items-center text-[#006D38] hover:text-[#005229] font-medium text-sm transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-          />
-        </svg>
-      </a>
-    )}
+          Ver más
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 ml-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            />
+          </svg>
+        </a>
+      )
+    }
   </div>
 </div>

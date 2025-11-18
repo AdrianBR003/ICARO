@@ -1,6 +1,5 @@
 import type { News, NewsPage } from "@/types/news";
 
-// Interfaz para el objeto que llega "crudo" desde el API
 interface ApiNewsItem {
   id?: string;
   title?: string;
@@ -94,7 +93,6 @@ export async function searchNews(
   size: number = 5
 ): Promise<NewsPage> {
 
-  // Se construye la URL base del endpoint de búsqueda
   const url = new URL(`${API_BASE}/api/news/search`);
 
   url.searchParams.append("query", query);
