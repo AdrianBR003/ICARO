@@ -1,16 +1,18 @@
-export interface News{
-    id: string; 
-    title: string; 
-    description: string; 
-    authors?: string; 
-    link?: string; 
-    publicationDate?: string; 
+export interface News {
+  id: string;
+  title: string;
+  description: string;
+  authors?: string;
+  link?: string;
+  publicationDate?: string;
+  highlighted?: boolean;
+  createdAt?: string;
 }
 
 // index/Carrousel
-export interface NewsImageResponse{
-    exists: boolean; 
-    imageURL?: string; 
+export interface NewsImageResponse {
+  exists: boolean;
+  imageURL?: string;
 }
 
 // Page
@@ -25,4 +27,4 @@ export interface Page<T> {
   last: boolean;
 }
 
-export type NewsPage = Page<News>; 
+export type NewsPage = Page<News>;

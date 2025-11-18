@@ -1,4 +1,5 @@
 ---
+//RecentCarousel.astro
 ---
 
 <style>
@@ -25,12 +26,15 @@
     <!-- Carrusel -->
     <div
       id="slider"
-      class="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar scroll-smooth
-             snap-x snap-mandatory w-full p-4 sm:p-5 md:p-6 lg:p-7"
+      class="relative flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto no-scrollbar scroll-smooth
+             snap-x snap-mandatory w-full p-4 sm:p-5 md:p-6 lg:p-7 min-h-[300px]"
     >
-      <!-- Las noticias destacadas se cargarán aquí dinámicamente -->
-      <div id="loading" class="w-full text-center p-6 sm:p-8">
-        <p class="text-sm sm:text-base text-gray-500">Cargando noticias destacadas...</p>
+      <!-- Loader del carousel -->
+      <div id="carousel-loader" class="absolute inset-0 flex items-center justify-center bg-white">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#006D38]"></div>
+          <p class="mt-4 text-gray-500">Cargando noticias destacadas...</p>
+        </div>
       </div>
     </div>
 

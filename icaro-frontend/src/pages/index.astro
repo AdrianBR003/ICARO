@@ -5,7 +5,7 @@ import RecentCarousel from "@/components/CIndex/RecentCarousel.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
 import IndexInfo from "@/components/CIndex/IndexInfo.astro";
-import "@/styles/index.css";	
+import "@/styles/index.css";
 import epslimage from "@/assets/epslportada.webp";
 ---
 
@@ -21,7 +21,24 @@ import epslimage from "@/assets/epslportada.webp";
 
   <section class="w-full bg-white shadow-md">
     <div class="relative w-full overflow-hidden">
-      <img src={epslimage.src} alt="EPSL Logo" class="w-full h-auto" />
+      <!-- Loader de la imagen -->
+      <div
+        id="image-loader"
+        class="absolute inset-0 bg-gray-100 flex items-center justify-center"
+      >
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#006D38]"
+        >
+        </div>
+      </div>
+
+      <!-- Imagen (oculta inicialmente) -->
+      <img
+        id="main-image"
+        src={epslimage.src}
+        alt="EPSL Logo"
+        class="w-full h-auto opacity-0 transition-opacity duration-500"
+      />
     </div>
   </section>
 
@@ -53,3 +70,22 @@ import epslimage from "@/assets/epslportada.webp";
     <RecentCarousel />
   </section>
 </BaseLayout>
+
+<script>
+    const mainImage = document.getElementById('main-image') as HTMLImageElement;
+    const imageLoader = document.getElementById('image-loader');
+
+    if (mainImage && imageLoader) {
+      mainImage.addEventListener('load', () => {
+        imageLoader.style.display = 'none';
+        mainImage.classList.remove('opacity-0');
+        mainImage.classList.add('opacity-100');
+      });
+
+      // Si la imagen ya está en caché
+      if (mainImage.complete) {
+        imageLoader.style.display = 'none';
+        mainImage.classList.add('opacity-100');
+      }
+    }
+  </script>

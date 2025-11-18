@@ -1,5 +1,6 @@
 package com.icaro.icarobackend.controller;
 
+import com.icaro.icarobackend.dto.NewsImageDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
@@ -90,7 +91,19 @@ public class NewController {
         return ResponseEntity.ok(results);
     }
 
+    // Imagen en el carousel
 
+    @GetMapping("/Hnews")
+    public ResponseEntity<List<New>> getHighlightedNews() {
+        List<New> highlightedNews = newService.getHighlightedNews();
+        return ResponseEntity.ok(highlightedNews);
+    }
+
+    @GetMapping("/check-image/{newsId}")
+    public ResponseEntity<NewsImageDTO> checkNewsImage(@PathVariable String newsId) {
+        NewsImageDTO response = newService.checkNewsImage(newsId);
+        return ResponseEntity.ok(response);
+    }
 
     // ---------- METODOS CON VERIFICACION -------------
 
