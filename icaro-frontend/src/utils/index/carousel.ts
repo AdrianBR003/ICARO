@@ -5,6 +5,8 @@ import {
   createNewsCard,
 } from "@/services/index/carouselService";
 
+import { backendStatus } from "@/stores/backendStatusStore";
+
 const GAP = 32; // Espacio entre las tarjetas
 
 /**
@@ -18,12 +20,45 @@ export function setupCarousel(
   const slider = document.getElementById(sliderId) as HTMLElement;
   const prevBtn = document.getElementById(prevBtnId) as HTMLButtonElement;
   const nextBtn = document.getElementById(nextBtnId) as HTMLButtonElement;
+  const carouselLoader = document.getElementById("carousel-loader");
 
   // Verificación de los elementos
   if (!slider || !prevBtn || !nextBtn) {
     console.error("No se han encontrado los elementos del carousel");
     return;
   }
+
+  // Función para chequear la disponibilidad del backend
+
+  backendStatus.subscribe(async (status) => {
+    if (status === "offline") {
+      console.log("Backend offline — esperando reconexión");
+
+      // Mostrar loader
+      if (carouselLoader) {
+        carouselLoader.style.opacity = "1";
+        carouselLoader.style.display = "flex";
+      }
+
+      return;
+    }
+
+    if (status === "online") {
+      console.log("Backend online — recargando noticias");
+
+      // Mostrar loader mientras se cargan
+      if (carouselLoader) {
+        carouselLoader.style.opacity = "1";
+        carouselLoader.style.display = "flex";
+      }
+
+      try {
+        await loadHighlightedNews();
+      } catch (e) {
+        console.error("Error cargando noticias tras reconexión", e);
+      }
+    }
+  });
 
   // Obtiene el ancho de una tarjeta incluyendo el gap
   const getCardWidth = (): number => {
@@ -56,19 +91,8 @@ export function setupCarousel(
       const highlightedNews = await fetchHighlightedNews();
 
       if (highlightedNews.length === 0) {
-        slider.innerHTML = `
-  <div class="w-full h-[30vh] flex items-center justify-center">
-    <div class="bg-white border border-gray-300 rounded-xl shadow-xl p-12 text-center max-w-xl">
-      <p class="text-gray-700 text-xl font-semibold tracking-wide">
-        No hay noticias destacadas disponibles.
-      </p>
-    </div>
-  </div>
-`;
-
-
-        // Oculta el loader
-        if (carouselLoader) carouselLoader.style.display = "none";
+        // El loader se qeuda cargando
+        console.log("No hay noticias disponibles");
         return;
       }
 
@@ -87,21 +111,6 @@ export function setupCarousel(
       loadAllImages();
     } catch (error) {
       console.error("Error al cargar noticias:", error);
-      slider.innerHTML = `
-      <div class="w-full text-center p-8">
-        <p class="text-red-500 mb-4">Error al cargar las noticias.</p>
-        <button 
-          id="retryBtn" 
-          class="px-6 py-2 bg-[#006D38] text-white rounded-lg hover:bg-[#005229] transition-colors"
-        >
-          Reintentar
-        </button>
-      </div>
-    `;
-
-      // Oculta el loader incluso en error
-      if (carouselLoader) carouselLoader.style.display = "none";
-
       const retryBtn = document.getElementById("retryBtn");
       if (retryBtn) {
         retryBtn.addEventListener("click", loadHighlightedNews);

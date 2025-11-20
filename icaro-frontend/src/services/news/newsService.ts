@@ -1,4 +1,6 @@
+import { backendStatus } from "@/stores/backendStatusStore";
 import type { News, NewsPage } from "@/types/news";
+import { hideLoader, updateLoaderState } from "../general/loaderService";
 
 interface ApiNewsItem {
   id?: string;
@@ -117,3 +119,34 @@ export async function searchNews(
     throw error;
   }
 }
+
+export function initNewsListLifecycle(loaderId: string) {
+  console.log(`🔌 [NewsService] Inicializando observador para: ${loaderId}`);
+
+  // 1. Comprobación inicial inmediata
+  const currentStatus = backendStatus.get();
+  if (currentStatus === 'offline') {
+    updateLoaderState(loaderId, 'error', 'Sin conexión con el servidor');
+  } else {
+    // Si estamos online y es carga inicial (SSR), aseguramos que esté oculto
+    hideLoader(loaderId);
+  }
+
+  // 2. Suscripción a eventos (Si se cae el wifi o el server muere mientras navegas)
+  const unsubscribe = backendStatus.subscribe((status) => {
+    console.log(`📡 [NewsService] Cambio de estado backend: ${status}`);
+    
+    if (status === 'offline') {
+      // BLOQUEAR PANTALLA (Rojo)
+      updateLoaderState(loaderId, 'error', 'Conexión perdida con el servidor');
+    } 
+    else if (status === 'online') {
+      // DESBLOQUEAR PANTALLA
+      hideLoader(loaderId);
+    }
+  });
+
+  // Retornamos la función de limpieza por si fuera necesaria (SPA/ViewTransitions)
+  return unsubscribe;
+}
+

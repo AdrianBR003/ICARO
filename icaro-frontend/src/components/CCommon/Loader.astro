@@ -1,0 +1,103 @@
+---
+interface Props {
+  id?: string;
+  text?: string;
+  className?: string;
+}
+
+const { 
+  id = "loader", 
+  text = "Cargando...", 
+  className = "" 
+} = Astro.props;
+
+// Generador matemático Sinc^2
+function generateSincSquaredPath(width: number, height: number, points: number) {
+  let path = "";
+  const xRange = 4 * Math.PI; 
+  const baseline = 90;
+  const amplitude = 80; 
+
+  for (let i = 0; i <= points; i++) {
+    const t = i / points;
+    const x = (t * 2 * xRange) - xRange;
+    let yVal = 1;
+    if (Math.abs(x) > 0.00001) yVal = Math.pow(Math.sin(x) / x, 2);
+    const svgX = t * width;
+    const svgY = baseline - (yVal * amplitude);
+    path += `${i === 0 ? 'M' : 'L'} ${svgX.toFixed(2)} ${svgY.toFixed(2)} `;
+  }
+  return path;
+}
+
+const precisePath = generateSincSquaredPath(200, 100, 250);
+---
+
+<div 
+  id={id} 
+  class:list={[
+    "absolute inset-0 flex flex-col items-center justify-center bg-transparent z-50 transition-opacity duration-300 px-4", 
+    className
+  ]}
+>
+  <div class="w-full max-w-[20rem] h-24 sm:h-32 flex items-center justify-center overflow-hidden">
+    <svg width="100%" height="100%" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 90 H200" class="loader-path" stroke-opacity="0.2" stroke-width="1" fill="none" />
+      
+      <path 
+        class="loader-path"
+        d={precisePath} 
+        stroke-width="3" 
+        stroke-opacity="0.3" 
+        fill="none" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+      />
+
+      <path 
+        class="loader-path animate-trace"
+        d={precisePath} 
+        stroke-width="3" 
+        fill="none" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+      />
+    </svg>
+  </div>
+  
+  <p class="mt-2 font-mono text-xs sm:text-sm uppercase tracking-widest font-bold text-center break-words max-w-full transition-colors duration-300 text-[#006D38]">
+    {text}
+  </p>
+</div>
+
+<style>
+  .animate-trace {
+    stroke-dasharray: 75 325; 
+    animation: flow 3s linear infinite;
+    
+  }
+
+  @keyframes flow {
+    from {
+      stroke-dashoffset: 400;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Animación suave para el texto */
+  p {
+      animation: pulse-text 2s ease-in-out infinite;
+  }
+  @keyframes pulse-text {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+  }
+
+  /* Color base */
+  .loader-path {
+      stroke: #006D38;
+      transition: stroke 0.3s ease;
+  }
+</style>

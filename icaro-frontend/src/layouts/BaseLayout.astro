@@ -1,4 +1,5 @@
 ---
+
 ---
 
 <html lang="en">
@@ -15,8 +16,13 @@
   </footer>
 </html>
 
+<script>
+  import { startBackendPolling } from "@/stores/backendStatusStore";
+  startBackendPolling(5000);
+</script>
+
 <style is:global>
   html {
-    font-size: 12.8px; 
+    font-size: 12.8px;
   }
 </style>

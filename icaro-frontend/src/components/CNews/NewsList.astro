@@ -4,6 +4,7 @@ import NewsAdd from "@/components/CNews/modals/NewsAdd.astro";
 import NewsEdit from "@/components/CNews/modals/NewsEdit.astro";
 import NewsDelete from "@/components/CNews/modals/NewsDelete.astro";
 import SearchFilter from "@/components/CCommon/SearchFilter.astro";
+import Loader from "@/components/CCommon/Loader.astro"; 
 import type { News } from "@/types/news";
 
 interface Props {
@@ -12,12 +13,22 @@ interface Props {
 
 const { news } = Astro.props;
 const hasQuery = Astro.url.searchParams.has("query");
+
+const initialLoaderText = news.length > 0 
+  ? "Conectando..." 
+  : (hasQuery ? "No se encontraron resultados" : "No hay noticias disponibles");
 ---
 
-<div id="news-page-wrapper">
+<div id="news-page-wrapper" class="relative min-h-[400px]">
+  
+  <Loader 
+    id="news-list-loader" 
+    text={initialLoaderText}
+  />
+
   <NewsAdd />
 
-  <div class="w-full max-w-custom mb-6 relative">
+  <div class="w-full max-w-custom mb-6 relative z-20">
     <SearchFilter
       inputId="news-search"
       placeholder="Buscar noticias por título o descripción..."
@@ -25,31 +36,19 @@ const hasQuery = Astro.url.searchParams.has("query");
     />
   </div>
 
-  <!-- Lista de noticias -->
-  {
-    news.length > 0 ? (
-      <div id="news-list-container" class="space-y-6">
-        {news.map((newsItem) => (
-          <article class="news-card-item" data-news-id={newsItem.id}>
-            <NewsCard news={newsItem} />
-          </article>
-        ))}
-      </div>
-    ) : (
-      <div class="empty-state">
-        <p class="empty-message">
-          {hasQuery
-            ? "No se encontraron noticias con ese término de búsqueda"
-            : "No hay noticias disponibles en este momento"}
-        </p>
-        {hasQuery && (
-          <a href={Astro.url.pathname} class="empty-link">
-            Ver todas las noticias
-          </a>
-        )}
-      </div>
-    )
-  }
+  <div id="content-area" class="transition-opacity duration-500 opacity-0">
+    {
+      news.length > 0 && (
+        <div id="news-list-container" class="space-y-4">
+          {news.map((newsItem) => (
+            <article class="news-card-item" data-news-id={newsItem.id}>
+              <NewsCard news={newsItem} />
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </div>
 
   <NewsEdit />
   <NewsDelete />
@@ -60,17 +59,50 @@ const hasQuery = Astro.url.searchParams.has("query");
   import { initializeAdminUI } from "@/utils/general/adminUI";
   import { setupAdvancedSearch } from "@/utils/general/searchFilter";
   import { initializeModalController } from "@/utils/general/modalController";
+  
+  import { backendStatus } from "@/stores/backendStatusStore";
+  import { updateLoaderState, hideLoader } from "@/services/general/loaderService";
 
   document.addEventListener("DOMContentLoaded", () => {
+    const LOADER_ID = 'news-list-loader';
+    const contentArea = document.getElementById('content-area');
+    const hasData = document.getElementById('news-list-container') !== null;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentQuery = urlParams.get('query');
+
+    const refreshState = () => {
+      const status = backendStatus.get();
+
+      if (status === 'offline') {
+        if (contentArea) contentArea.classList.add('opacity-0');
+        updateLoaderState(LOADER_ID, 'error', 'Sin conexión con el servidor');
+        return;
+      }
+
+      if (!hasData) {
+        if (contentArea) contentArea.classList.add('opacity-0');
+        
+        const msg = currentQuery 
+          ? `Sin resultados para "${currentQuery}"` 
+          : "No hay noticias disponibles";
+          
+        updateLoaderState(LOADER_ID, 'empty', msg);
+        return;
+      }
+
+      hideLoader(LOADER_ID);
+      if (contentArea) contentArea.classList.remove('opacity-0');
+    };
+
+    refreshState();
+    backendStatus.subscribe(refreshState);
+
     initializeAdminUI();
+    initializeModalController();
 
-    const newsImageLoader = createImageLoader({
-      basePath: "http://localhost:8080/assets/news",
-      dataAttribute: "data-news-image",
-    });
-
-    newsImageLoader.loadImages();
-    newsImageLoader.setupObserver("news-list-container");
+    const searchInput = document.getElementById('news-search') as HTMLInputElement;
+    if (currentQuery && searchInput) searchInput.value = currentQuery;
 
     setupAdvancedSearch({
       inputId: "news-search",
@@ -79,50 +111,18 @@ const hasQuery = Astro.url.searchParams.has("query");
       debounceMs: 300,
     });
 
-    initializeModalController();
+    if (hasData) {
+        const newsImageLoader = createImageLoader({
+          basePath: "http://localhost:8080/assets/news",
+          dataAttribute: "data-news-image",
+        });
+        newsImageLoader.loadImages();
+        newsImageLoader.setupObserver("news-list-container");
+    }
   });
 </script>
 
 <style>
-  .space-y-6 > * + * {
-    margin-top: 1.5rem;
-  }
-
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 2rem;
-    text-align: center;
-  }
-
-  .empty-icon {
-    width: 4rem;
-    height: 4rem;
-    color: #cbd5e1;
-    margin-bottom: 1rem;
-  }
-
-  .empty-message {
-    font-size: 1.125rem;
-    color: #64748b;
-    margin-bottom: 1rem;
-    max-width: 28rem;
-  }
-
-  .empty-link {
-    color: #06b6d4;
-    font-weight: 500;
-    transition: color 0.15s;
-  }
-
-  .empty-link:hover {
-    color: #0891b2;
-    text-decoration: underline;
-  }
-
-  .max-w-custom {
-    max-width: 1200px;
-  }
+  .space-y-4 > * + * { margin-top: 1rem; }
+  .max-w-custom { max-width: 1200px; }
 </style>
