@@ -14,18 +14,10 @@ export interface NewsPageData {
  * - Si no, llama a fetchNewsPage.
  */
 export async function loadNewsPages(astroUrl: URL): Promise<NewsPageData> {
-  // --- 1. Leer los parámetros de la URL ---
 
-  // Se obtiene el parámetro de búsqueda
   const query = astroUrl.searchParams.get("query");
-  
-  // Se obtiene el parámetro de página
   const pageParam = astroUrl.searchParams.get("page");
-  
-  // --- 2. Calcular las páginas ---
-  // La página que ve el usuario (base 1, default 1)
   const userPage = pageParam ? parseInt(pageParam) : 1; 
-  // La página que se pide a Spring Boot (base 0)
   const springBootPage = Math.max(0, userPage - 1); 
 
   try {

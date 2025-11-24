@@ -1,20 +1,7 @@
 ---
 import ProjectCard from "./CCProjectsList/ProjectCard.astro";
 
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  colaborators: string[];
-  firstprojectDate: string | " ... ";
-  secondprojectDate: string | " ... ";
-  relatedWorks: {
-    type: string;
-    title: string;
-    year: string;
-    link: string | null;
-  }[];
-}
+import { Project } from "@/types/project";
 
 interface Props {
   projects: Project[];
@@ -26,7 +13,7 @@ const { projects, isAdmin = false } = Astro.props;
 
 <div class="space-y-6" id="projects-list">
   {projects.map((project) => (
-    <ProjectCard project={project} isAdmin={isAdmin} />
+    <ProjectCard Project={project} isAdmin={isAdmin} />
   ))}
 </div>
 

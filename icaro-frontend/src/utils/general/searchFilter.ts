@@ -1,6 +1,3 @@
-// utils/general/searchFilter.ts
-// Sistema de búsqueda híbrido: sugerencias en cliente + navegación SSR
-
 interface SearchConfig {
   inputId: string;
   searchEndpoint: string;
@@ -27,16 +24,13 @@ export function setupAdvancedSearch(config: SearchConfig) {
   let debounceTimer: number | null = null;
   const cache = new Map<string, any>();
 
-  // --- Estilos para las sugerencias ---
   injectStyles();
 
-  // --- Crear contenedor de sugerencias ---
   const suggestionsContainer = document.createElement("div");
   suggestionsContainer.className = "search-suggestions";
   suggestionsContainer.style.display = "none";
   searchInput.parentElement?.appendChild(suggestionsContainer);
 
-  // --- Event: Input (mostrar sugerencias) ---
   searchInput.addEventListener("input", (e) => {
     const searchTerm = (e.target as HTMLInputElement).value.trim();
 
@@ -52,7 +46,6 @@ export function setupAdvancedSearch(config: SearchConfig) {
     }, debounceMs);
   });
 
-  // --- Event: Submit (navegación SSR) ---
   form.addEventListener('submit', (e) => {
     const query = searchInput.value.trim();
     
@@ -61,18 +54,15 @@ export function setupAdvancedSearch(config: SearchConfig) {
       return;
     }
 
-    // Validar que la query no tenga solo caracteres especiales
     if (/^[\(\)\[\]\{\}\.\*\+\?\^\$\|\\]+$/.test(query)) {
       e.preventDefault();
       showError("Por favor, introduce un término de búsqueda válido");
       return;
     }
 
-    // Dejar que el form haga su trabajo (GET request)
     hideSuggestions();
   });
 
-  // --- Event: Click fuera (cerrar sugerencias) ---
   document.addEventListener("click", (e) => {
     if (!searchInput.contains(e.target as Node) && 
         !suggestionsContainer.contains(e.target as Node)) {
@@ -80,14 +70,12 @@ export function setupAdvancedSearch(config: SearchConfig) {
     }
   });
 
-  // --- Event: Escape (cerrar sugerencias) ---
   searchInput.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       hideSuggestions();
     }
   });
 
-  // --- Función: Fetch Sugerencias ---
   async function fetchSuggestions(searchTerm: string) {
     showLoading();
 

@@ -2,27 +2,14 @@
 import ProjectEdit from "@/components/CProjects/CCProjectsList/ProjectEdit.astro";
 import ProjectDelete from "@/components/CProjects/CCProjectsList/ProjectDelete.astro";
 
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  colaborators: string[];
-  firstprojectDate: string | " ... ";
-  secondprojectDate: string | " ... ";
-  relatedWorks: {
-    type: string;
-    title: string;
-    year: string;
-    link: string | null;
-  }[];
-}
+import { Project } from "@/types/project";
 
 interface Props {
-  project: Project;
+  Project: Project;
   isAdmin?: boolean;
 }
 
-const { project, isAdmin = false } = Astro.props;
+const { Project: project, isAdmin = false } = Astro.props;
 const cardId = `project-card-${project.id}`;
 
 function formatDate(dateString: string | " ... "): string {
@@ -40,8 +27,8 @@ function formatDate(dateString: string | " ... "): string {
   return date.toLocaleDateString("es-ES", options);
 }
 
-const formattedFirstDate = formatDate(project.firstprojectDate);
-const formattedSecondDate = formatDate(project.secondprojectDate);
+const formattedFirstDate = formatDate(project.firstProjectDate);
+const formattedSecondDate = formatDate(project.secondProjectDate);
 ---
 
 <div

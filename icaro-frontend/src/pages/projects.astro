@@ -3,69 +3,15 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import Header from "@/components/CCommon/Header.astro";
-import "@/styles/index.css";
 import CTitle from "@/components/CCommon/TitlePages.astro";
 import SearchInput from "@/components/CProjects/SearchProject.astro";
 import ProjectsList from "@/components/CProjects/ProjectList.astro";
 import AddProject from "@/components/CProjects/AddProject.astro";
 
-const API_BASE_URL = "http://localhost:8080";
+import "@/styles/index.css";
+import { loadProjectsData } from "@/utils/projects/projectsPageLoader";
 
-async function fetchProjects() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/project/all`);
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching projects:", error);
-    return [];
-  }
-}
-
-async function fetchRelatedWorks(projectId) {
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/project-work/project/${projectId}/works`,
-    );
-    if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Error fetching works for project ${projectId}:`, error);
-    return [];
-  }
-}
-
-const projectsData = await fetchProjects();
-
-const projectsWithWorks = await Promise.all(
-  projectsData.map(async (project) => {
-    const relatedWorks = await fetchRelatedWorks(project.id);
-
-    return {
-      id: project.id,
-      title: project.title,
-      description: project.description,
-      colaborators: project.participants || [],
-      firstprojectDate: project.firstprojectDate || " ... ",
-      secondprojectDate: project.secondprojectDate || " ... ",
-      relatedWorks: relatedWorks.map((work) => ({
-        type: work.tags && work.tags.length > 0 ? work.tags[0] : "Publicación",
-        title: work.title,
-        year: work.projectDate
-          ? new Date(work.projectDate).getFullYear().toString()
-          : "N/A",
-        link:
-          work.externalIds && work.externalIds.length > 0
-            ? work.externalIds[0]
-            : null,
-      })),
-    };
-  }),
-);
+const projects = await loadProjectsData();
 ---
 
 <BaseLayout>
@@ -73,212 +19,25 @@ const projectsWithWorks = await Promise.all(
     <TopUtility />
     <Header />
   </section>
+
   <section class="mt-10 max-w-full bg-white shadow-md">
     <NavBar />
   </section>
 
   <CTitle Title="Projects" />
-  <!-- Eliminar prop isAdmin - se maneja dinámicamente -->
+
   <AddProject />
 
-  <section class="max-w-4xl mx-auto px-4">
+  <section class="w-full px-4 mx-auto max-w-custom">
     <SearchInput placeholder="Buscar proyectos por nombre..." />
-    <!-- Eliminar prop isAdmin - se maneja dinámicamente -->
-    <ProjectsList projects={projectsWithWorks} />
+    
+    <ProjectsList projects={projects} />
   </section>
-
-  <script is:inline>
-    document.addEventListener("DOMContentLoaded", function () {
-      console.log("🚀 [PROJECTS] Página iniciada");
-
-      // ============= SISTEMA DE AUTENTICACIÓN JWT =============
-
-      // Helper para generar headers con token JWT
-      function getAuthHeaders() {
-        const token = localStorage.getItem("adminToken");
-
-        const headers = {
-          "Content-Type": "application/json",
-        };
-
-        // Si existe token, añadir header Authorization con Bearer
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-
-        return headers;
-      }
-
-      // ============= GESTIÓN DEL ESTADO ADMIN =============
-      let currentAdminStatus = false;
-
-      // Verificar estado admin con token JWT
-      async function checkAdminStatus() {
-        console.log("🔐 [PROJECTS] Verificando estado admin...");
-
-        try {
-          const token = localStorage.getItem("adminToken");
-          if (!token) {
-            console.log("🔐 [PROJECTS] No hay token almacenado");
-            currentAdminStatus = false;
-            updateAdminElements(false);
-            return false;
-          }
-
-          console.log("🔐 [PROJECTS] Token encontrado, verificando...");
-          const response = await fetch(
-            "http://localhost:8080/api/auth/verify",
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            },
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            const isAdmin = data.authenticated && data.isAdmin;
-            console.log("🔐 [PROJECTS] Verificación exitosa:", {
-              isAdmin,
-              username: data.username,
-            });
-            currentAdminStatus = isAdmin;
-            updateAdminElements(isAdmin);
-            return isAdmin;
-          } else {
-            console.log(
-              "🔐 [PROJECTS] Token inválido, status:",
-              response.status,
-            );
-            throw new Error("Token inválido");
-          }
-        } catch (error) {
-          console.error("❌ [PROJECTS] Error verificando token:", error);
-          localStorage.removeItem("adminToken");
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          return false;
-        }
-      }
-
-      // Escuchar cambios desde TopUtility
-      window.addEventListener("adminStatusChanged", function (event) {
-        const { isAdmin, source } = event.detail;
-        console.log(
-          `🔄 [PROJECTS] Estado admin cambiado desde ${source}:`,
-          isAdmin,
-        );
-        currentAdminStatus = isAdmin;
-        updateAdminElements(isAdmin);
-      });
-
-      // Actualizar elementos admin en la UI
-      function updateAdminElements(isAdmin) {
-        console.log("🎨 [PROJECTS] Actualizando UI admin:", isAdmin);
-
-        // Botón de agregar proyecto
-        const addProjectButton = document.getElementById("addProjectButton");
-        if (addProjectButton) {
-          if (isAdmin) {
-            addProjectButton.classList.remove("hidden");
-            addProjectButton.classList.add("flex");
-          } else {
-            addProjectButton.classList.remove("flex");
-            addProjectButton.classList.add("hidden");
-          }
-        }
-
-        // Botones de editar (excluyendo el botón principal de agregar)
-        document
-          .querySelectorAll(".edit-btn:not(#addProjectButton)")
-          .forEach((btn) => {
-            if (isAdmin) {
-              btn.classList.remove("hidden");
-              btn.classList.add("flex");
-            } else {
-              btn.classList.remove("flex");
-              btn.classList.add("hidden");
-            }
-          });
-
-        // Botones de eliminar
-        document.querySelectorAll(".delete-btn").forEach((btn) => {
-          if (isAdmin) {
-            btn.classList.remove("hidden");
-            btn.classList.add("block");
-          } else {
-            btn.classList.remove("block");
-            btn.classList.add("hidden");
-          }
-        });
-
-        console.log("✅ [PROJECTS] UI actualizada correctamente");
-      }
-
-      // Inicializar estado admin al cargar la página
-      checkAdminStatus();
-
-      // Verificar estado cada 5 minutos para detectar tokens expirados
-      setInterval(() => {
-        console.log("⏰ [PROJECTS] Verificación periódica del estado admin");
-        checkAdminStatus();
-      }, 300000);
-
-      // Verificar al volver a la pestaña (detectar cambios en otras pestañas)
-      document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) {
-          console.log("👁️ [PROJECTS] Tab visible, verificando admin status");
-          checkAdminStatus();
-        }
-      });
-
-      // Escuchar cambios en localStorage (para sincronizar entre pestañas)
-      window.addEventListener("storage", (e) => {
-        if (e.key === "adminToken") {
-          console.log(
-            "🔄 [PROJECTS] Token cambiado en localStorage:",
-            e.newValue ? "Token añadido" : "Token eliminado",
-          );
-          if (e.newValue) {
-            checkAdminStatus();
-          } else {
-            currentAdminStatus = false;
-            updateAdminElements(false);
-          }
-        }
-      });
-
-      // ============= GESTIÓN DE NOTIFICACIONES PENDIENTES =============
-
-      setTimeout(() => {
-        const pendingNotifications = JSON.parse(
-          localStorage.getItem("pendingNotifications") || "[]",
-        );
-        if (pendingNotifications.length > 0) {
-          console.log(
-            `📋 [NEWS] Encontradas ${pendingNotifications.length} notificaciones pendientes en localStorage`,
-          );
-
-          if (
-            window.notificationSystem &&
-            window.notificationSystem.isInitialized
-          ) {
-            console.log(
-              "🔄 [NEWS] Forzando procesamiento de notificaciones pendientes",
-            );
-
-            pendingNotifications.forEach((notification, index) => {
-              setTimeout(() => {
-                window.notificationSystem.notify(
-                  notification.message,
-                  notification.type,
-                  notification.duration,
-                );
-              }, index * 200);
-            });
-
-            localStorage.removeItem("pendingNotifications");
-          }
-        }
-      }, 1000);
-    });
-  </script>
 </BaseLayout>
+
+<style>
+  /* Igual que en News */
+  .max-w-custom {
+    max-width: 1200px;
+  }
+</style>

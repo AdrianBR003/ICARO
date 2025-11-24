@@ -16,7 +16,7 @@ const hasQuery = Astro.url.searchParams.has("query");
 
 const initialLoaderText = news.length > 0 
   ? "Conectando..." 
-  : (hasQuery ? "No se encontraron resultados" : "No hay noticias disponibles");
+  : (hasQuery ? "No se encontraron resultados" : "");
 ---
 
 <div id="news-page-wrapper" class="relative min-h-[400px]">
@@ -85,7 +85,7 @@ const initialLoaderText = news.length > 0
         
         const msg = currentQuery 
           ? `Sin resultados para "${currentQuery}"` 
-          : "No hay noticias disponibles";
+          : "";
           
         updateLoaderState(LOADER_ID, 'empty', msg);
         return;

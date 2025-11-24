@@ -13,7 +13,6 @@ import Paginate from "@/components/CCommon/Paginate.astro";
 import { loadNewsPages } from "@/utils/news/newsPageLoader";
 const { news, totalPages, currentPage } = await loadNewsPages(Astro.url);
 
-console.log(`[NEWS PAGE] Loaded page ${currentPage} of ${totalPages}`);
 ---
 
 <BaseLayout>
