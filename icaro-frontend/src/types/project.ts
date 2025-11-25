@@ -30,3 +30,22 @@ export interface Project {
   secondProjectDate: string;
   relatedWorks: RelatedWork[];
 }
+
+export interface ProjectPageDTO {
+  content: ProjectDTO[];    
+  totalPages: number;       
+  totalElements: number;   
+  last: boolean;
+  size: number;
+  number: number;          
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+// Estructura simplificada para el componente Astro
+export interface ProjectsPageData {
+  projects: Project[];      
+  totalPages: number;
+  currentPage: number;
+}

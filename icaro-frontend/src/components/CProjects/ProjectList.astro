@@ -1,75 +1,34 @@
 ---
-import ProjectCard from "./CCProjectsList/ProjectCard.astro";
-
-import { Project } from "@/types/project";
+import ProjectCard from "@/components/CProjects/ProjectCard.astro";
+import type { Project } from "@/types/project";
 
 interface Props {
   projects: Project[];
-  isAdmin?: boolean;
 }
 
-const { projects, isAdmin = false } = Astro.props;
+const { projects } = Astro.props;
 ---
 
 <div class="space-y-6" id="projects-list">
-  {projects.map((project) => (
-    <ProjectCard Project={project} isAdmin={isAdmin} />
-  ))}
+  {
+    projects.length > 0 ? (
+      projects.map((project) => (
+        <ProjectCard Project={project} />
+      ))
+    ) : (
+      /* Mensaje opcional por si la búsqueda no trae nada */
+      <div class="text-center text-gray-500 py-10">
+        <p>No se encontraron proyectos con esos criterios.</p>
+      </div>
+    )
+  }
 </div>
 
-<script is:inline>
-  document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("search-input");
-    if (searchInput) {
-      searchInput.addEventListener("input", function () {
-        const searchTerm = this.value.toLowerCase();
-        const projects = document.querySelectorAll(".project-card");
+<script>
+  import { initProjectListInteractions } from "@/utils/projects/projectListInteractions";
 
-        projects.forEach((project) => {
-          const title = project
-            .querySelector("h3")
-            .textContent.toLowerCase();
-          const description = project
-            .querySelector("p")
-            .textContent.toLowerCase();
-          const matches =
-            title.includes(searchTerm) ||
-            description.includes(searchTerm);
-          project.style.display = matches ? "block" : "none";
-        });
-      });
-    }
-
-    const projectCards = document.querySelectorAll('.project-card[data-expandable="true"]');
-    projectCards.forEach((card) => {
-      card.addEventListener('click', function(e) {
-        if (e.target.tagName === 'A' || e.target.closest('a')) {
-          return;
-        }
-        
-        // Evitar que los botones de admin activen la expansión
-        if (e.target.closest('.edit-btn') || e.target.closest('.delete-btn')) {
-          return;
-        }
-        
-        const projectId = this.getAttribute('data-project-id');
-        const projectCard = document.querySelector(
-          `.project-card[data-project-id="${projectId}"]`,
-        );
-        projectCard.classList.toggle('expanded');
-      });
-    });
-
-    const expandButtons = document.querySelectorAll(".expand-btn");
-    expandButtons.forEach((button) => {
-      button.addEventListener("click", function (e) {
-        e.stopPropagation(); 
-        const projectId = this.getAttribute("data-project-id");
-        const projectCard = document.querySelector(
-          `.project-card[data-project-id="${projectId}"]`,
-        );
-        projectCard.classList.toggle("expanded");
-      });
-    });
+  // Solo inicializamos interacciones de UI (Acordeón), nada de búsqueda
+  document.addEventListener("DOMContentLoaded", () => {
+    initProjectListInteractions();
   });
 </script>

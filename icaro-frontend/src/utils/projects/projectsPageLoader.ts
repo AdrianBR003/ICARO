@@ -1,13 +1,22 @@
-import { fetchAllProjects, fetchRelatedWorksByProject } from "@/services/project/projectsService";
-import type { Project, RelatedWork } from "@/types/project";
+import { fetchProjectsPaged, fetchRelatedWorksByProject } from "@/services/project/projectsService";
+import type { Project, RelatedWork, ProjectsPageData } from "@/types/project";
 
-export async function loadProjectsData(): Promise<Project[]> {
-  const rawProjects = await fetchAllProjects();
+export async function loadProjectsPages(url: URL): Promise<ProjectsPageData> {
+  const query = url.searchParams.get("query") || "";
+  
+  // Frontend usa página 1-based, Backend usa 0-based
+  const pageParam = Number(url.searchParams.get("page")) || 1;
+  const apiPage = Math.max(0, pageParam - 1); 
+  const pageSize = 5; 
+
+  const pagedData = await fetchProjectsPaged(apiPage, pageSize, query);
 
   const projectsWithWorks = await Promise.all(
-    rawProjects.map(async (project) => {
-      const rawWorks = await fetchRelatedWorksByProject(project.id);
+    pagedData.content.map(async (projectDTO) => {
+        
+      const rawWorks = await fetchRelatedWorksByProject(projectDTO.id.toString());
 
+      // Mapeo de Related Works
       const formattedWorks: RelatedWork[] = rawWorks.map((work) => ({
         type: work.tags && work.tags.length > 0 ? work.tags[0] : "Publicación",
         title: work.title,
@@ -18,17 +27,23 @@ export async function loadProjectsData(): Promise<Project[]> {
           ? work.externalIds[0]
           : null,
       }));
+
+      // Retornar objeto Project final
       return {
-        id: project.id,
-        title: project.title,
-        description: project.description,
-        colaborators: project.participants || [],
-        firstProjectDate: project.firstProjectDate || " ... ",
-        secondProjectDate: project.secondProjectDate || " ... ",
+        id: projectDTO.id,
+        title: projectDTO.title,
+        description: projectDTO.description,
+        colaborators: projectDTO.participants || [],
+        firstProjectDate: projectDTO.firstProjectDate || " ... ",
+        secondProjectDate: projectDTO.secondProjectDate || " ... ",
         relatedWorks: formattedWorks,
       };
     })
   );
 
-  return projectsWithWorks;
+  return {
+    projects: projectsWithWorks,
+    totalPages: pagedData.totalPages,
+    currentPage: pagedData.number + 1 // Convertimos de vuelta a 1-based para la UI
+  };
 }

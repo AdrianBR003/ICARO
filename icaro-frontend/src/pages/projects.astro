@@ -1,17 +1,20 @@
 ---
+export const prerender = false;
+
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import Header from "@/components/CCommon/Header.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
-import SearchInput from "@/components/CProjects/SearchProject.astro";
+import SearchFilter from "@/components/CCommon/SearchFilter.astro";
+import Paginate from "@/components/CCommon/Paginate.astro";
 import ProjectsList from "@/components/CProjects/ProjectList.astro";
 import AddProject from "@/components/CProjects/AddProject.astro";
 
 import "@/styles/index.css";
-import { loadProjectsData } from "@/utils/projects/projectsPageLoader";
+import { loadProjectsPages } from "@/utils/projects/projectsPageLoader";
 
-const projects = await loadProjectsData();
+const { projects, totalPages, currentPage } = await loadProjectsPages(Astro.url);
 ---
 
 <BaseLayout>
@@ -29,14 +32,40 @@ const projects = await loadProjectsData();
   <AddProject />
 
   <section class="w-full px-4 mx-auto max-w-custom">
-    <SearchInput placeholder="Buscar proyectos por nombre..." />
+    <SearchFilter 
+      inputId="search-project" 
+      placeholder="Buscar proyectos por título..." 
+      baseURL="/projects" 
+    />
     
-    <ProjectsList projects={projects} />
+    <div class="relative z-0"> <ProjectsList projects={projects} />
+    </div>
+
+    <div class="mt-8 mb-12">
+      <Paginate
+        totalPages={totalPages}
+        currentPage={currentPage}
+        astroURL={Astro.url}
+      />
+    </div>
   </section>
 </BaseLayout>
 
+<script>
+  import { setupAdvancedSearch } from "@/utils/general/searchFilter";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Inicializamos el buscador avanzado
+    setupAdvancedSearch({
+      inputId: "search-project", // Debe coincidir con el prop del SearchFilter
+      searchEndpoint: "http://localhost:8080/api/project/paged", // Endpoint unificado
+      baseUrl: "/projects",
+      debounceMs: 300
+    });
+  });
+</script>
+
 <style>
-  /* Igual que en News */
   .max-w-custom {
     max-width: 1200px;
   }

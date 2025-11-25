@@ -70,7 +70,7 @@ public class ProjectController {
 
         return ResponseEntity.ok(projects);
     }
-    
+
     // ---------- METODOS CON VERIFICACION -------------
 
 
