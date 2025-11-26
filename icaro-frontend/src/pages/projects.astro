@@ -9,12 +9,13 @@ import CTitle from "@/components/CCommon/TitlePages.astro";
 import SearchFilter from "@/components/CCommon/SearchFilter.astro";
 import Paginate from "@/components/CCommon/Paginate.astro";
 import ProjectsList from "@/components/CProjects/ProjectList.astro";
-import AddProject from "@/components/CProjects/AddProject.astro";
 
 import "@/styles/index.css";
 import { loadProjectsPages } from "@/utils/projects/projectsPageLoader";
 
-const { projects, totalPages, currentPage } = await loadProjectsPages(Astro.url);
+const { projects, totalPages, currentPage } = await loadProjectsPages(
+  Astro.url
+);
 ---
 
 <BaseLayout>
@@ -29,17 +30,8 @@ const { projects, totalPages, currentPage } = await loadProjectsPages(Astro.url)
 
   <CTitle Title="Projects" />
 
-  <AddProject />
-
   <section class="w-full px-4 mx-auto max-w-custom">
-    <SearchFilter 
-      inputId="search-project" 
-      placeholder="Buscar proyectos por título..." 
-      baseURL="/projects" 
-    />
-    
-    <div class="relative z-0"> <ProjectsList projects={projects} />
-    </div>
+    <ProjectsList projects={projects} />
 
     <div class="mt-8 mb-12">
       <Paginate
@@ -55,12 +47,11 @@ const { projects, totalPages, currentPage } = await loadProjectsPages(Astro.url)
   import { setupAdvancedSearch } from "@/utils/general/searchFilter";
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Inicializamos el buscador avanzado
     setupAdvancedSearch({
       inputId: "search-project", // Debe coincidir con el prop del SearchFilter
       searchEndpoint: "http://localhost:8080/api/project/paged", // Endpoint unificado
       baseUrl: "/projects",
-      debounceMs: 300
+      debounceMs: 300,
     });
   });
 </script>

@@ -1,4 +1,3 @@
-// stores/modalStore.ts
 // Estado centralizado para todos los modales
 
 import { atom } from 'nanostores';
