@@ -1,7 +1,7 @@
 import { backendStatus } from "@/stores/backendStatusStore";
 import { updateLoaderState, hideLoader } from "@/services/general/loaderService";
 import { initializeAdminUI } from "@/utils/general/adminUI";
-import { initializeModalController } from "@/utils/general/modalController";
+import { initializeModalController } from "@/utils/news/newsModalController";
 import { setupAdvancedSearch } from "@/utils/general/searchFilter";
 
 export function initProjectList() {

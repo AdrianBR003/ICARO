@@ -1,92 +1,158 @@
 import { updateProjectService } from "@/services/project/projectEditService";
 
-export function initProjectEditModal() {
+let scrollPosition = 0;
+
+// ============= APERTURA / CIERRE =============
+
+export function showEditProjectModal(data: any) {
+  console.log("📝 [ProjectEdit] Abriendo modal con datos:", data);
   const modal = document.getElementById("project-edit-modal");
   const form = document.getElementById("edit-project-form") as HTMLFormElement;
-  const cancelBtn = document.getElementById("cancel-edit-btn");
-  const closeBtn = document.getElementById("close-edit-modal");
 
-  // 1. DETECTAR APERTURA Y RELLENAR DATOS
-  document.addEventListener("click", (e) => {
-    const trigger = (e.target as HTMLElement).closest('[data-modal-trigger="project-edit-modal"]');
-    if (trigger) {
-      const dataJson = trigger.getAttribute("data-entity-data");
-      if (dataJson) {
+  if (!modal || !form) {
+    console.error("❌ [ProjectEdit] No se encontró el modal o el formulario");
+    return;
+  }
+
+  // 1. Guardar scroll
+  scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+  document.body.classList.add("modal-open");
+  document.body.style.top = `-${scrollPosition}px`;
+
+  // 2. Rellenar datos
+  populateForm(form, data);
+
+  // 3. Mostrar
+  modal.classList.remove("hidden");
+}
+
+export function hideEditProjectModal() {
+  const modal = document.getElementById("project-edit-modal");
+  const form = document.getElementById("edit-project-form") as HTMLFormElement;
+
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
+  document.body.style.top = "";
+  window.scrollTo(0, scrollPosition);
+
+  if (form) form.reset();
+}
+
+// ============= RELLENADO DE DATOS =============
+
+function populateForm(form: HTMLFormElement, data: any) {
+  const setVal = (name: string, val: any) => {
+    const input = form.elements.namedItem(name) as HTMLInputElement;
+    if (input) input.value = val || "";
+  };
+
+  setVal("id", data.id);
+  setVal("title", data.title);
+  setVal("description", data.description);
+  
+  // Fechas: Recortar ISO string si es necesario (yyyy-mm-dd)
+  const formatDate = (d: string) => (d && d.length >= 10 ? d.substring(0, 10) : "");
+  setVal("firstProjectDate", formatDate(data.firstProjectDate));
+  setVal("secondProjectDate", formatDate(data.secondProjectDate));
+
+  // Participantes: Array a String
+  const parts = data.participants || data.colaborators || [];
+  const partsStr = Array.isArray(parts) ? parts.join(", ") : parts;
+  setVal("participants", partsStr);
+}
+
+// ============= SUBMIT =============
+
+async function handleFormSubmit(event: Event) {
+  event.preventDefault();
+  const addNotification = (window as any).addNotification || alert;
+  const getAuthHeaders = (window as any).getAuthHeaders;
+
+  const form = event.target as HTMLFormElement;
+  const formData = new FormData(form);
+
+  const projectData = {
+    id: formData.get("id"),
+    title: formData.get("title"),
+    description: formData.get("description"),
+    participants: (formData.get("participants") as string).split(",").map(p => p.trim()).filter(Boolean),
+    firstProjectDate: formData.get("firstProjectDate"),
+    secondProjectDate: formData.get("secondProjectDate") || null
+  };
+
+  try {
+    const response = await updateProjectService(projectData);
+    if (response.ok) {
+      addNotification("success", "Proyecto actualizado correctamente.");
+      hideEditProjectModal();
+      setTimeout(() => window.location.reload(), 500);
+    } else {
+      const err = await response.text();
+      addNotification("error", `Error: ${err}`);
+    }
+  } catch (error) {
+    console.error(error);
+    addNotification("error", "Error de conexión.");
+  }
+}
+
+// ============= INICIALIZACIÓN (LA PARTE IMPORTANTE) =============
+
+export function initProjectEditModal() {
+  console.log("🚀 [ProjectEdit] Inicializando listeners...");
+
+  const modal = document.getElementById("project-edit-modal");
+  const form = document.getElementById("edit-project-form");
+  
+  if (!modal) {
+    console.error("❌ [ProjectEdit] Error crítico: No existe el modal en el DOM");
+    return;
+  }
+
+  // 1. Listeners de Cierre
+  const closeSelectors = ["#close-edit-modal", "#cancel-edit-btn"];
+  closeSelectors.forEach(sel => {
+    const btn = document.querySelector(sel);
+    btn?.addEventListener("click", hideEditProjectModal);
+  });
+  
+  modal.querySelector(".modal-overlay")?.addEventListener("click", hideEditProjectModal);
+
+  // 2. Listener Submit
+  form?.addEventListener("submit", handleFormSubmit);
+
+  // 3. DELEGACIÓN DE EVENTOS GLOBAL (EL FIX)
+  // Escuchamos en todo el documento para pillar los botones edit-btn
+  document.body.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    
+    // Buscamos si el click fue dentro de un .edit-btn
+    const editBtn = target.closest(".edit-btn");
+
+    if (editBtn) {
+      // Verificamos si tiene datos
+      if (editBtn.hasAttribute("data-entity-data")) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         try {
-          const project = JSON.parse(dataJson);
-          populateForm(project);
-        } catch (error) {
-          console.error("Error parsing project data", error);
+          const json = editBtn.getAttribute("data-entity-data") || "{}";
+          console.log("👆 [ProjectEdit] Click detectado. JSON:", json);
+          const data = JSON.parse(json);
+          showEditProjectModal(data);
+        } catch (err) {
+          console.error("❌ [ProjectEdit] Error al leer JSON del botón:", err);
         }
+      } else {
+        console.warn("⚠️ [ProjectEdit] Botón detectado pero sin data-entity-data");
       }
     }
   });
+}
 
-  function populateForm(project: any) {
-    if (!form) return;
-    
-    // Asignación directa de campos simples
-    (form.elements.namedItem("id") as HTMLInputElement).value = project.id || "";
-    (form.elements.namedItem("title") as HTMLInputElement).value = project.title || "";
-    (form.elements.namedItem("description") as HTMLInputElement).value = project.description || "";
-    (form.elements.namedItem("firstProjectDate") as HTMLInputElement).value = project.firstProjectDate || "";
-    (form.elements.namedItem("secondProjectDate") as HTMLInputElement).value = project.secondProjectDate || "";
-    
-    // Arrays a String (Participants)
-    // Nota: El backend envía 'participants' o 'colaborators'? Ajustar según DTO.
-    // Asumimos 'colaborators' según tu código anterior, pero el DTO tenía participants.
-    const parts = project.participants || project.colaborators || [];
-    (form.elements.namedItem("participants") as HTMLInputElement).value = Array.isArray(parts) ? parts.join(", ") : "";
-  }
-
-  // 2. CERRAR MODAL
-  const closeModal = () => {
-    modal?.classList.add("hidden");
-    document.body.style.overflow = "";
-    if(form) form.reset();
-  };
-
-  cancelBtn?.addEventListener("click", closeModal);
-  closeBtn?.addEventListener("click", closeModal);
-  modal?.querySelector(".modal-overlay")?.addEventListener("click", closeModal);
-
-  // 3. ENVIAR CAMBIOS
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      if (!confirm("¿Guardar cambios?")) return;
-
-      const formData = new FormData(form);
-      
-      const projectData = {
-        id: formData.get("id"), // ID suele ser inmutable, pero necesario para identificar
-        title: formData.get("title"),
-        description: formData.get("description"),
-        participants: (formData.get("participants") as string).split(",").map(s => s.trim()).filter(Boolean),
-        firstProjectDate: formData.get("firstProjectDate"),
-        secondProjectDate: formData.get("secondProjectDate") || null,
-        // Si necesitas editar tags o works aquí, deberías implementar la misma lógica que en Add
-      };
-
-      try {
-        const response = await updateProjectService(projectData);
-        if (response.ok) {
-          saveNotification("success", "Proyecto actualizado correctamente.");
-          window.location.reload();
-        } else {
-           const err = await response.text();
-           alert(`Error al actualizar: ${err}`);
-        }
-      } catch (error) {
-        alert("Error de conexión");
-      }
-    });
-  }
-
-  function saveNotification(type: string, message: string) {
-    const notifications = JSON.parse(localStorage.getItem("pendingNotifications") || "[]");
-    notifications.push({ id: Date.now(), message, type, duration: 4000 });
-    localStorage.setItem("pendingNotifications", JSON.stringify(notifications));
-  }
+// Exponer globalmente por si acaso
+if (typeof window !== 'undefined') {
+  (window as any).initProjectEditModal = initProjectEditModal;
 }

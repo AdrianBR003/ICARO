@@ -167,12 +167,10 @@
 </div>
 
 <script>
-  // Importamos la lógica directa (sin Store ni triggers externos)
-  import { initializeAddModal } from "@/utils/projects/modals/projectsAddModal";
-
-  // Aseguramos que se cargue cuando el DOM esté listo
+  import { initializeProjectAddModal } from "@/utils/projects/modals/projectsAddModal";
+  
   document.addEventListener("DOMContentLoaded", () => {
-    initializeAddModal();
+    initializeProjectAddModal();
   });
 </script>
 

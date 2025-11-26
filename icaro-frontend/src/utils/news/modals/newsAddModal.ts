@@ -1,5 +1,4 @@
-
-import { modalActions } from "@/stores/modalStore";
+import { modalStore, modalActions } from "@/stores/modalStore";
 import { 
   createNews, 
   checkIdExists, 
@@ -7,57 +6,7 @@ import {
   type CreateNewsData 
 } from "@/services/news/newsAddService";
 
-let scrollPosition = 0;
-
-/**
- * Muestra el modal de añadir
- */
-export function showAddModal() {
-  const modal = document.getElementById("modal-add-news");
-  if (!modal) return;
-
-  // Generar ID automáticamente al abrir
-  generateAndVerifyId();
-
-  // Guardar posición de scroll
-  scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-  document.body.classList.add("modal-open");
-  document.body.style.top = `-${scrollPosition}px`;
-
-  // Mostrar modal
-  modal.classList.remove("hidden");
-
-  // Enfocar primer input
-  const firstInput = modal.querySelector('input[name="title"]') as HTMLElement;
-  if (firstInput) firstInput.focus();
-}
-
-/**
- * Oculta el modal de añadir
- */
-export function hideAddModal() {
-  const modal = document.getElementById("modal-add-news");
-  const form = document.getElementById("form-add-news") as HTMLFormElement;
-  
-  if (!modal || !form) return;
-
-  // Ocultar modal
-  modal.classList.add("hidden");
-
-  // Restaurar scroll
-  document.body.classList.remove("modal-open");
-  document.body.style.top = "";
-  window.scrollTo(0, scrollPosition);
-
-  // Limpiar formulario
-  form.reset();
-  resetIdField();
-
-  // Cerrar en el store
-  modalActions.close();
-}
-
-// ============= LÓGICA DE ID =============
+// ============= LÓGICA DE NEGOCIO (ID) =============
 
 type IdStatus = "loading" | "valid" | "invalid" | "idle";
 
@@ -131,7 +80,6 @@ async function handleVerifyClick() {
 
   const id = inputEl.value.trim();
 
-  // Validaciones
   if (!id) {
     setIdStatus("invalid", "El ID no puede estar vacío.");
     return;
@@ -143,7 +91,6 @@ async function handleVerifyClick() {
   }
 
   setIdStatus("loading", `Verificando '${id}'...`);
-
   const exists = await checkIdExists(id);
 
   if (exists) {
@@ -158,40 +105,39 @@ async function handleVerifyClick() {
 async function handleFormSubmit(event: Event) {
   event.preventDefault();
 
-  // Obtener funciones globales de adminUI
+  // Obtener funciones globales
   const getAuthHeaders = (window as any).getAuthHeaders;
   const addNotification = (window as any).addNotification;
 
-  if (!getAuthHeaders || !addNotification) {
+  if (!getAuthHeaders) {
     console.error("[addModal] Funciones de adminUI no encontradas");
-    alert("Error de inicialización. Refresque la página.");
     return;
   }
 
   const form = event.target as HTMLFormElement;
   const formData = new FormData(form);
 
-  // Validar campos obligatorios
+  // 1. Validar campos obligatorios
   const id = (formData.get("id") as string)?.trim();
   const title = (formData.get("title") as string)?.trim();
   const description = (formData.get("description") as string)?.trim();
 
   if (!id || !title || !description) {
-    addNotification("error", "ID, Título y Descripción son obligatorios.");
+    if(addNotification) addNotification("error", "ID, Título y Descripción son obligatorios.");
     return;
   }
 
-  // Verificar ID una última vez
+  // 2. Verificar ID una última vez
   setIdStatus("loading", "Verificando ID final...");
   const idExists = await checkIdExists(id);
 
   if (idExists) {
-    setIdStatus("invalid", "Este ID ya está en uso. Genere uno nuevo.");
-    addNotification("error", "El ID ya existe. Por favor, genere o escriba uno nuevo.");
+    setIdStatus("invalid", "Este ID ya está en uso.");
+    if(addNotification) addNotification("error", "El ID ya existe.");
     return;
   }
 
-  // Preparar datos
+  // 3. Preparar datos
   const newsData: CreateNewsData = {
     id,
     title,
@@ -200,52 +146,64 @@ async function handleFormSubmit(event: Event) {
     link: (formData.get("link") as string)?.trim() || null,
   };
 
-  // Llamar al servicio
+  // 4. Llamar al servicio
   const result = await createNews(newsData, getAuthHeaders());
 
   if (result.success) {
-    addNotification("success", result.message);
-    hideAddModal();
+    if(addNotification) addNotification("success", result.message);
     
-    // Recargar página para mostrar la nueva noticia
+    // Limpiamos
+    form.reset();
+    resetIdField();
+    
+    // Cerramos via Store (El controller se encarga de ocultar el HTML)
+    modalActions.close();
+    
     setTimeout(() => window.location.reload(), 500);
   } else {
-    addNotification("error", `Error al crear: ${result.message}`);
+    if(addNotification) addNotification("error", `Error al crear: ${result.message}`);
   }
 }
 
 // ============= INICIALIZACIÓN =============
 
 export function initializeAddModal() {
-  const btnAdd = document.getElementById("btn-add-news");
-  const btnClose = document.getElementById("btn-close-modal");
-  const btnCancel = document.getElementById("btn-cancel");
-  const form = document.getElementById("form-add-news");
+  const form = document.getElementById("form-add-news") as HTMLFormElement;
   const btnGenerateId = document.getElementById("btn-generate-id");
   const btnVerifyId = document.getElementById("btn-verify-id");
   const idInput = document.getElementById("newsId");
 
-  if (!btnAdd || !form || !btnClose || !btnCancel || !btnGenerateId || !btnVerifyId || !idInput) {
-    console.warn("[addModal] Faltan elementos del DOM");
-    return;
-  }
+  // Si no hay formulario, salimos (quizás no se ha renderizado el modal aún)
+  if (!form) return;
 
-  // Event listeners
-  btnClose.onclick = hideAddModal;
-  btnCancel.onclick = hideAddModal;
-  form.onsubmit = handleFormSubmit;
-  btnGenerateId.onclick = generateAndVerifyId;
-  btnVerifyId.onclick = handleVerifyClick;
-
-  idInput.addEventListener("input", () => {
-    setIdStatus("idle", "El ID ha sido modificado. Verifique su disponibilidad.");
+  // 1. Suscripción al Store para REACCIONAR a la apertura
+  // Esto reemplaza a showAddModal()
+  modalStore.subscribe(state => {
+    if (state.isOpen && state.type === 'add') {
+      // Cuando el store dice "OPEN ADD", nosotros preparamos el formulario
+      // El controller se encarga de quitar la clase 'hidden' y el scroll
+      form.reset();
+      generateAndVerifyId(); // Generar ID automáticamente
+      
+      // Enfocar primer input
+      setTimeout(() => {
+          const firstInput = form.querySelector('input[name="title"]') as HTMLElement;
+          if(firstInput) firstInput.focus();
+      }, 50);
+    }
   });
 
-  console.log("✅ [addModal] Inicializado");
-}
+  // 2. Listeners internos del formulario
+  form.onsubmit = handleFormSubmit;
+  
+  if (btnGenerateId) btnGenerateId.onclick = generateAndVerifyId;
+  if (btnVerifyId) btnVerifyId.onclick = handleVerifyClick;
 
-// Exponer funciones al window para modalController
-if (typeof window !== 'undefined') {
-  (window as any).showAddModal = showAddModal;
-  (window as any).hideAddModal = hideAddModal;
+  if (idInput) {
+    idInput.addEventListener("input", () => {
+      setIdStatus("idle", "El ID ha sido modificado. Verifique su disponibilidad.");
+    });
+  }
+
+  console.log("✅ [NewsAddModal] Lógica interna inicializada");
 }

@@ -1,67 +1,71 @@
 import { modalActions } from "@/stores/modalStore";
 import { createProjectService } from "@/services/project/projectsAddService";
 
-// Estado local
 let scrollPosition = 0;
 let tagsList: string[] = [];
 let workIdsList: string[] = [];
 
-// ============= FUNCIONES VISUALES (SHOW/HIDE) =============
+// ============= LÓGICA DE APERTURA / CIERRE =============
 
 /**
  * Muestra el modal de añadir proyecto
  */
-export function showAddModal() {
+export function showAddProjectModal() {
   const modal = document.getElementById("add-project-modal");
   if (!modal) return;
 
-  // Resetear listas locales
-  tagsList = [];
-  workIdsList = [];
-  renderList("tagsContainer", tagsList, removeTag);
-  renderList("workIdsContainer", workIdsList, removeWorkId);
-
-  // Guardar scroll y bloquear body
+  // 1. Guardar scroll y bloquear body
   scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
   document.body.classList.add("modal-open");
   document.body.style.top = `-${scrollPosition}px`;
 
-  // Mostrar
+  // 2. Resetear estados internos
+  resetFormInternal();
+
+  // 3. Mostrar visualmente
   modal.classList.remove("hidden");
 
-  // Enfocar primer input (ID)
+  // 4. Enfocar primer input
   const firstInput = modal.querySelector('input[name="id"]') as HTMLElement;
   if (firstInput) firstInput.focus();
+  
+  // 5. Actualizar Store (opcional, para que el resto de la app sepa que hay un modal)
+  modalActions.open('add');
 }
 
 /**
  * Oculta el modal de añadir proyecto
  */
-export function hideAddModal() {
+export function hideAddProjectModal() {
   const modal = document.getElementById("add-project-modal");
-  const form = document.getElementById("add-project-form") as HTMLFormElement;
-  
-  if (!modal || !form) return;
+  if (!modal) return;
 
+  // 1. Ocultar visualmente
   modal.classList.add("hidden");
 
-  // Restaurar scroll
+  // 2. Restaurar scroll
   document.body.classList.remove("modal-open");
   document.body.style.top = "";
   window.scrollTo(0, scrollPosition);
 
-  // Limpiar formulario y estados
-  form.reset();
+  // 3. Limpiar formulario
+  resetFormInternal();
+
+  // 4. Cerrar en Store
+  modalActions.close();
+}
+
+function resetFormInternal() {
+  const form = document.getElementById("add-project-form") as HTMLFormElement;
+  if (form) form.reset();
+  
   tagsList = [];
   workIdsList = [];
   renderList("tagsContainer", tagsList, removeTag);
   renderList("workIdsContainer", workIdsList, removeWorkId);
-  
-  // Cerrar en el store
-  modalActions.close();
 }
 
-// ============= GESTIÓN DE LISTAS (TAGS & WORK IDS) =============
+// ============= GESTIÓN DE TAGS Y WORK IDS =============
 
 function addTag() {
   const input = document.getElementById("tagInput") as HTMLInputElement;
@@ -93,7 +97,7 @@ function removeWorkId(val: string) {
   renderList("workIdsContainer", workIdsList, removeWorkId);
 }
 
-// Helper genérico para renderizar etiquetas
+// Renderizado genérico de etiquetas
 function renderList(containerId: string, list: string[], removeFn: (val: string) => void) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -102,52 +106,48 @@ function renderList(containerId: string, list: string[], removeFn: (val: string)
   list.forEach(item => {
     const el = document.createElement("div");
     el.className = "inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm mr-2 mb-2 border border-gray-200";
+    el.innerHTML = `
+      <span>${item}</span>
+      <button type="button" class="ml-2 text-gray-400 hover:text-red-500 font-bold focus:outline-none">&times;</button>
+    `;
     
-    const text = document.createElement("span");
-    text.textContent = item;
-    
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "ml-2 text-gray-400 hover:text-red-500 font-bold focus:outline-none";
-    btn.innerHTML = "&times;";
-    btn.onclick = () => removeFn(item);
+    // Asignar evento al botón de borrar
+    const btn = el.querySelector("button");
+    if (btn) btn.onclick = () => removeFn(item);
 
-    el.appendChild(text);
-    el.appendChild(btn);
     container.appendChild(el);
   });
 }
 
-// ============= SUBMIT DEL FORMULARIO =============
+// ============= ENVÍO DEL FORMULARIO =============
 
 async function handleFormSubmit(event: Event) {
   event.preventDefault();
 
   // Obtener helpers globales (inyectados por adminUI)
   const getAuthHeaders = (window as any).getAuthHeaders;
-  const addNotification = (window as any).addNotification;
+  const addNotification = (window as any).addNotification || alert;
 
-  if (!getAuthHeaders || !addNotification) {
-    console.error("[ProjectAdd] Funciones de adminUI no encontradas");
-    alert("Error de inicialización. Refresque la página.");
+  if (!getAuthHeaders) {
+    console.error("[ProjectAdd] getAuthHeaders no encontrado");
     return;
   }
 
   const form = event.target as HTMLFormElement;
   const formData = new FormData(form);
 
-  // Validaciones básicas
+  // Validaciones
   const id = (formData.get("id") as string)?.trim();
   const title = (formData.get("title") as string)?.trim();
   const description = (formData.get("description") as string)?.trim();
   const firstDate = formData.get("firstProjectDate");
 
   if (!id || !title || !description || !firstDate) {
-    addNotification("error", "Complete los campos obligatorios (*)");
+    if(addNotification) addNotification("error", "Complete los campos obligatorios (*)");
     return;
   }
 
-  // Construir objeto DTO
+  // Construir DTO
   const projectData = {
     id,
     title,
@@ -160,73 +160,68 @@ async function handleFormSubmit(event: Event) {
   };
 
   try {
-    const response = await createProjectService(projectData); // Usamos el servicio existente
+    // Aquí deberías pasar getAuthHeaders() si tu servicio lo requiere como argumento,
+    // o dejar que el servicio lo coja del localStorage si está programado así.
+    // Asumo que tu servicio ya lo gestiona o lo pasas:
+    const response = await createProjectService(projectData); 
 
     if (response.ok) {
-      addNotification("success", `Proyecto "${title}" creado exitosamente.`);
-      hideAddModal();
+      addNotification("success", `Proyecto "${title}" creado.`);
+      hideAddProjectModal();
       setTimeout(() => window.location.reload(), 500);
     } else {
       const errorText = await response.text();
       addNotification("error", `Error al crear: ${errorText}`);
     }
   } catch (error) {
-    console.error(error);
-    addNotification("error", "Error de conexión al crear el proyecto.");
+    addNotification("error", "Error de conexión.");
   }
 }
 
 // ============= INICIALIZACIÓN =============
 
-export function initializeAddModal() {
+export function initializeProjectAddModal() {
+  // Referencias al DOM
+  const openBtn = document.getElementById("addProjectButton");
   const modal = document.getElementById("add-project-modal");
   const form = document.getElementById("add-project-form");
-  const openBtns = document.querySelectorAll("#addProjectButton"); // Por si hay más de uno
   const closeBtns = document.querySelectorAll(".close-add-modal");
   
-  // Inputs especiales
   const tagInput = document.getElementById("tagInput");
   const addTagBtn = document.getElementById("addTagBtn");
   const workIdInput = document.getElementById("workIdInput");
   const addWorkIdBtn = document.getElementById("addWorkIdBtn");
 
-  if (!modal || !form) {
-    console.warn("[ProjectAdd] Elementos del modal no encontrados");
+  if (!openBtn || !modal || !form) {
+    console.warn("[ProjectAdd] Elementos principales no encontrados");
     return;
   }
 
-  // Listeners de Apertura
-  openBtns.forEach(btn => {
-    btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        showAddModal();
-    });
+  // Listeners Apertura/Cierre
+  openBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    showAddProjectModal();
   });
 
-  // Listeners de Cierre
-  closeBtns.forEach(btn => btn.addEventListener("click", hideAddModal));
-  modal.querySelector(".modal-overlay")?.addEventListener("click", hideAddModal);
+  closeBtns.forEach(btn => btn.addEventListener("click", hideAddProjectModal));
+  modal.querySelector(".modal-overlay")?.addEventListener("click", hideAddProjectModal);
 
   // Listener Submit
-  form.onsubmit = handleFormSubmit;
+  form.addEventListener("submit", handleFormSubmit);
 
   // Listeners Tags
   addTagBtn?.addEventListener("click", addTag);
-  tagInput?.addEventListener("keypress", (e: any) => { 
-    if (e.key === "Enter") { e.preventDefault(); addTag(); } 
-  });
+  tagInput?.addEventListener("keypress", (e: any) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } });
 
   // Listeners Work IDs
   addWorkIdBtn?.addEventListener("click", addWorkId);
-  workIdInput?.addEventListener("keypress", (e: any) => { 
-    if (e.key === "Enter") { e.preventDefault(); addWorkId(); } 
-  });
+  workIdInput?.addEventListener("keypress", (e: any) => { if (e.key === "Enter") { e.preventDefault(); addWorkId(); } });
 
   console.log("✅ [ProjectAdd] Modal Inicializado");
 }
 
-// Exponer funciones al window para el controlador global si es necesario
+// Exponer a window para compatibilidad si es necesario
 if (typeof window !== 'undefined') {
-  (window as any).showProjectAddModal = showAddModal;
-  (window as any).hideProjectAddModal = hideAddModal;
+  (window as any).showAddProjectModal = showAddProjectModal;
+  (window as any).hideAddProjectModal = hideAddProjectModal;
 }

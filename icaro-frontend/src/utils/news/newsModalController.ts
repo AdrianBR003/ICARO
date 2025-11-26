@@ -1,6 +1,3 @@
-// utils/client/modalController.ts
-// Controlador que gestiona la apertura/cierre de modales y rellena formularios
-
 import { modalStore, modalActions, type ModalType } from '@/stores/modalStore';
 
 let scrollPosition = 0;
