@@ -1,5 +1,5 @@
 ---
-// No necesitamos props ni imports de lógica aquí, todo va por JS
+// ProjectAdd.astro
 ---
 
 <div class="flex justify-center mb-8 relative z-30">
@@ -167,6 +167,8 @@
 </div>
 
 <script>
+  // REVISA LA RUTA AQUÍ: Si tu archivo es projectAddModal.ts (singular), 
+  // la importación debe ser 'projectAddModal', no 'projectsAddModal'.
   import { initializeProjectAddModal } from "@/utils/projects/modals/projectsAddModal";
   
   document.addEventListener("DOMContentLoaded", () => {
@@ -175,9 +177,8 @@
 </script>
 
 <style>
-  /* Animación simple de entrada */
   .fade-in {
-    animation: fadeIn 0.2s ease-out;
+    animation: fadeIn 0.1s ease-out;
   }
   @keyframes fadeIn {
     from { opacity: 0; }

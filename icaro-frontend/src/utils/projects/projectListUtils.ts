@@ -1,8 +1,12 @@
 import { backendStatus } from "@/stores/backendStatusStore";
 import { updateLoaderState, hideLoader } from "@/services/general/loaderService";
 import { initializeAdminUI } from "@/utils/general/adminUI";
-import { initializeModalController } from "@/utils/news/newsModalController";
 import { setupAdvancedSearch } from "@/utils/general/searchFilter";
+
+import { initializeProjectModalController } from "@/utils/projects/modals/projectModalController";
+
+import { initializeProjectAddModal } from "@/utils/projects/modals/projectsAddModal";
+import { initProjectEditModal } from "@/utils/projects/modals/projectsEditModals";
 
 export function initProjectList() {
   const LOADER_ID = 'project-list-loader';
@@ -22,7 +26,7 @@ export function initProjectList() {
       return;
     }
 
-    // Caso B: Servidor OK pero sin datos (o búsqueda vacía)
+    // Caso B: Servidor OK pero sin datos
     if (!hasData) {
       if (contentArea) contentArea.classList.add('opacity-0');
       
@@ -34,17 +38,24 @@ export function initProjectList() {
       return;
     }
 
-    // Caso C: Todo OK, mostramos lista
+    // Caso C: Todo OK
     hideLoader(LOADER_ID);
     if (contentArea) contentArea.classList.remove('opacity-0');
   };
 
-  refreshState(); // Ejecución inicial
+  refreshState();
   backendStatus.subscribe(refreshState);
 
-  initializeAdminUI();       // Muestra botones editar/borrar si hay token
-  initializeModalController(); // Activa la apertura de modales
+  // --- INICIALIZACIÓN DE UI ---
+  initializeAdminUI(); 
 
+  // --- INICIALIZACIÓN DE MODALES ---
+  initializeProjectModalController(); 
+
+  initializeProjectAddModal();
+  initProjectEditModal();
+
+  // --- BUSCADOR ---
   const searchInput = document.getElementById('project-search') as HTMLInputElement;
   if (currentQuery && searchInput) {
     searchInput.value = currentQuery;
@@ -57,5 +68,5 @@ export function initProjectList() {
     debounceMs: 300,
   });
 
-  console.log("🚀 [PROJECTS] List logic initialized");
+  console.log("🚀 [PROJECTS] List logic initialized correctly");
 }
