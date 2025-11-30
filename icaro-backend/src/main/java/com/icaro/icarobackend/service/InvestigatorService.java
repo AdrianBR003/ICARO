@@ -100,7 +100,7 @@ public class InvestigatorService {
                 }
             } else {
                 Work toSave = Work.builder()
-                        .putCode(summary.getPutCode())
+                        .id(summary.getId())
                         .title(summary.getTitle())
                         .tags(summary.getTags())
                         .externalIds(new ArrayList<>(summary.getExternalIds()))

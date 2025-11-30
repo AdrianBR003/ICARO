@@ -5,6 +5,8 @@ import com.icaro.icarobackend.model.Work;
 import com.icaro.icarobackend.repository.ProjectRepository;
 import com.icaro.icarobackend.repository.WorkRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,6 +33,15 @@ public class WorkService {
         return workRepository.findAll().stream()
                 .filter(w -> w.getOwnerOrcids().contains(orcid))
                 .collect(Collectors.toList());
+    }
+
+    // Metodo para la paginacion
+    public Page<Work> getWorkPaged(String title, Pageable pageable) {
+        if (title != null && !title.trim().isEmpty()) {
+            return workRepository.findByTitleContainingIgnoreCase(title, pageable);
+        } else {
+            return workRepository.findAll(pageable);
+        }
     }
 
     /**

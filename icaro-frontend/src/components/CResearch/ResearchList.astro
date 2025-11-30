@@ -1,51 +1,59 @@
 ---
-import ResearchCard from './CCResearchList/ResearchCard.astro';
+import ResearchCard from "@/components/CResearch/ResearchCard.astro";
+import ResearchAdd from "@/components/CResearch/modals/ResearchAdd.astro";
+import ResearchEdit from "@/components/CResearch/modals/ResearchEdit.astro";
+import ResearchDelete from "@/components/CResearch/modals/ResearchDelete.astro";
+import SearchFilter from "@/components/CCommon/SearchFilter.astro";
+import Loader from "@/components/CCommon/Loader.astro"; 
+import type { ResearchWorkDTO } from "@/types/research";
 
-
-export interface Props {
-  researchGroups: Array<{
-    year: string;
-    items: Array<{
-      id: string;
-      putCode: string;
-      title: string;
-      description?: string;
-      participants?: string[];
-      externalIds?: string[];
-      ownerOrcids?: string[];
-      projectDate: string;
-      projectName?: string;
-      tags: string[];
-    }>;
-  }>;
+interface Props {
+  works: ResearchWorkDTO[];
 }
 
-const { researchGroups } = Astro.props;
+const { works } = Astro.props;
+const hasQuery = Astro.url.searchParams.has("query");
+const initialLoaderText = works.length > 0 
+  ? "Conectando..." 
+  : (hasQuery ? "No se encontraron resultados" : "No hay publicaciones disponibles");
 ---
 
-<div class="space-y-8" id="publications">
-  {
-    researchGroups.map(({ year, items }) =>
-      items.map((work) => (
-        <ResearchCard 
-          work={work} 
-          year={year} 
-        />
-      ))
-    )
-  }
+<div id="research-page-wrapper" class="relative min-h-[400px]">
+  
+  <Loader 
+    id="research-list-loader" 
+    text={initialLoaderText}
+  />
+
+  <ResearchAdd />
+
+  <div id="content-area" class="transition-opacity duration-500 opacity-0">
+    {
+      works.length > 0 && (
+        <div id="research-list-container" class="space-y-4">
+          {works.map((work) => (
+            <article class="research-card-item" data-research-id={work.id}>
+              <ResearchCard work={work} />
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </div>
+
+  <ResearchEdit />
+  <ResearchDelete />
 </div>
 
 <script>
-// Asegurar que las funciones estén disponibles globalmente
-if (typeof window !== 'undefined') {
-  // Esto asegura que si el modal se carga después, las funciones estén definidas
-  window.showResearchModal = window.showResearchModal || function() {
-    console.warn('showResearchModal no está implementado aún');
-  };
-  
-  window.hideResearchModal = window.hideResearchModal || function() {
-    console.warn('hideResearchModal no está implementado aún');
-  };
-}
+  // Importamos el inicializador de la lista (que crearemos en el siguiente paso)
+  import { initResearchList } from "@/utils/research/researchListUtils";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initResearchList();
+  });
 </script>
+
+<style>
+  .space-y-4 > * + * { margin-top: 1rem; }
+</style>

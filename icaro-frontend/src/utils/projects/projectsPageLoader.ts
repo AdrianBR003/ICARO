@@ -12,7 +12,7 @@ export async function loadProjectsPages(url: URL): Promise<ProjectsPageData> {
   const pagedData = await fetchProjectsPaged(apiPage, pageSize, query);
 
   const projectsWithWorks = await Promise.all(
-    pagedData.content.map(async (projectDTO) => {
+    pagedData.content.map(async (projectDTO) => { 
         
       const rawWorks = await fetchRelatedWorksByProject(projectDTO.id.toString());
 
