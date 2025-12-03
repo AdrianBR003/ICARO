@@ -1,32 +1,51 @@
-import { fetchResearchPaged } from "@/services/research/researchService";
-import type { ResearchPageData } from "@/types/research";
+import { fetchResearchPaged, fetchUniqueTags } from "@/services/research/researchService";
+import { fetchAllProjectsList } from "@/services/project/projectsService";
+import type { ResearchWorkDTO } from "@/types/research";
 
-export async function loadResearchPage(url: URL): Promise<ResearchPageData> {
-  // 1. Obtener parámetros de la URL
+export interface ResearchLoaderResult {
+  works: ResearchWorkDTO[];
+  totalPages: number;
+  currentPage: number;
+  allProjects: { id: string; title: string }[];
+  allTags: string[];
+  activeFilters: { project: string; tag: string; query: string };
+}
+
+export async function loadResearchPage(url: URL): Promise<ResearchLoaderResult> {
+  // 1. Leer parámetros URL
   const query = url.searchParams.get("query") || "";
-  
-  // Frontend usa página 1-based, Backend usa 0-based
+  const projectFilter = url.searchParams.get("project") || "";
+  const tagFilter = url.searchParams.get("tag") || "";
   const pageParam = Number(url.searchParams.get("page")) || 1;
-  const apiPage = Math.max(0, pageParam - 1); 
-  const pageSize = 5; // Configurable
+  const apiPage = Math.max(0, pageParam - 1);
+  const pageSize = 5;
 
-  // 2. Llamada al Servicio
-  const pagedData = await fetchResearchPaged(apiPage, pageSize, query);
+  // 2. Fetch en paralelo (Eficiencia)
+  const [pagedData, projectsList, tagsList] = await Promise.all([
+    fetchResearchPaged(apiPage, pageSize, query, projectFilter, tagFilter),
+    fetchAllProjectsList(), // Traemos ID+Titulo de proyectos
+    fetchUniqueTags()
+  ]);
 
-  // 3. Transformación / Limpieza de datos (si fuera necesaria)
-  // Aquí devolvemos los datos tal cual vienen del DTO, asegurando arrays vacíos
-  const cleanWorks = pagedData.content.map(work => ({
+  // 3. Enriquecer Works (Mapear ID Proyecto -> Nombre Proyecto)
+  // Creamos un mapa para búsqueda rápida O(1)
+  const projectMap = new Map(projectsList.map(p => [String(p.id), p.title]));
+
+  const enrichedWorks = pagedData.content.map(work => ({
     ...work,
     participants: work.participants || [],
     tags: work.tags || [],
     externalIds: work.externalIds || [],
-    ownerOrcids: work.ownerOrcids || []
+    // Aquí inyectamos el título buscando en el mapa por ID
+    projectTitle: work.projectId ? projectMap.get(String(work.projectId)) : undefined
   }));
 
-  // 4. Retorno estructurado para la UI
   return {
-    works: cleanWorks,
+    works: enrichedWorks,
     totalPages: pagedData.totalPages,
-    currentPage: pagedData.number + 1 // Convertimos a 1-based para la UI
+    currentPage: pagedData.number + 1,
+    allProjects: projectsList,
+    allTags: tagsList,
+    activeFilters: { project: projectFilter, tag: tagFilter, query }
   };
 }

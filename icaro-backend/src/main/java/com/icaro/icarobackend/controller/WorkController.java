@@ -41,7 +41,7 @@ public class WorkController {
 
     @GetMapping("/{orcid}")
     public ResponseEntity<List<Work>> getWorkOrcid(@PathVariable("orcid") String orcid) {
-         return ResponseEntity.ok(orcidService.fetchWorks(orcid));
+        return ResponseEntity.ok(orcidService.fetchWorks(orcid));
     }
 
     // Metodo para la paginacion:
@@ -49,14 +49,23 @@ public class WorkController {
     @GetMapping("/paged")
     public ResponseEntity<Page<Work>> getWorksPaged(
             @RequestParam(required = false) String query,
+            @RequestParam(required = false) String projectId, // Nuevo
+            @RequestParam(required = false) String tag,       // Nuevo
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) { // 5 por defecto
+            @RequestParam(defaultValue = "5") int size) {
 
-        // Ordenamos por año (descendente) por defecto, o lo que prefieras
         Sort stableSort = Sort.by(Sort.Order.desc("publicationDate"), Sort.Order.desc("id"));
         Pageable pageable = PageRequest.of(page, size, stableSort);
-        Page<Work> works = workService.getWorkPaged(query, pageable);
+        Page<Work> works = workService.getWorksPaged(query, projectId, tag, pageable);
         return ResponseEntity.ok(works);
+    }
+
+    /**
+     * Endpoint para obtener la lista de etiquetas únicas (para el filtro superior).
+     */
+    @GetMapping("/tags")
+    public ResponseEntity<List<String>> getUniqueTags() {
+        return ResponseEntity.ok(workService.getAllUniqueTags());
     }
 
     // ---------- METODOS VERIFICACION -------------
@@ -66,7 +75,7 @@ public class WorkController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> saveWork(@RequestBody Work work) {
         this.workService.saveWork(work);
-        return  ResponseEntity.ok().build();
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/delete/{id}")

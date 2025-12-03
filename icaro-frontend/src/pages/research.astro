@@ -6,21 +6,21 @@ import TopUtility from "@/components/CCommon/TopUtility.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import Header from "@/components/CCommon/Header.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
+import ResearchList from "@/components/CResearch/ResearchList.astro"; 
 
 // Componentes Comunes
 import SearchFilter from "@/components/CCommon/SearchFilter.astro";
 import Paginate from "@/components/CCommon/Paginate.astro";
 
-// Componentes Específicos de Research (Los crearemos a continuación)
-import ResearchList from "@/components/CResearch/ResearchList.astro"; 
 
 import "@/styles/index.css";
 
 // Loader de Datos
 import { loadResearchPage } from "@/utils/research/researchPageLoader";
+import ResearchFilters from "@/components/CResearch/ResearchFilters.astro";
 
 // Carga de datos inicial
-const { works, totalPages, currentPage } = await loadResearchPage(Astro.url);
+const { works, totalPages, currentPage, allProjects, allTags, activeFilters } = await loadResearchPage(Astro.url);
 ---
 
 <BaseLayout>
@@ -35,17 +35,27 @@ const { works, totalPages, currentPage } = await loadResearchPage(Astro.url);
 
   <CTitle Title="Research" />
 
-  <section class="w-full px-4 mx-auto max-w-custom">
+  <section class="w-full px-4 mx-auto max-w-custom pb-12">
     
-    <SearchFilter 
-      inputId="search-research" 
-      placeholder="Buscar publicaciones por título..." 
-      baseURL="/research" 
+    <div class="mb-6">
+      <SearchFilter 
+        inputId="search-research" 
+        placeholder="Buscar publicaciones por título..." 
+        baseURL="/research" 
+      />
+    </div>
+
+    <ResearchFilters 
+      tags={allTags}
+      projects={allProjects}
+      activeTag={activeFilters.tag}
+      activeProject={activeFilters.project}
+      baseUrl="/research"
     />
     
     <ResearchList works={works} />
 
-    <div class="mt-8 mb-12">
+    <div class="mt-8">
       <Paginate
         totalPages={totalPages}
         currentPage={currentPage}

@@ -9,7 +9,9 @@ const API_BASE_URL = "http://localhost:8080";
 export async function fetchResearchPaged(
   page: number,
   size: number,
-  query: string = ""
+  query: string = "",
+  projectFilter: string = "",
+  tagFilter: string = ""     
 ): Promise<ResearchPageDTO> {
   try {
     const params = new URLSearchParams();
@@ -19,6 +21,9 @@ export async function fetchResearchPaged(
     if (query.trim() !== "") {
       params.append("query", query);
     }
+
+    if (projectFilter) params.append("projectId", projectFilter);
+    if (tagFilter) params.append("tag", tagFilter);
 
     const response = await fetch(`${API_BASE_URL}/api/works/paged?${params.toString()}`);
 
@@ -41,5 +46,15 @@ export async function fetchResearchPaged(
       first: true,
       empty: true
     };
+  }
+}
+
+export async function fetchUniqueTags(): Promise<string[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/works/tags`); 
+    if (!response.ok) return [];
+    return await response.json();
+  } catch (error) {
+    return [];
   }
 }
