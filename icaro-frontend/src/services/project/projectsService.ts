@@ -1,6 +1,24 @@
 import type { ProjectPageDTO, RelatedWorkDTO } from "@/types/project";
+import type { ProjectSelector } from "@/types/project";
+
 
 const API_BASE_URL = "http://localhost:8080";
+
+export async function fetchAllProjectsList(): Promise<[]> {
+  try {
+    // Intenta usar el endpoint ligero optimizado
+    const response = await fetch(`${API_BASE_URL}/api/project/selector`);
+    
+    if (!response.ok) {
+      throw new Error("Error fetching project list for selector");
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error cargando lista de proyectos:", error);
+    return [];
+  }
+}
 
 /**
  * Obtiene proyectos paginados y filtrados (por título) desde el backend.

@@ -1,15 +1,25 @@
 import { modalStore, modalActions } from "@/stores/modalStore";
-// Asegúrate de crear este servicio luego
-import { createResearchService } from "@/services/research/researchAddService"; 
+import { createResearchService } from "@/services/research/researchAddService";
+
+// ⚠️ IMPORTANTE: Asegúrate de importar desde el SERVICE, no desde el Loader
+import { fetchAllProjectsList } from "@/services/project/projectsService"; 
 
 export function initializeResearchAddModal() {
   const form = document.getElementById("add-research-form") as HTMLFormElement;
+  const projectSelect = document.getElementById("add-project-select") as HTMLSelectElement;
+
   if (!form) return;
 
-  // 1. Suscripción: Limpiar al abrir
-  modalStore.subscribe(state => {
+  // 1. Suscripción
+  modalStore.subscribe(async (state) => {
     if (state.isOpen && state.type === 'add') {
       form.reset();
+      
+      // CARGAR PROYECTOS AL ABRIR
+      if (projectSelect) {
+        // 👇 AQUÍ ESTABA EL ERROR. Llama al helper local, NO al loader externo
+        await loadProjectsIntoSelect(projectSelect); 
+      }
     }
   });
 
@@ -53,4 +63,31 @@ export function initializeResearchAddModal() {
       addNotification("error", "Error de conexión.");
     }
   });
+}
+
+// HELPER LOCAL: Cargar proyectos en el select
+async function loadProjectsIntoSelect(select: HTMLSelectElement, selectedId: string = "") {
+  try {
+    select.innerHTML = '<option value="">Cargando...</option>';
+    select.disabled = true;
+    
+    const projects = await fetchAllProjectsList();
+    
+    let html = '<option value="">(No asignar)</option>';
+    
+    if (Array.isArray(projects)) {
+      projects.forEach(p => {
+        // Convertimos a string para comparar seguro
+        const isSelected = String(p.id) === String(selectedId) ? 'selected' : '';
+        html += `<option value="${p.id}" ${isSelected}>${p.title}</option>`;
+      });
+    }
+    
+    select.innerHTML = html;
+    select.disabled = false;
+  } catch (error) {
+    console.error(error);
+    select.innerHTML = '<option value="">Error al cargar proyectos</option>';
+    select.disabled = false;
+  }
 }

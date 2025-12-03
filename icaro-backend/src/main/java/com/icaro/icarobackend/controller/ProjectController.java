@@ -1,5 +1,6 @@
 package com.icaro.icarobackend.controller;
 
+import com.icaro.icarobackend.dto.ProjectSelectorDTO;
 import com.icaro.icarobackend.model.Project;
 import com.icaro.icarobackend.repository.ProjectRepository;
 import com.icaro.icarobackend.service.ProjectService;
@@ -46,10 +47,9 @@ public class ProjectController {
         }
     }
 
-    @GetMapping("/titles")
-    public ResponseEntity<List<String>> getTitlesProjects(){
-        log.info("getting titles of projects");
-        return ResponseEntity.ok(projectService.getTitlesProjects());
+    @GetMapping("/selector")
+    public ResponseEntity<List<ProjectSelectorDTO>> getProjectsForSelector() {
+        return ResponseEntity.ok(projectService.getProjectTitles());
     }
 
     @GetMapping("/paged")

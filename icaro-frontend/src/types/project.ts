@@ -14,6 +14,11 @@ export interface ProjectDTO {
   secondProjectDate: string;
 }
 
+export interface ProjectSelector {
+  id: string;
+  title: string;
+}
+
 export interface RelatedWork {
   type: string;
   title: string;

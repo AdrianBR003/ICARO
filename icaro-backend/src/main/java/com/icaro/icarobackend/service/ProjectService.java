@@ -1,5 +1,6 @@
 package com.icaro.icarobackend.service;
 
+import com.icaro.icarobackend.dto.ProjectSelectorDTO;
 import com.icaro.icarobackend.model.Project;
 import com.icaro.icarobackend.repository.ProjectRepository;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,10 @@ public class ProjectService {
         }
     }
 
+    public List<ProjectSelectorDTO> getProjectTitles() {
+        return projectRepository.findAllProjectSummaries();
+    }
+
     public void save(Project project) {
         projectRepository.save(project);
     }
@@ -41,12 +46,6 @@ public class ProjectService {
 
     public void deleteById(String id) {
         projectRepository.deleteById(id);
-    }
-
-    public List<String> getTitlesProjects(){
-        List <String> titles = new ArrayList<>();
-        projectRepository.findAll().forEach(p -> titles.add(p.getTitle()));
-        return titles;
     }
 
 }
