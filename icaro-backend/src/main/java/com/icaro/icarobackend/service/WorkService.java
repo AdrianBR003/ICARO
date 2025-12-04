@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 @Slf4j
 @Service
@@ -54,7 +55,7 @@ public class WorkService {
 
         // 1. Filtro por Título (Búsqueda de texto parcial e insensible a mayúsculas)
         if (title != null && !title.trim().isEmpty()) {
-            criteria.add(Criteria.where("title").regex(title, "i"));
+            criteria.add(Criteria.where("title").regex(Pattern.quote(title), "i"));
         }
 
         // 2. Filtro por Proyecto (Coincidencia exacta)

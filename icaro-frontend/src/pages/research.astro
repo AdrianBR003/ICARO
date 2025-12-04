@@ -72,7 +72,7 @@ const { works, totalPages, currentPage, allProjects, allTags, activeFilters } = 
   document.addEventListener("DOMContentLoaded", () => {
     setupAdvancedSearch({
       inputId: "search-research",
-      searchEndpoint: "http://localhost:8080/api/work/paged", // Endpoint de Research
+      searchEndpoint: "http://localhost:8080/api/works/paged", // Endpoint de Research
       baseUrl: "/research",
       debounceMs: 300
     });

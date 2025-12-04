@@ -66,7 +66,7 @@ public class WorkController {
     @GetMapping("/tags")
     public ResponseEntity<List<String>> getUniqueTags() {
         return ResponseEntity.ok(workService.getAllUniqueTags());
-    }
+    }   
 
     // ---------- METODOS VERIFICACION -------------
 
