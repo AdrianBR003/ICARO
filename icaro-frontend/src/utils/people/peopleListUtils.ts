@@ -1,10 +1,9 @@
 import { backendStatus } from "@/stores/backendStatusStore";
 import { updateLoaderState, hideLoader } from "@/services/general/loaderService";
 import { initializeAdminUI } from "@/utils/general/adminUI";
+import { setupAdvancedSearch } from "@/utils/general/searchFilter";
 
-// Importamos los controladores de modales (que veremos abajo)
 import { initializePeopleModalController } from "@/utils/people/peopleModalController";
-// Importamos las lógicas específicas de cada modal (Add/Edit/Delete)
 import { initializePeopleAddModal } from "@/utils/people/modals/peopleAddModals";
 import { initPeopleEditModal } from "@/utils/people/modals/peopleEditModals";
 import { initPeopleDeleteModal } from "@/utils/people/modals/peopleDeleteModals";
@@ -13,9 +12,12 @@ import { initPersonImageLoader } from "./peopleImageHelpers";
 export function initPeopleList() {
   const LOADER_ID = 'people-list-loader';
   const contentArea = document.getElementById('content-area');
-  const hasData = document.getElementById('people-list-container') !== null;
+  const listContainer = document.getElementById('people-list-container');
+  const hasData = listContainer !== null;
   
-  // 1. Gestión de Estado (Carga / Vacío / Error)
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentQuery = urlParams.get('query');
+  
   const refreshState = () => {
     const status = backendStatus.get();
     
@@ -26,10 +28,15 @@ export function initPeopleList() {
       return;
     }
     
-    // Caso: Lista vacía
+    // Caso: Lista vacía (con o sin búsqueda)
     if (!hasData) {
-      updateLoaderState(LOADER_ID, 'empty', 'No hay resultados');
       if (contentArea) contentArea.classList.add('opacity-0');
+      
+      const msg = currentQuery 
+        ? `Sin resultados para "${currentQuery}"` 
+        : "No hay miembros del equipo disponibles";
+        
+      updateLoaderState(LOADER_ID, 'empty', msg);
       return;
     }
 
@@ -42,17 +49,38 @@ export function initPeopleList() {
   refreshState();
   backendStatus.subscribe(refreshState);
 
-  // 2. Inicializar UI de Admin (Muestra/Oculta botones según token)
+  // 2. Inicializar UI de Admin
   initializeAdminUI();
   
   // 3. Inicializar Controladores de Modales
-  initializePeopleModalController(); // Escucha los clics en las tarjetas
-  
-  // 4. Inicializar Lógica de Formularios
+  initializePeopleModalController();
   initializePeopleAddModal();
   initPeopleEditModal();
   initPeopleDeleteModal();
   initPersonImageLoader();
 
-  console.log("🚀 [PEOPLE] Inicializado correctamente");
+  // 4. CONFIGURACIÓN DEL BUSCADOR 
+  const searchInput = document.getElementById('search-people') as HTMLInputElement;
+  if (currentQuery && searchInput) searchInput.value = currentQuery;
+
+  setupAdvancedSearch({
+    inputId: "search-people",
+    
+    clearBtnId: "search-people-clear", 
+    
+    searchEndpoint: "http://localhost:8080/api/investigators/paged",
+    baseUrl: "/people",
+    debounceMs: 300,
+    formatter: (person) => {
+      const fullName = `${person.givenNames}`; 
+      const info = person.email || person.department || "Investigador";
+
+      return {
+        title: fullName,
+        description: info
+      };
+    }
+  });
+
+  console.log("🚀 [PEOPLE] Inicializado correctamente con Buscador");
 }

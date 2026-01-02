@@ -1,5 +1,5 @@
 ---
-export const prerender = false; // SSR Activado para búsqueda y paginación
+export const prerender = false;
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
@@ -7,19 +7,13 @@ import Header from "@/components/CCommon/Header.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
 
-// Componentes Comunes de Arquitectura
-import SearchFilter from "@/components/CCommon/SearchFilter.astro";
-import Paginate from "@/components/CCommon/Paginate.astro";
-
-// Componentes Específicos de People
 import PeopleList from "@/components/CPeople/PeopleList.astro"; 
+import Paginate from "@/components/CCommon/Paginate.astro";
 
 import "@/styles/index.css";
 
-// Loader de Datos (Capa Lógica)
 import { loadPeoplePage } from "@/utils/people/peoplePageLoader";
 
-// Carga de datos inicial (Paginada y Filtrada)
 const { people, totalPages, currentPage } = await loadPeoplePage(Astro.url);
 ---
 
@@ -37,14 +31,6 @@ const { people, totalPages, currentPage } = await loadPeoplePage(Astro.url);
 
   <section class="w-full px-4 mx-auto max-w-custom pb-12">
     
-    <div class="mb-8">
-      <SearchFilter 
-        inputId="search-people" 
-        placeholder="Buscar investigador por nombre o apellido..." 
-        baseURL="/people" 
-      />
-    </div>
-    
     <PeopleList people={people} />
 
     <div class="mt-10 mb-12">
@@ -58,34 +44,8 @@ const { people, totalPages, currentPage } = await loadPeoplePage(Astro.url);
   </section>
 </BaseLayout>
 
-<script>
-  import { setupAdvancedSearch } from "@/utils/general/searchFilter";
-
-  document.addEventListener("DOMContentLoaded", () => {
-    setupAdvancedSearch({
-      inputId: "search-people",
-      clearBtnId: "search-people-clear",
-      searchEndpoint: "http://localhost:8080/api/investigators/paged",
-      baseUrl: "/people",
-      debounceMs: 300,
-      
-      // Se formatea los datos porque del backend vienen diferentes: 
-
-      formatter: (person) => {
-        const fullName = `${person.givenNames}`;
-        const info = person.email || person.department || "Investigador";
-
-        return {
-          title: fullName,    
-          description: info   
-        };
-      }
-    });
-  });
-</script>
-
 <style>
   .max-w-custom {
-    max-width: 1200px; /* O el ancho que prefieras para el grid de tarjetas */
+    max-width: 1200px;
   }
 </style>

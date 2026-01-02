@@ -3,6 +3,7 @@ import PeopleCard from "@/components/CPeople/PeopleCard.astro";
 import PeopleAdd from "@/components/CPeople/modals/PeopleAdd.astro";
 import PeopleEdit from "@/components/CPeople/modals/PeopleEdit.astro";
 import PeopleDelete from "@/components/CPeople/modals/PeopleDelete.astro";
+import SearchFilter from "@/components/CCommon/SearchFilter.astro"; 
 import Loader from "@/components/CCommon/Loader.astro";
 
 import type { InvestigatorDTO } from "@/types/people";
@@ -12,35 +13,45 @@ interface Props {
 }
 
 const { people } = Astro.props;
-const hasQuery = Astro.url.searchParams.has("query");
+const currentQuery = Astro.url.searchParams.get("query");
 
-// Loader
 const initialLoaderText = people.length > 0 
-  ? "Cargando ..." 
-  : (hasQuery ? "No se encontraron investigadores" : "No hay miembros del equipo disponibles");
+  ? "Cargando..." 
+  : (currentQuery ? `Sin resultados para "${currentQuery}"` : "No hay miembros del equipo disponibles");
 ---
 
-<div id="people-page-wrapper" class="relative min-h-[400px]">
+<div id="people-page-wrapper" class="w-full">
   
-  <Loader 
-    id="people-list-loader" 
-    text={initialLoaderText}
-  />
-
   <PeopleAdd />
 
-  <div id="content-area" class="transition-opacity duration-500 opacity-0">
-    {
-      people.length > 0 && (
-        <div id="people-list-container" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
-          {people.map((person) => (
-            <article class="people-card-item" data-orcid={person.orcid}>
-              <PeopleCard person={person} />
-            </article>
-          ))}
-        </div>
-      )
-    }
+  <div class="w-full max-w-custom mb-8 relative z-[60]">
+    <SearchFilter 
+      inputId="search-people" 
+      placeholder="Buscar investigador por nombre o apellido..." 
+      baseURL="/people" 
+    />
+  </div>
+
+  <div class="relative min-h-[400px]">
+    
+    <Loader 
+      id="people-list-loader" 
+      text={initialLoaderText}
+    />
+
+    <div id="content-area" class="transition-opacity duration-500 opacity-0">
+      {
+        people.length > 0 && (
+          <div id="people-list-container" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
+            {people.map((person) => (
+              <article class="people-card-item" data-orcid={person.orcid}>
+                <PeopleCard person={person} />
+              </article>
+            ))}
+          </div>
+        )
+      }
+    </div>
   </div>
 
   <PeopleEdit />
@@ -49,10 +60,13 @@ const initialLoaderText = people.length > 0
 </div>
 
 <script>
-  // Importamos la lógica centralizada
   import { initPeopleList } from "@/utils/people/peopleListUtils";
 
   document.addEventListener("DOMContentLoaded", () => {
     initPeopleList();
   });
 </script>
+
+<style>
+  .max-w-custom { max-width: 1200px; }
+</style>
