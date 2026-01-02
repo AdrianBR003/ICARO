@@ -1,28 +1,58 @@
 ---
-import PeopleCard from "./PeopleCard.astro";
-import PeopleEdit from "./PeopleEdit.astro";
-import PeopleDelete from "./PeopleDelete.astro";
+import PeopleCard from "@/components/CPeople/PeopleCard.astro";
+import PeopleAdd from "@/components/CPeople/modals/PeopleAdd.astro";
+import PeopleEdit from "@/components/CPeople/modals/PeopleEdit.astro";
+import PeopleDelete from "@/components/CPeople/modals/PeopleDelete.astro";
+import Loader from "@/components/CCommon/Loader.astro";
+
+import type { InvestigatorDTO } from "@/types/people";
+
+interface Props {
+  people: InvestigatorDTO[];
+}
 
 const { people } = Astro.props;
+const hasQuery = Astro.url.searchParams.has("query");
+
+// Loader
+const initialLoaderText = people.length > 0 
+  ? "Cargando ..." 
+  : (hasQuery ? "No se encontraron investigadores" : "No hay miembros del equipo disponibles");
 ---
 
-<div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
-  {people.map((person) => <PeopleCard person={person} />)}
+<div id="people-page-wrapper" class="relative min-h-[400px]">
+  
+  <Loader 
+    id="people-list-loader" 
+    text={initialLoaderText}
+  />
+
+  <PeopleAdd />
+
+  <div id="content-area" class="transition-opacity duration-500 opacity-0">
+    {
+      people.length > 0 && (
+        <div id="people-list-container" class="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mt-6">
+          {people.map((person) => (
+            <article class="people-card-item" data-orcid={person.orcid}>
+              <PeopleCard person={person} />
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </div>
+
+  <PeopleEdit />
+  <PeopleDelete />
+
 </div>
 
-<PeopleEdit />
-<PeopleDelete />
+<script>
+  // Importamos la lógica centralizada
+  import { initPeopleList } from "@/utils/people/peopleListUtils";
 
-<script is:inline>
-  // Escuchar eventos desde PersonCard para abrir modal de edición
-  document.addEventListener("editPerson", async (e) => {
-    console.log('✏️ [PEOPLE] Evento editPerson recibido:', e.detail);
-    await window.showEditModal(e.detail);
-  });
-
-  // Escuchar eventos desde PersonCard para eliminar
-  document.addEventListener("deletePerson", async (e) => {
-    console.log('🗑️ [PEOPLE] Evento deletePerson recibido:', e.detail);
-    await window.deletePerson(e.detail);
+  document.addEventListener("DOMContentLoaded", () => {
+    initPeopleList();
   });
 </script>

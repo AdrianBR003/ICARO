@@ -1,232 +1,105 @@
 ---
+import type { InvestigatorDTO } from "@/types/people";
+
+interface Props {
+  person: InvestigatorDTO;
+}
+
 const { person } = Astro.props;
+const fullName = `${person.givenNames} ${person.familyName}`;
+const personJson = JSON.stringify(person);
+
+const defaultImg = "http://localhost:8080/assets/people/default.jpg";
 ---
 
 <div
-  class="person-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 relative"
+  class="person-card bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 relative group"
 >
-  <div class="absolute top-3 right-3 mr-2 flex flex-col gap-2">
-    <!-- Botón Editar -->
+  <div class="absolute top-3 right-3 flex flex-col gap-2 z-20">
     <button
-      class="edit-btn hidden z-10 p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm"
-      onclick={`document.dispatchEvent(new CustomEvent('editPerson', {detail: ${JSON.stringify(person)}}))`}
-      aria-label="Editar"
+      type="button"
+      class="edit-btn admin-control hidden p-2 rounded-full bg-white/90 hover:bg-gray-100 text-gray-600 transition-colors shadow-sm border border-gray-200"
+      data-entity-data={personJson}
+      title="Editar"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-600"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-        ></path>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
       </svg>
     </button>
 
-    <!-- Botón Eliminar -->
     <button
-      class="edit-btn delete-btn hidden z-10 p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm"
-      onclick={`document.dispatchEvent(new CustomEvent('deletePerson', {detail: ${JSON.stringify(person)}}))`}
-      aria-label="Eliminar"
+      type="button"
+      class="delete-btn admin-control hidden p-2 rounded-full bg-white/90 hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors shadow-sm border border-gray-200"
+      data-entity-id={person.orcid}
+      data-entity-title={fullName}
+      title="Eliminar"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-600"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-          clip-rule="evenodd"></path>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
       </svg>
     </button>
   </div>
 
-  <div class="p-6 flex flex-col gap-4" data-orcid={person.orcid}>
+  <div class="p-6 flex flex-col gap-4">
     <div class="flex items-center gap-4">
-      <div class="relative max-w-23 flex-shrink-0">
+      <div class="relative flex-shrink-0">
         <img
-          src="http://localhost:8080/assets/people/default.jpg"
-          alt={`Foto de ${person.name}`}
-          class="w-21 h-21 rounded-full object-cover border-2 border-gray-100"
+          src={defaultImg} 
+          alt={`Foto de ${fullName}`}
+          class="w-20 h-20 rounded-full object-cover border-2 border-gray-100 shadow-sm"
           loading="lazy"
           data-orcid-image
           data-orcid={person.orcid}
-          onerror="this.src='http://localhost:8080/assets/people/default.jpg'"
         />
       </div>
       <div>
-        <h3 class="person-name text-lg font-semibold text-gray-800">
-          {person.name}
+        <h3 class="text-lg font-bold text-gray-900 leading-tight">
+          {fullName}
         </h3>
-        {
-          person.role && (
-            <p class="person-role text-sm text-gray-500">{person.role}</p>
-          )
-        }
+        {person.role && (
+          <p class="text-sm font-medium text-[#006D38] mt-1">{person.role}</p>
+        )}
       </div>
     </div>
 
-    <div class="space-y-2 text-sm">
-      {
-        person.email && (
-          <p class="flex items-center gap-2 text-gray-600">
-            <svg
-              class="w-4 h-4 text-gray-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002-2h12a2 2 0 002-2V8.118z" />
-            </svg>
-            <span class="person-email">{person.email}</span>
-          </p>
-        )
-      }
+    <div class="space-y-2.5 text-sm pt-2 border-t border-gray-50 mt-1">
+      
+      {/* Email - ICONO CORREGIDO */}
+      {person.email && (
+        <div class="flex items-center gap-3 text-gray-600 group/item">
+          <div class="w-8 flex justify-center text-gray-400 group-hover/item:text-[#006D38] transition-colors">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+               <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
+               <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
+             </svg>
+          </div>
+          <span class="truncate">{person.email}</span>
+        </div>
+      )}
 
-      {
-        person.phone && (
-          <p class="flex items-center gap-2 text-gray-600">
-            <svg
-              class="w-4 h-4 text-gray-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z"
-                clip-rule="evenodd"
-              />
+      {/* Teléfono */}
+      {person.phone && (
+        <div class="flex items-center gap-3 text-gray-600 group/item">
+          <div class="w-8 flex justify-center text-gray-400 group-hover/item:text-[#006D38] transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
             </svg>
-            <span class="person-phone">{person.phone}</span>
-          </p>
-        )
-      }
+          </div>
+          <span>{person.phone}</span>
+        </div>
+      )}
 
-      {
-        person.office && (
-          <p class="flex items-center gap-2 text-gray-600">
-            <svg
-              class="w-4 h-4 text-gray-400"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
-                clip-rule="evenodd"
-              />
+      {/* Oficina */}
+      {person.office && (
+        <div class="flex items-center gap-3 text-gray-600 group/item">
+           <div class="w-8 flex justify-center text-gray-400 group-hover/item:text-[#006D38] transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" />
             </svg>
-            <span class="person-office">{person.office}</span>
-          </p>
-        )
-      }
+          </div>
+          <span>{person.office}</span>
+        </div>
+      )}
     </div>
   </div>
-
-  <script is:inline>
-    // === FUNCIONES DE CARGA DE IMÁGENES ===
-    
-    function loadPersonImages() {
-      const images = document.querySelectorAll("img[data-orcid-image]");
-
-      images.forEach((img) => {
-        const orcid = img.getAttribute("data-orcid");
-        if (!orcid) return;
-
-        if (!img.src.includes("default.jpg")) return;
-
-        const extensions = ["png", "jpg", "webp"];
-        let currentIndex = 0;
-
-        function tryExtension() {
-          if (currentIndex >= extensions.length) {
-            return;
-          }
-
-          const imageUrl = `http://localhost:8080/assets/people/${orcid}.${extensions[currentIndex]}`;
-          const testImg = new Image();
-
-          testImg.onload = function () {
-            if (img.src.includes("default.jpg")) {
-              img.src = imageUrl;
-            }
-          };
-          testImg.onerror = function () {
-            currentIndex++;
-            tryExtension();
-          };
-          testImg.src = imageUrl;
-        }
-
-        tryExtension();
-      });
-    }
-
-    // === GESTIÓN DE VISIBILIDAD DE BOTONES ADMIN ===
-    
-    function updateAdminVisibility(isAdmin) {
-      const editButtons = document.querySelectorAll(".edit-btn");
-
-      editButtons.forEach((btn) => {
-        btn.classList.toggle("hidden", !isAdmin);
-      });
-    }
-
-    // Verificar estado admin inicial
-    async function checkInitialAdminStatus() {
-      try {
-        const token = localStorage.getItem("adminToken");
-        if (!token) {
-          updateAdminVisibility(false);
-          return;
-        }
-
-        const response = await fetch("http://localhost:8080/api/auth/verify", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          updateAdminVisibility(data.authenticated && data.isAdmin);
-        } else {
-          updateAdminVisibility(false);
-        }
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-        updateAdminVisibility(false);
-      }
-    }
-
-    // === EVENT LISTENERS ===
-    
-    window.addEventListener("adminStatusChanged", (event) => {
-      const { isAdmin } = event.detail;
-      updateAdminVisibility(isAdmin);
-    });
-    
-    // Inicialización
-    document.addEventListener("DOMContentLoaded", function () {
-      loadPersonImages();
-      checkInitialAdminStatus();
-    });
-
-    window.addEventListener("load", loadPersonImages);
-    setTimeout(loadPersonImages, 100);
-    setTimeout(loadPersonImages, 500);
-  </script>
-
-  <style is:global>
-    .modal {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .modal:not(.hidden) {
-      opacity: 1;
-      pointer-events: auto;
-    }
-  </style>
 </div>

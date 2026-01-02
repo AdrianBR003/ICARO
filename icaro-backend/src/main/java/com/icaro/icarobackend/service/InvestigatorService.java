@@ -5,6 +5,8 @@ import com.icaro.icarobackend.model.Investigator;
 import com.icaro.icarobackend.repository.WorkRepository;
 import com.icaro.icarobackend.repository.InvestigatorRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -29,26 +31,22 @@ public class InvestigatorService {
         this.workRepository = workRepository;
     }
 
+    public Page<Investigator> getInvestigatorsPaged(String query, Pageable pageable) {
+        if (query != null && !query.trim().isEmpty()) {
+            // Buscamos lo mismo en nombre O apellido
+            return investigatorRepository.findByGivenNamesContainingIgnoreCaseOrFamilyNameContainingIgnoreCase(
+                    query, query, pageable);
+        }
+        return investigatorRepository.findAll(pageable);
+    }
+
     public List<Investigator> getAllInvestigator(){
         log.info("getAllInvestigator");
         return investigatorRepository.findAll();
     }
 
-    public void saveInvestigatorbyId(Investigator inv) {
-        log.info("saveInvestigatorById");
-        // Buscar el investigador o crear uno nuevo si no existe
-        Investigator investigator = investigatorRepository.findById(inv.getOrcid())
-                .orElse(inv);
-
-        // Actualizar campos
-        investigator.setGivenNames(inv.getGivenNames());
-        investigator.setFamilyName(inv.getFamilyName());
-        investigator.setEmail(inv.getEmail());
-        investigator.setRole(inv.getRole());
-        investigator.setPhone(inv.getPhone());
-        investigator.setOffice(inv.getOffice());
-
-        investigatorRepository.save(investigator);
+    public Investigator saveInvestigator(Investigator investigator) {
+        return investigatorRepository.save(investigator);
     }
 
     public Investigator syncAndMergeInvestigator(String orcid) {
@@ -122,9 +120,8 @@ public class InvestigatorService {
         return this.investigatorRepository.findById(oid);
     }
 
-    public void deleteInvestigatorbyOID(String oid){
-        log.info("findInvestigatorbyOID");
-        this.investigatorRepository.deleteById(oid);
+    public void deleteInvestigator(String orcid) {
+        investigatorRepository.deleteById(orcid);
     }
 
     private String normalize(String text) {

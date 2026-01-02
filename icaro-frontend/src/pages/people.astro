@@ -1,17 +1,26 @@
 ---
+export const prerender = false; // SSR Activado para búsqueda y paginación
+
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
 import Header from "@/components/CCommon/Header.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
-import AddPeople from "@/components/CPeople/AddPeople.astro";
-import PeopleList from "@/components/CPeople/PeopleList.astro";
+
+// Componentes Comunes de Arquitectura
+import SearchFilter from "@/components/CCommon/SearchFilter.astro";
+import Paginate from "@/components/CCommon/Paginate.astro";
+
+// Componentes Específicos de People
+import PeopleList from "@/components/CPeople/PeopleList.astro"; 
+
 import "@/styles/index.css";
-import type { Investigator } from "@/types/investigator";
-import { getAllInvestigators } from "@/services/investigatorsService";
 
+// Loader de Datos (Capa Lógica)
+import { loadPeoplePage } from "@/utils/people/peoplePageLoader";
 
-const people: Investigator[] = await getAllInvestigators(); 
+// Carga de datos inicial (Paginada y Filtrada)
+const { people, totalPages, currentPage } = await loadPeoplePage(Astro.url);
 ---
 
 <BaseLayout>
@@ -19,33 +28,51 @@ const people: Investigator[] = await getAllInvestigators();
     <TopUtility />
     <Header />
   </section>
+
   <section class="mt-10 max-w-full bg-white shadow-md">
     <NavBar />
   </section>
-  <section
-    class="w-full content-wrap bg-white shadow-md
-           max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-10"
-  >
-    <CTitle Title="People" />
+
+  <CTitle Title="People" />
+
+  <section class="w-full px-4 mx-auto max-w-custom pb-12">
     
-    <AddPeople />
+    <div class="mb-8">
+      <SearchFilter 
+        inputId="search-people" 
+        placeholder="Buscar investigador por nombre o apellido..." 
+        baseURL="/people" 
+      />
+    </div>
+    
     <PeopleList people={people} />
+
+    <div class="mt-10 mb-12">
+      <Paginate
+        totalPages={totalPages}
+        currentPage={currentPage}
+        astroURL={Astro.url}
+      />
+    </div>
+
   </section>
 </BaseLayout>
 
 <script>
-  
-  // Estado de autentificación
-  import { adminState } from "@/stores/auth";
+  import { setupAdvancedSearch } from "@/utils/general/searchFilter";
 
-  // Boton de Añadir Investigador
-  const addButton = document.getElementById('addButton'); 
-
-  // Suscribirse a los cambios de estado del sistema de auth
-  adminState.subscribe(state => {
-    if(addButton){
-      addButton.classList.toggle('hidden', !state.isAdmin); 
-      addButton.classList.toggle('flex', state.isAdmin); 
-    }
-  })
+  document.addEventListener("DOMContentLoaded", () => {
+    setupAdvancedSearch({
+      inputId: "search-people",
+      searchEndpoint: "http://localhost:8080/api/investigators/paged",
+      baseUrl: "/people",
+      debounceMs: 300
+    });
+  });
 </script>
+
+<style>
+  .max-w-custom {
+    max-width: 1200px; /* O el ancho que prefieras para el grid de tarjetas */
+  }
+</style>
