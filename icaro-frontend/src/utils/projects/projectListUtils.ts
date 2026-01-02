@@ -63,6 +63,7 @@ export function initProjectList() {
 
   setupAdvancedSearch({
     inputId: "project-search",
+    clearBtnId: "project-search-clear",
     searchEndpoint: "http://localhost:8080/api/project/paged",
     baseUrl: window.location.pathname,
     debounceMs: 300,

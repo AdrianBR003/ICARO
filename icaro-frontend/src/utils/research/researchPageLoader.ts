@@ -20,10 +20,9 @@ export async function loadResearchPage(url: URL): Promise<ResearchLoaderResult> 
   const apiPage = Math.max(0, pageParam - 1);
   const pageSize = 5;
 
-  // 2. Fetch en paralelo (Eficiencia)
   const [pagedData, projectsList, tagsList] = await Promise.all([
     fetchResearchPaged(apiPage, pageSize, query, projectFilter, tagFilter),
-    fetchAllProjectsList(), // Traemos ID+Titulo de proyectos
+    fetchAllProjectsList(), 
     fetchUniqueTags()
   ]);
 
@@ -36,7 +35,6 @@ export async function loadResearchPage(url: URL): Promise<ResearchLoaderResult> 
     participants: work.participants || [],
     tags: work.tags || [],
     externalIds: work.externalIds || [],
-    // Aquí inyectamos el título buscando en el mapa por ID
     projectTitle: work.projectId ? projectMap.get(String(work.projectId)) : undefined
   }));
 

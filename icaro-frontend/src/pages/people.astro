@@ -64,6 +64,7 @@ const { people, totalPages, currentPage } = await loadPeoplePage(Astro.url);
   document.addEventListener("DOMContentLoaded", () => {
     setupAdvancedSearch({
       inputId: "search-people",
+      clearBtnId: "search-people-clear",
       searchEndpoint: "http://localhost:8080/api/investigators/paged",
       baseUrl: "/people",
       debounceMs: 300,

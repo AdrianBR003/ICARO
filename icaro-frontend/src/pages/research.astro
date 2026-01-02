@@ -1,25 +1,20 @@
 ---
-export const prerender = false; // SSR Activado para búsqueda y paginación
+export const prerender = false;
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import Header from "@/components/CCommon/Header.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
-import ResearchList from "@/components/CResearch/ResearchList.astro"; 
 
-// Componentes Comunes
-import SearchFilter from "@/components/CCommon/SearchFilter.astro";
+// Importamos solo el List y Paginate
+import ResearchList from "@/components/CResearch/ResearchList.astro"; 
 import Paginate from "@/components/CCommon/Paginate.astro";
 
-
 import "@/styles/index.css";
-
-// Loader de Datos
 import { loadResearchPage } from "@/utils/research/researchPageLoader";
-import ResearchFilters from "@/components/CResearch/ResearchFilters.astro";
 
-// Carga de datos inicial
+// Cargamos todos los datos (incluidos los filtros)
 const { works, totalPages, currentPage, allProjects, allTags, activeFilters } = await loadResearchPage(Astro.url);
 ---
 
@@ -37,23 +32,13 @@ const { works, totalPages, currentPage, allProjects, allTags, activeFilters } = 
 
   <section class="w-full px-4 mx-auto max-w-custom pb-12">
     
-    <div class="mb-6">
-      <SearchFilter 
-        inputId="search-research" 
-        placeholder="Buscar publicaciones por título..." 
-        baseURL="/research" 
-      />
-    </div>
-
-    <ResearchFilters 
+    <ResearchList 
+      works={works}
       tags={allTags}
       projects={allProjects}
       activeTag={activeFilters.tag}
       activeProject={activeFilters.project}
-      baseUrl="/research"
     />
-    
-    <ResearchList works={works} />
 
     <div class="mt-8">
       <Paginate
@@ -65,19 +50,6 @@ const { works, totalPages, currentPage, allProjects, allTags, activeFilters } = 
 
   </section>
 </BaseLayout>
-
-<script>
-  import { setupAdvancedSearch } from "@/utils/general/searchFilter";
-
-  document.addEventListener("DOMContentLoaded", () => {
-    setupAdvancedSearch({
-      inputId: "search-research",
-      searchEndpoint: "http://localhost:8080/api/works/paged", // Endpoint de Research
-      baseUrl: "/research",
-      debounceMs: 300
-    });
-  });
-</script>
 
 <style>
   .max-w-custom {

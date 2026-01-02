@@ -48,8 +48,9 @@ const { projects, totalPages, currentPage } = await loadProjectsPages(
 
   document.addEventListener("DOMContentLoaded", () => {
     setupAdvancedSearch({
-      inputId: "search-project", // Debe coincidir con el prop del SearchFilter
-      searchEndpoint: "http://localhost:8080/api/project/paged", // Endpoint unificado
+      inputId: "search-project", 
+      clearBtnId: "search-project-clear",
+      searchEndpoint: "http://localhost:8080/api/project/paged",
       baseUrl: "/projects",
       debounceMs: 300,
     });

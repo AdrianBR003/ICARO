@@ -3,15 +3,23 @@ interface SearchConfig {
   searchEndpoint: string;
   baseUrl: string;
   debounceMs?: number;
-  // Opcion para formatear los datos (People)
+  clearBtnId?: string;
   formatter?: (item: any) => { title: string; description: string };
 }
 
 export function setupAdvancedSearch(config: SearchConfig) {
-  const { inputId, searchEndpoint, baseUrl, debounceMs = 300, formatter } = config;
+  const { 
+    inputId, 
+    searchEndpoint, 
+    baseUrl, 
+    debounceMs = 300, 
+    formatter, 
+    clearBtnId 
+  } = config;
 
   const searchInput = document.getElementById(inputId) as HTMLInputElement;
   const form = searchInput?.closest("form");
+  const clearBtn = clearBtnId ? document.getElementById(clearBtnId) : null;
 
   if (!searchInput || !form) {
     console.warn("[SearchFilter] Input or form not found");
@@ -28,10 +36,26 @@ export function setupAdvancedSearch(config: SearchConfig) {
   suggestionsContainer.style.display = "none";
   searchInput.parentElement?.appendChild(suggestionsContainer);
 
-  // --- Event Listeners ---
+  // --- LÓGICA DE LIMPIEZA ---
+  const clearSearch = () => {
+    searchInput.value = "";
+    hideSuggestions();
+    searchInput.focus();
+    navigateToSearch(""); 
+  };
+
+  // --- EVENT LISTENERS ---
+  if (clearBtn) {
+    clearBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      clearSearch();
+    });
+  }
 
   searchInput.addEventListener("input", (e) => {
     const searchTerm = (e.target as HTMLInputElement).value.trim();
+    
+    if (clearBtn) clearBtn.style.display = searchTerm ? 'flex' : 'none';
 
     if (debounceTimer) clearTimeout(debounceTimer);
 
@@ -46,59 +70,58 @@ export function setupAdvancedSearch(config: SearchConfig) {
   });
 
   form.addEventListener("submit", (e) => {
-    const query = searchInput.value.trim();
-
-    if (query === "") {
-      e.preventDefault();
-      return;
-    }
-
-    if (/^[\(\)\[\]\{\}\.\*\+\?\^\$\|\\]+$/.test(query)) {
-      e.preventDefault();
-      showError();
-      return;
-    }
-
     e.preventDefault();
+    const query = searchInput.value.trim();
     hideSuggestions();
+    // Navegamos manteniendo filtros, incluso si query está vacío (para borrar búsqueda pero dejar filtros)
     navigateToSearch(query);
   });
 
   document.addEventListener("click", (e) => {
+    const target = e.target as Node;
     if (
-      !searchInput.contains(e.target as Node) &&
-      !suggestionsContainer.contains(e.target as Node)
+      !searchInput.contains(target) &&
+      !suggestionsContainer.contains(target) &&
+      (!clearBtn || !clearBtn.contains(target))
     ) {
       hideSuggestions();
     }
   });
 
   searchInput.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      hideSuggestions();
-    }
+    if (e.key === "Escape") hideSuggestions();
   });
 
-  // --- Fetch Logic ---
-
+  // --- FETCH LOGIC (SOLUCIÓN PARTE 1: AUTOCOMPLETADO CON FILTROS) ---
   async function fetchSuggestions(searchTerm: string) {
     try {
-      if (cache.has(searchTerm)) {
-        const cachedData = cache.get(searchTerm);
-        showSuggestions(cachedData, searchTerm);
+      // Clave de caché única por búsqueda Y filtros actuales
+      const currentSearchParams = new URLSearchParams(window.location.search);
+      currentSearchParams.set("query", searchTerm);
+      // Ordenamos para que la clave sea consistente (a=1&b=2 igual a b=2&a=1)
+      currentSearchParams.sort(); 
+      const cacheKey = currentSearchParams.toString();
+
+      if (cache.has(cacheKey)) {
+        showSuggestions(cache.get(cacheKey), searchTerm);
         return;
       }
 
       const url = new URL(searchEndpoint, window.location.origin);
+      
+      // 1. Añadimos TODOS los parámetros actuales de la URL al endpoint
+      const currentUrlParams = new URLSearchParams(window.location.search);
+      currentUrlParams.forEach((value, key) => {
+        // Excluimos paginación y size porque es una búsqueda nueva de sugerencias
+        if (key !== 'page' && key !== 'size') {
+          url.searchParams.set(key, value);
+        }
+      });
+
+      // 2. Sobrescribimos la query y configuración de autocompletado
       url.searchParams.set("query", searchTerm);
       url.searchParams.set("page", "0");
       url.searchParams.set("size", "5");
-
-      const currentParams = new URLSearchParams(window.location.search);
-      if (currentParams.has("tag"))
-        url.searchParams.set("tag", currentParams.get("tag")!);
-      if (currentParams.has("projectId"))
-        url.searchParams.set("projectId", currentParams.get("projectId")!);
 
       const response = await fetch(url.toString(), {
         method: "GET",
@@ -106,19 +129,17 @@ export function setupAdvancedSearch(config: SearchConfig) {
       });
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
       const data = await response.json();
 
-      cache.set(searchTerm, data);
+      cache.set(cacheKey, data);
       showSuggestions(data, searchTerm);
     } catch (error) {
-      console.error("[SearchFilter] Error:", error);
+      console.error(error);
       showError();
     }
   }
 
-  // --- Render Logic ---
-
+  // --- RENDER LOGIC ---
   function showSuggestions(data: any, searchTerm: string) {
     const results = data.content || [];
     const totalElements = data.totalElements || 0;
@@ -129,157 +150,94 @@ export function setupAdvancedSearch(config: SearchConfig) {
     }
 
     suggestionsContainer.innerHTML = `
-      <div class="suggestions-header">
-        ${totalElements} resultado${totalElements !== 1 ? "s" : ""}
-      </div>
+      <div class="suggestions-header">${totalElements} resultado${totalElements !== 1 ? "s" : ""}</div>
       <div class="suggestions-list">
-        ${results
-          .map((result: any) => {
+        ${results.map((result: any) => {
             const { title, description } = formatter 
               ? formatter(result) 
               : { title: result.title, description: result.description };
-          
-            const finalTitle = title || "Sin título";
-            const finalDesc = description || "";
-
+            
             return `
-            <div class="suggestion-item" data-title="${escapeHtml(finalTitle)}">
-              <div class="suggestion-title">
-                ${highlightText(finalTitle, searchTerm)}
-              </div>
-              <div class="suggestion-description">
-                ${truncate(finalDesc, 80)}
-              </div>
+            <div class="suggestion-item" data-title="${escapeHtml(title || "")}">
+              <div class="suggestion-title">${highlightText(title || "", searchTerm)}</div>
+              <div class="suggestion-description">${truncate(description || "", 80)}</div>
             </div>`;
-          })
-          .join("")}
+          }).join("")}
       </div>
-      ${
-        totalElements > 5
-          ? `<div class="suggestions-footer" data-query="${escapeHtml(
-              searchTerm
-            )}">
-          Ver todos los resultados →
-        </div>`
-          : ""
-      }
+      ${totalElements > 5 ? `<div class="suggestions-footer" data-query="${escapeHtml(searchTerm)}">Ver todos →</div>` : ""}
     `;
 
     suggestionsContainer.style.display = "block";
 
-    // Click en Item
-    suggestionsContainer
-      .querySelectorAll(".suggestion-item")
-      .forEach((item) => {
-        item.addEventListener("click", () => {
-          const title = item.getAttribute("data-title") || "";
-          if (title) {
-            searchInput.value = title;
-            hideSuggestions();
-            navigateToSearch(title);
-          }
-        });
+    suggestionsContainer.querySelectorAll(".suggestion-item").forEach((item) => {
+      item.addEventListener("click", () => {
+        const title = item.getAttribute("data-title") || "";
+        if (title) {
+          searchInput.value = title;
+          hideSuggestions();
+          navigateToSearch(title);
+        }
       });
+    });
 
-    // Click en Footer
     const footer = suggestionsContainer.querySelector(".suggestions-footer");
-    if (footer) {
-      footer.addEventListener("click", () => {
+    if (footer) footer.addEventListener("click", () => {
         const query = footer.getAttribute("data-query") || "";
         searchInput.value = query;
         hideSuggestions();
         navigateToSearch(query);
-      });
-    }
+    });
   }
 
-  // --- Navigation Logic ---
-
+  // --- NAVIGATION LOGIC (SOLUCIÓN PARTE 2: PERSISTENCIA AL DAR ENTER) ---
   function navigateToSearch(query: string) {
+    // 1. Tomamos la URL actual tal cual está (con sus filtros tag, project, etc.)
     const currentUrl = new URL(window.location.href);
-    const targetBase = new URL(baseUrl, window.location.origin);
-
-    if (currentUrl.pathname === targetBase.pathname) {
-      if (query) {
-        currentUrl.searchParams.set("query", query);
-      } else {
-        currentUrl.searchParams.delete("query");
-      }
-      currentUrl.searchParams.set("page", "1");
-      window.location.href = currentUrl.toString();
-    } else {
-      targetBase.searchParams.set("query", query);
-      window.location.href = targetBase.toString();
+    
+    // 2. Si la baseURL es diferente (ej: estamos en home y buscamos), cambiamos pathname
+    // pero intentamos mantener params si son compatibles
+    if (!currentUrl.pathname.endsWith(baseUrl) && baseUrl !== window.location.pathname) {
+       currentUrl.pathname = baseUrl;
     }
+
+    // 3. Gestionamos el parámetro query
+    if (query) {
+      currentUrl.searchParams.set("query", query);
+    } else {
+      currentUrl.searchParams.delete("query");
+    }
+
+    // 4. Reset de paginación (siempre a la 1 al cambiar búsqueda)
+    currentUrl.searchParams.set("page", "0"); // O '1' si tu paginación empieza en 1, Spring suele ser 0
+
+    // 5. IMPORTANTE: No tocamos 'tag', 'projectId', etc. Se quedan como están.
+    
+    window.location.href = currentUrl.toString();
   }
 
-  // --- Visual States & Helpers ---
-
-  function showNoResults() {
-    suggestionsContainer.innerHTML = `<div class="suggestions-empty">Sin resultados</div>`;
-    suggestionsContainer.style.display = "block";
-  }
-
-  function showError() {
-    suggestionsContainer.innerHTML = `<div class="suggestions-error">Error al buscar</div>`;
-    suggestionsContainer.style.display = "block";
-  }
-
-  function hideSuggestions() {
-    suggestionsContainer.style.display = "none";
-  }
-
-  function highlightText(text: string, term: string): string {
-    if (!text || !term) return text || "";
-    const regex = new RegExp(`(${escapeRegex(term)})`, "gi");
-    return text.replace(regex, "<mark>$1</mark>");
-  }
-
-  function truncate(text: string, maxLength: number): string {
-    if (!text) return "";
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + "..."
-      : text;
-  }
-
-  function escapeHtml(text: string): string {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  function escapeRegex(str: string): string {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-
-  // --- Styles ---
+  // --- HELPERS ---
+  function showNoResults() { suggestionsContainer.innerHTML = `<div class="suggestions-empty">Sin resultados</div>`; suggestionsContainer.style.display = "block"; }
+  function showError() { suggestionsContainer.innerHTML = `<div class="suggestions-error">Error al buscar</div>`; suggestionsContainer.style.display = "block"; }
+  function hideSuggestions() { suggestionsContainer.style.display = "none"; }
+  function highlightText(text: string, term: string): string { if (!text || !term) return text || ""; const regex = new RegExp(`(${escapeRegex(term)})`, "gi"); return text.replace(regex, "<mark>$1</mark>"); }
+  function truncate(text: string, maxLength: number): string { if (!text) return ""; return text.length > maxLength ? text.substring(0, maxLength) + "..." : text; }
+  function escapeHtml(text: string): string { const div = document.createElement("div"); div.textContent = text; return div.innerHTML; }
+  function escapeRegex(str: string): string { return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+  
   function injectStyles() {
     if (document.getElementById("search-filter-styles")) return;
     const style = document.createElement("style");
     style.id = "search-filter-styles";
     style.textContent = `
-      .search-suggestions {
-        position: absolute; top: 100%; left: 0; right: 0;
-        background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem;
-        margin-top: 0.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        z-index: 50; max-height: 400px; overflow-y: auto;
-      }
-      .suggestions-header {
-        padding: 0.5rem 1rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0;
-        font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase;
-      }
+      .search-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; margin-top: 0.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); z-index: 50; max-height: 400px; overflow-y: auto; }
+      .suggestions-header { padding: 0.5rem 1rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 0.7rem; font-weight: 600; color: #64748b; text-transform: uppercase; }
       .suggestions-list { padding: 0.5rem; }
-      .suggestion-item {
-        padding: 0.75rem; cursor: pointer; border-radius: 0.375rem; transition: all 0.15s;
-      }
+      .suggestion-item { padding: 0.75rem; cursor: pointer; border-radius: 0.375rem; transition: all 0.15s; }
       .suggestion-item:hover { background: #f1f5f9; transform: translateX(2px); }
       .suggestion-title { font-weight: 600; color: #1e293b; font-size: 0.9rem; }
       .suggestion-title mark { background: #fef08a; padding: 0 2px; border-radius: 2px; }
       .suggestion-description { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
-      .suggestions-footer {
-        padding: 0.75rem; background: #f8fafc; border-top: 1px solid #e2e8f0;
-        text-align: center; font-size: 0.8rem; color: #3b82f6; font-weight: 500; cursor: pointer;
-      }
+      .suggestions-footer { padding: 0.75rem; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center; font-size: 0.8rem; color: #3b82f6; font-weight: 500; cursor: pointer; }
       .suggestions-footer:hover { background: #eff6ff; }
       .suggestions-empty, .suggestions-error { padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.9rem; }
       .suggestions-error { color: #dc2626; }
@@ -287,10 +245,10 @@ export function setupAdvancedSearch(config: SearchConfig) {
     document.head.appendChild(style);
   }
 
-  // Cleanup
   return () => {
     if (debounceTimer) clearTimeout(debounceTimer);
     cache.clear();
     suggestionsContainer.remove();
+    if(clearBtn) clearBtn.replaceWith(clearBtn.cloneNode(true));
   };
 }

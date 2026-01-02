@@ -3,41 +3,71 @@ import ResearchCard from "@/components/CResearch/ResearchCard.astro";
 import ResearchAdd from "@/components/CResearch/modals/ResearchAdd.astro";
 import ResearchEdit from "@/components/CResearch/modals/ResearchEdit.astro";
 import ResearchDelete from "@/components/CResearch/modals/ResearchDelete.astro";
+import SearchFilter from "@/components/CCommon/SearchFilter.astro";
 import Loader from "@/components/CCommon/Loader.astro"; 
+import ResearchFilters from "@/components/CResearch/ResearchFilters.astro";
 import type { ResearchWorkDTO } from "@/types/research";
 
 interface Props {
   works: ResearchWorkDTO[];
+  tags: string[];
+  projects: string[];
+  activeTag?: string;
+  activeProject?: string;
 }
 
-const { works } = Astro.props;
-const hasQuery = Astro.url.searchParams.has("query");
+const { works, tags, projects, activeTag, activeProject } = Astro.props;
+
+const params = Astro.url.searchParams;
+const hasFilter = Array.from(params.keys()).some(key => key !== "page" && key !== "size");
+
 const initialLoaderText = works.length > 0 
   ? "Conectando..." 
-  : (hasQuery ? "No se encontraron resultados" : "No hay publicaciones disponibles");
+  : (hasFilter ? "No se encontraron resultados con los filtros actuales" : "No hay publicaciones disponibles");
 ---
 
-<div id="research-page-wrapper" class="relative min-h-[400px]">
+<div id="research-page-wrapper" class="w-full">
   
-  <Loader 
-    id="research-list-loader" 
-    text={initialLoaderText}
-  />
-
   <ResearchAdd />
 
-  <div id="content-area" class="transition-opacity duration-500 opacity-0">
-    {
-      works.length > 0 && (
-        <div id="research-list-container" class="space-y-4">
-          {works.map((work) => (
-            <article class="research-card-item" data-research-id={work.id}>
-              <ResearchCard work={work} />
-            </article>
-          ))}
-        </div>
-      )
-    }
+  <div class="w-full max-w-custom mb-6 relative z-[60]">
+    <SearchFilter 
+      inputId="search-research" 
+      placeholder="Buscar publicaciones por título..." 
+      baseURL="/research" 
+    />
+  </div>
+
+  <div class="relative z-[50] mb-6">
+    <ResearchFilters 
+      tags={tags}
+      projects={projects}
+      activeTag={activeTag}
+      activeProject={activeProject}
+      baseUrl="/research"
+    />
+  </div>
+
+  <div class="relative min-h-[400px]">
+    
+    <Loader 
+      id="research-list-loader" 
+      text={initialLoaderText}
+    />
+
+    <div id="content-area" class="transition-opacity duration-500 opacity-0">
+      {
+        works.length > 0 && (
+          <div id="research-list-container" class="space-y-4">
+            {works.map((work) => (
+              <article class="research-card-item" data-research-id={work.id}>
+                <ResearchCard work={work} />
+              </article>
+            ))}
+          </div>
+        )
+      }
+    </div>
   </div>
 
   <ResearchEdit />
@@ -45,7 +75,6 @@ const initialLoaderText = works.length > 0
 </div>
 
 <script>
-  // Importamos el inicializador de la lista (que crearemos en el siguiente paso)
   import { initResearchList } from "@/utils/research/researchListUtils";
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -55,4 +84,5 @@ const initialLoaderText = works.length > 0
 
 <style>
   .space-y-4 > * + * { margin-top: 1rem; }
+  .max-w-custom { max-width: 1200px; }
 </style>

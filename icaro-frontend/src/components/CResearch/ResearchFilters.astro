@@ -14,11 +14,9 @@ interface Props {
 
 const { tags, projects, activeTag, activeProject, baseUrl } = Astro.props;
 
-// Helper para construir la URL manteniendo el otro filtro activo
 function getFilterUrl(param: "tag" | "project", value: string) {
   const url = new URL(baseUrl, "http://dummy.com");
 
-  // 1. Gestión del toggle (si clico el activo, lo quito)
   const currentValue = param === "tag" ? activeTag : activeProject;
 
   if (currentValue === value) {
