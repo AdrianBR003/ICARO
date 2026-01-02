@@ -1,0 +1,125 @@
+---
+// ProjectEdit.astro
+---
+
+<div
+  id="project-edit-modal"
+  class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 fade-in"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="modal-overlay absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+
+  <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all">
+    
+    <div class="p-8">
+      
+      <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+        <h3 class="text-2xl font-bold text-gray-800">
+          Editar Proyecto
+        </h3>
+        <button 
+          id="close-edit-modal" 
+          type="button" 
+          class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form id="edit-project-form" class="space-y-6">
+        <input type="hidden" name="id" />
+
+        <div>
+          <label class="block mb-2 text-sm font-semibold text-gray-700">Título *</label>
+          <input 
+            type="text" 
+            name="title" 
+            required 
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] focus:border-[#006D38] outline-none transition-all" 
+          />
+        </div>
+
+        <div>
+          <label class="block mb-2 text-sm font-semibold text-gray-700">Descripción *</label>
+          <textarea 
+            name="description" 
+            rows="4" 
+            required 
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] focus:border-[#006D38] outline-none transition-all resize-none"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block mb-2 text-sm font-semibold text-gray-700">Participantes</label>
+          <textarea 
+            name="participants" 
+            rows="2" 
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] focus:border-[#006D38] outline-none transition-all resize-none" 
+            placeholder="Separados por comas..."
+          ></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">Fecha de Inicio *</label>
+            <input 
+              type="date" 
+              name="firstProjectDate" 
+              required 
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] focus:border-[#006D38] outline-none transition-all" 
+            />
+          </div>
+          <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700">Fecha de Finalización</label>
+            <input 
+              type="date" 
+              name="secondProjectDate" 
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] focus:border-[#006D38] outline-none transition-all" 
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-6 border-t border-gray-100 mt-6">
+          <button 
+            id="cancel-edit-btn" 
+            type="button" 
+            class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="px-8 py-2.5 bg-[#006D38] text-white rounded-lg hover:bg-[#005229] font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+          >
+            Guardar Cambios
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Asegúrate de que la ruta coincida con el nombre de tu archivo TS
+  import { initProjectEditModal } from "@/utils/projects/modals/projectsEditModals";
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initProjectEditModal);
+  } else {
+    initProjectEditModal();
+  }
+</script>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>

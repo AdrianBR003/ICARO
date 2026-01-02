@@ -1,0 +1,181 @@
+<div
+  id="research-edit-modal"
+  class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 fade-in"
+  role="dialog"
+  aria-modal="true"
+>
+  <div
+    class="modal-overlay absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+  >
+  </div>
+
+  <div
+    class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+  >
+    <div class="p-8">
+      <div
+        class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100"
+      >
+        <h3 class="text-2xl font-bold text-gray-800">Editar Publicación</h3>
+        <button
+          id="close-edit-modal"
+          type="button"
+          class="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            ><path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"></path></svg
+          >
+        </button>
+      </div>
+
+      <form id="edit-research-form" class="space-y-6">
+        <input type="hidden" name="id" />
+
+        <div>
+          <label class="block mb-2 text-sm font-semibold text-gray-700"
+            >Título *</label
+          >
+          <input
+            type="text"
+            name="title"
+            required
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="block mb-2 text-sm font-semibold text-gray-700"
+            >Resumen</label
+          >
+          <textarea
+            name="description"
+            rows="3"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none resize-none"
+          ></textarea>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-300">
+          <label class="block mb-2 text-sm font-semibold text-gray-600"
+            >Etiquetas</label
+          >
+
+          <div
+            id="edit-research-tags-container"
+            class="flex flex-wrap gap-2 mb-3 min-h-[32px]"
+          >
+          </div>
+
+          <div class="flex gap-2">
+            <input
+              type="text"
+              id="edit-research-tag-input"
+              class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none"
+              placeholder="Añadir etiqueta..."
+            />
+            <button
+              type="button"
+              id="btn-edit-research-tag"
+              class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-bold transition-colors"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700"
+              >Participantes</label
+            >
+            <input
+              type="text"
+              name="participants"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none"
+            />
+          </div>
+          <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700"
+              >Fecha de Publicación</label
+            >
+            <input
+              type="date"
+              name="projectDate"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block mb-2 text-sm font-semibold text-gray-700"
+            >Proyecto Vinculado</label
+          >
+          <div class="relative">
+            <select
+              name="projectId"
+              id="edit-project-select"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none appearance-none bg-white text-gray-700"
+            >
+              <option value="">(Cargando...)</option>
+            </select>
+
+            <div
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+            >
+              <svg
+                class="fill-current h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                ><path
+                  d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+                ></path></svg
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-6 border-t border-gray-100 mt-6">
+          <button
+            id="cancel-edit-btn"
+            type="button"
+            class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+            >Cancelar</button
+          >
+          <button
+            type="submit"
+            class="px-8 py-2.5 bg-[#006D38] text-white rounded-lg hover:bg-[#005229] font-bold shadow-md"
+            >Guardar Cambios</button
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initResearchEditModal } from "@/utils/research/modals/researchEditModal";
+  document.addEventListener("DOMContentLoaded", () => {
+    initResearchEditModal();
+  });
+</script>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+</style>

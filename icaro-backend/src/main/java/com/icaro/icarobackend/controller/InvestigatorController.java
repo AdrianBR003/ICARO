@@ -6,6 +6,11 @@ import com.icaro.icarobackend.service.OrcidService;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -46,49 +51,59 @@ public class InvestigatorController {
         return ResponseEntity.ok(investigatorService.getAllInvestigator());
     }
 
+    @GetMapping("/paged")
+    public ResponseEntity<Page<Investigator>> getInvestigatorsPaged(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size) {
+
+        Sort stableSort = Sort.by(Sort.Order.asc("familyName"), Sort.Order.asc("givenNames"));
+        Pageable pageable = PageRequest.of(page, size, stableSort);
+        Page<Investigator> pageResult = investigatorService.getInvestigatorsPaged(query, pageable);
+
+        return ResponseEntity.ok(pageResult);
+    }
 
     // ---------- METODOS VERIFICACION -------------
 
-    @PostMapping("/add")
+    // CREAR (POST)
+    @PostMapping("/save")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity <Void> addInvestigator(
-            @RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> createInvestigator(@RequestBody Investigator investigator) {
+        // Validar si ya existe
+        if (investigatorService.findInvestigatorbyOID(investigator.getOrcid()).isPresent()) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT) // 409 Conflict
+                    .body("Error: Ya existe un investigador con el ORCID " + investigator.getOrcid());
+        }
 
-        String orcid = (String) body.get("orcid");
-        String givenNames = (String) body.get("givenNames");
-        String familyName = (String) body.get("familyName");
-        String email = (String) body.get("email");
-        String role = (String) body.get("role");
-        String phone = (String) body.get("phone");
-        String office = (String) body.get("office");
+        Investigator saved = investigatorService.saveInvestigator(investigator);
+        // Devolver 201 Created
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
 
-        this.investigatorService.saveInvestigatorbyId(new Investigator(orcid, givenNames, familyName, email, role, phone, office, ""));
-        return ResponseEntity.noContent().build();
+    // ACTUALIZAR (PUT)
+    @PutMapping("/save/{orcid}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateInvestigator(@PathVariable String orcid, @RequestBody Investigator investigator) {
+        // Validar si NO existe
+        if (investigatorService.findInvestigatorbyOID(orcid).isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND) // 404 Not Found
+                    .body("Error: No se encuentra el investigador con ORCID " + orcid);
+        }
+        investigator.setOrcid(orcid);
+        Investigator updated = investigatorService.saveInvestigator(investigator);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/delete/{orcid}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteInvestigator(@PathVariable String orcid) {
-        this.investigatorService.deleteInvestigatorbyOID(orcid);
-        return ResponseEntity.noContent().build();
+        investigatorService.deleteInvestigator(orcid);
+        return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{orcid}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity   <Void> updateInvestigator(
-            @PathVariable String orcid,
-            @RequestBody Map<String, Object> body) {
-
-        String givenNames = (String) body.get("givenNames");
-        String familyName = (String) body.get("familyName");
-        String email = (String) body.get("email");
-        String role = (String) body.get("role");
-        String phone = (String) body.get("phone");
-        String office = (String) body.get("office");
-
-        this.investigatorService.saveInvestigatorbyId(new Investigator(orcid, givenNames, familyName, email, role, phone, office, ""));
-        return ResponseEntity.noContent().build();
-    }
 
     /**
      * Endpoint intermediaria con API ORCID

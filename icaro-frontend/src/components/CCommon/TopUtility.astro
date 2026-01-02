@@ -1,11 +1,14 @@
 ---
+
 ---
 
 <div class="bg-slate-800 text-slate-200 text-xs">
   <div class="container mx-auto px-4 flex justify-end gap-4 py-1">
-    <a href="/lang" class="hidden sm:inline hover:text-white transition-colors">ES</a>
-    <button 
-      id="adminToggle" 
+    <a href="/lang" class="hidden sm:inline hover:text-white transition-colors"
+      >ES</a
+    >
+    <button
+      id="adminToggle"
       class="cursor-pointer bg-transparent border-none text-inherit px-2 py-1 rounded hover:bg-slate-700 transition-all duration-200"
     >
       Admin
@@ -13,180 +16,41 @@
   </div>
 </div>
 
-<script is:inline>
-document.addEventListener('DOMContentLoaded', () => {
-  const API_BASE = 'http://localhost:8080/api';
-  const adminToggle = document.getElementById('adminToggle');
-  
-  if (!adminToggle) {
-    console.error('AdminToggle button not found');
-    return;
-  }
-  
-  let currentAdminStatus = false;
-  let currentUsername = '';
+<script>
+  import { adminState, logoutAdmin } from "@/stores/auth";
 
-  console.log('TopUtility: Initializing admin system...');
+  const adminToggle = document.getElementById("adminToggle");
 
-  // Verificar estado admin al cargar
-  async function checkAdminStatus() {
-    console.log('TopUtility: Checking admin status...');
-    try {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        console.log('TopUtility: No token found');
-        setAdminStatus(false);
-        return false;
-      }
-
-      console.log('TopUtility: Token found, verifying...');
-      const response = await fetch(`${API_BASE}/auth/verify`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const isAdmin = data.authenticated && data.isAdmin;
-        console.log('TopUtility: Verification result:', { isAdmin, username: data.username });
-        setAdminStatus(isAdmin, data.username);
-        return isAdmin;
+  // Nos suscribimos a Atom para actualizar el texto del boton
+  adminState.subscribe((state) => {
+    if (adminToggle != null) {
+      if (state.isAdmin) {
+        adminToggle.textContent = state.username
+          ? `${state.username}`
+          : "Admin Activo";
+        adminToggle.classList.add("text-green-400", "font-bold");
       } else {
-        console.log('TopUtility: Token verification failed');
-        throw new Error('Token inválido');
+        adminToggle.textContent = "Admin";
+        adminToggle.classList.add("text-green-400", "font-bold");
       }
-    } catch (error) {
-      console.error('TopUtility: Error verificando token:', error);
-      localStorage.removeItem('adminToken');
-      setAdminStatus(false);
-      return false;
+    }else{
+      console.error("El boton Admin no se ha actualizado correctamente"); 
     }
-  }
+  });
 
-  function setAdminStatus(isAdmin, username = '') {
-    console.log('TopUtility: Setting admin status:', { isAdmin, username });
-    currentAdminStatus = isAdmin;
-    currentUsername = username;
-    
-    // Actualizar UI del botón
-    if (isAdmin) {
-      adminToggle.textContent = username ? `Admin (${username})` : 'Admin Activo';
-      adminToggle.classList.add('text-green-400', 'font-bold');
-      adminToggle.classList.remove('text-slate-200');
-    } else {
-      adminToggle.textContent = 'Admin';
-      adminToggle.classList.remove('text-green-400', 'font-bold');
-      adminToggle.classList.add('text-slate-200');
-    }
+  // El click ahora llama a las funciones del store
 
-    // Emitir evento para otros componentes
-    const event = new CustomEvent('adminStatusChanged', {
-      detail: { 
-        isAdmin, 
-        username, 
-        source: 'TopUtility' 
-      }
-    });
-    
-    console.log('TopUtility: Dispatching adminStatusChanged event:', event.detail);
-    window.dispatchEvent(event);
-  }
+  adminToggle?.addEventListener('click', ()=>{
+    const currentState = adminState.get(); 
 
-  async function toggleAdminStatus() {
-    console.log('TopUtility: Toggle admin status clicked. Current status:', currentAdminStatus);
-    
-    if (currentAdminStatus) {
+    if(currentState.isAdmin){
       // Logout
-      try {
-        console.log('TopUtility: Logging out...');
-        localStorage.removeItem('adminToken');
-        setAdminStatus(false);
-        
-        // Mostrar confirmación temporal
-        const originalText = adminToggle.textContent;
-        adminToggle.textContent = 'Sesión cerrada';
-        adminToggle.classList.add('text-red-400');
-        adminToggle.classList.remove('text-green-400');
-        
-        setTimeout(() => {
-          console.log('TopUtility: Reloading page after logout');
-          window.location.reload();
-        }, 1000);
-        
-      } catch (error) {
-        console.error('TopUtility: Error durante logout:', error);
-        localStorage.removeItem('adminToken');
-        setAdminStatus(false);
-      }
-    } else {
-      // Ir a página de login
-      console.log('TopUtility: Redirecting to login page');
+      logoutAdmin(); 
+      adminToggle.textContent = 'Sesion cerrada'; 
+      setTimeout(() => window.location.reload(), 1000); 
+    }else{
       window.location.href = '/admin-login';
     }
-  }
+  })
 
-  // Event listeners
-  adminToggle.addEventListener('click', toggleAdminStatus);
-
-  // Escuchar login exitoso desde la página de login
-  window.addEventListener('adminLoginSuccess', (event) => {
-    console.log('TopUtility: Received adminLoginSuccess event:', event.detail);
-    if (event.detail && event.detail.token) {
-      localStorage.setItem('adminToken', event.detail.token);
-      setAdminStatus(true, event.detail.username);
-    }
-  });
-
-  // Escuchar cambios de estado desde otros componentes
-  window.addEventListener('adminStatusChanged', (event) => {
-    const { isAdmin, username, source } = event.detail;
-    console.log('TopUtility: Received adminStatusChanged from:', source, { isAdmin, username });
-    
-    // Solo actualizar si el cambio viene de otro componente (evitar bucle)
-    if (source !== 'TopUtility') {
-      currentAdminStatus = isAdmin;
-      currentUsername = username;
-      
-      // Actualizar solo la UI, no emitir otro evento
-      if (isAdmin) {
-        adminToggle.textContent = username ? `Admin (${username})` : 'Admin Activo';
-        adminToggle.classList.add('text-green-400', 'font-bold');
-        adminToggle.classList.remove('text-slate-200');
-      } else {
-        adminToggle.textContent = 'Admin';
-        adminToggle.classList.remove('text-green-400', 'font-bold');
-        adminToggle.classList.add('text-slate-200');
-      }
-    }
-  });
-
-  // Verificación inicial
-  console.log('TopUtility: Starting initial admin check');
-  checkAdminStatus();
-
-  // Verificar estado cada 5 minutos para detectar tokens expirados
-  setInterval(() => {
-    console.log('TopUtility: Periodic admin status check');
-    checkAdminStatus();
-  }, 300000);
-
-  // Verificar al volver a la pestaña (detectar cambios en otras pestañas)
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      console.log('TopUtility: Tab became visible, checking admin status');
-      checkAdminStatus();
-    }
-  });
-
-  // Escuchar cambios en localStorage (para sincronizar entre pestañas)
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'adminToken') {
-      console.log('TopUtility: localStorage change detected:', e.newValue ? 'Token added' : 'Token removed');
-      if (e.newValue) {
-        checkAdminStatus();
-      } else {
-        setAdminStatus(false);
-      }
-    }
-  });
-});
 </script>

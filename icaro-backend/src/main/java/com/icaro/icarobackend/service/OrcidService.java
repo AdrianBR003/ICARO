@@ -69,7 +69,7 @@ public class OrcidService {
                 }
 
                 works.add(Work.builder()
-                        .putCode(putCode)
+                        .id(putCode)
                         .title(title)
                         .tags(typeList)
                         .externalIds(extIds)

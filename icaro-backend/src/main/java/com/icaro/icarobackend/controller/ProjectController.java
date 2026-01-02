@@ -1,10 +1,15 @@
 package com.icaro.icarobackend.controller;
 
+import com.icaro.icarobackend.dto.ProjectSelectorDTO;
 import com.icaro.icarobackend.model.Project;
 import com.icaro.icarobackend.repository.ProjectRepository;
 import com.icaro.icarobackend.service.ProjectService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,8 +32,8 @@ public class ProjectController {
     // ---------- METODOS SIN VERIFICACION -------------
 
     @GetMapping("/all")
-    public List<Project> findAll() {
-        return projectService.findAll();
+    public ResponseEntity<List<Project>> findAll() {
+        return ResponseEntity.ok(this.projectService.findAll());
     }
 
     @PostMapping("/save")
@@ -42,10 +47,28 @@ public class ProjectController {
         }
     }
 
-    @GetMapping("/titles")
-    public ResponseEntity<List<String>> getTitlesProjects(){
-        log.info("getting titles of projects");
-        return ResponseEntity.ok(projectService.getTitlesProjects());
+    @GetMapping("/selector")
+    public ResponseEntity<List<ProjectSelectorDTO>> getProjectsForSelector() {
+        return ResponseEntity.ok(projectService.getProjectTitles());
+    }
+
+    @GetMapping("/paged")
+    public ResponseEntity<Page<Project>> getProjectsPaged(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        // Ordenamos por fecha de inicio (más reciente primero)
+        Sort stableSort = Sort.by(
+                Sort.Order.desc("firstProjectDate"),
+                Sort.Order.desc("id")
+        );
+
+        Pageable pageable = PageRequest.of(page, size, stableSort);
+
+        Page<Project> projects = projectService.getProjectsPaged(query, pageable);
+
+        return ResponseEntity.ok(projects);
     }
 
     // ---------- METODOS CON VERIFICACION -------------

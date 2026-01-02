@@ -112,7 +112,7 @@ public class ProjectWorkService {
     @Transactional
     public Work createWorkAndLinkToProject(Work work, String projectId) {
         Work savedWork = workRepository.save(work);
-        addWorkToProject(projectId, savedWork.getPutCode());
+        addWorkToProject(projectId, savedWork.getId());
         return savedWork;
     }
 

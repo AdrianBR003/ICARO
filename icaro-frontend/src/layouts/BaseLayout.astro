@@ -1,5 +1,5 @@
 ---
-import Notification from "@/components/CCommon/Notification/Notification.astro";
+
 ---
 
 <html lang="en">
@@ -10,9 +10,19 @@ import Notification from "@/components/CCommon/Notification/Notification.astro";
   </head>
   <body class="bg-gray-50">
     <slot />
-    <Notification />
   </body>
   <footer class="bg-gray-50 text-center pt-4">
     <p class="bg-slate-800 text-white">© 2025 ICARO Research Group.</p>
   </footer>
 </html>
+
+<script>
+  import { startBackendPolling } from "@/stores/backendStatusStore";
+  startBackendPolling(5000);
+</script>
+
+<style is:global>
+  html {
+    font-size: 12.8px;
+  }
+</style>

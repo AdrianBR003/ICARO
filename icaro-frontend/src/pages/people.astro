@@ -1,36 +1,20 @@
 ---
+export const prerender = false;
+
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TopUtility from "@/components/CCommon/TopUtility.astro";
 import Header from "@/components/CCommon/Header.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
-import AddPeople from "@/components/CPeople/AddPeople.astro";
-import PeopleList from "@/components/CPeople/PeopleList.astro";
+
+import PeopleList from "@/components/CPeople/PeopleList.astro"; 
+import Paginate from "@/components/CCommon/Paginate.astro";
+
 import "@/styles/index.css";
 
-const fetchInvestigadores = async () => {
-  try {
-    const res = await fetch("http://localhost:8080/api/investigators/all");
-    if (!res.ok) {
-      throw new Error(`Error HTTP: ${res.status}`);
-    }
-    const invs = await res.json();
-    return invs.map((inv) => ({
-      name: inv.givenNames || "",
-      email: inv.email || "",
-      role: inv.role || "",
-      phone: inv.phone || "",
-      office: inv.office || "",
-      img: `/assets/${inv.orcid}.jpg`,
-      orcid: inv.orcid,
-    }));
-  } catch (error) {
-    console.error("No se pudo obtener la lista de investigadores:", error);
-    return [];
-  }
-};
+import { loadPeoplePage } from "@/utils/people/peoplePageLoader";
 
-let people = await fetchInvestigadores();
+const { people, totalPages, currentPage } = await loadPeoplePage(Astro.url);
 ---
 
 <BaseLayout>
@@ -38,200 +22,30 @@ let people = await fetchInvestigadores();
     <TopUtility />
     <Header />
   </section>
+
   <section class="mt-10 max-w-full bg-white shadow-md">
     <NavBar />
   </section>
-  <section
-    class="w-full content-wrap bg-white shadow-md
-           max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 mt-10"
-  >
-    <CTitle Title="People" />
+
+  <CTitle Title="People" />
+
+  <section class="w-full px-4 mx-auto max-w-custom pb-12">
     
-    <AddPeople />
     <PeopleList people={people} />
+
+    <div class="mt-10 mb-12">
+      <Paginate
+        totalPages={totalPages}
+        currentPage={currentPage}
+        astroURL={Astro.url}
+      />
+    </div>
+
   </section>
-
-  <script is:inline>
-    document.addEventListener("DOMContentLoaded", function () {
-      console.log('🚀 [PEOPLE] Página iniciada');
-      
-      // ============= SISTEMA DE AUTENTICACIÓN JWT =============
-      
-      function getAuthHeaders() {
-        const token = localStorage.getItem('adminToken');
-        const headers = {
-          'Content-Type': 'application/json'
-        };
-        
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-        
-        return headers;
-      }
-      
-      // ============= GESTIÓN DEL ESTADO ADMIN =============
-      let currentAdminStatus = false;
-      
-      async function checkAdminStatus() {
-        console.log('🔐 [PEOPLE] Verificando estado admin...');
-        
-        try {
-          const token = localStorage.getItem('adminToken');
-          if (!token) {
-            console.log('🔐 [PEOPLE] No hay token almacenado');
-            currentAdminStatus = false;
-            updateAdminElements(false);
-            return false;
-          }
-          console.log('🔐 [PEOPLE] Token encontrado, verificando...');
-          const response = await fetch('http://localhost:8080/api/auth/verify', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (response.ok) {
-            const data = await response.json();
-            const isAdmin = data.authenticated && data.isAdmin;
-            console.log('🔐 [PEOPLE] Verificación exitosa:', { isAdmin, username: data.username });
-            currentAdminStatus = isAdmin;
-            updateAdminElements(isAdmin);
-            // Actualizar la referencia global
-            window.currentAdminStatus = isAdmin;
-            return isAdmin;
-          } else {
-            console.log('🔐 [PEOPLE] Token inválido, status:', response.status);
-            throw new Error('Token inválido');
-          }
-        } catch (error) {
-          console.error('❌ [PEOPLE] Error verificando token:', error);
-          localStorage.removeItem('adminToken');
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          window.currentAdminStatus = false;
-          return false;
-        }
-      }
-      
-      function handleAuthError(response) {
-        if (response.status === 401 || response.status === 403) {
-          alert('No tiene permisos para realizar esta acción. Por favor, inicie sesión como administrador.');
-          localStorage.removeItem('adminToken');
-          currentAdminStatus = false;
-          window.currentAdminStatus = false;
-          updateAdminElements(false);
-          window.location.href = '/admin-login';
-          return true;
-        }
-        return false;
-      }
-      
-      function updateAdminElements(isAdmin) {
-        console.log('🎨 [PEOPLE] Actualizando UI admin:', isAdmin);
-        
-        const addButton = document.getElementById("addButton");
-        if (addButton) {
-          if (isAdmin) {
-            addButton.classList.remove('hidden');
-            addButton.classList.add('flex');
-          } else {
-            addButton.classList.remove('flex');
-            addButton.classList.add('hidden');
-          }
-        }
-        
-        const editButtons = document.querySelectorAll(".edit-btn");
-        editButtons.forEach((btn) => {
-          if (isAdmin) {
-            btn.classList.remove('hidden');
-            btn.classList.add('flex');
-          } else {
-            btn.classList.remove('flex');
-            btn.classList.add('hidden');
-          }
-        });
-        
-        console.log('✅ [PEOPLE] UI actualizada correctamente');
-      }
-      
-      // Hacer funciones disponibles globalmente
-      window.getAuthHeaders = getAuthHeaders;
-      window.currentAdminStatus = currentAdminStatus;
-      window.checkAdminStatus = checkAdminStatus;
-      window.handleAuthError = handleAuthError;
-      window.updateAdminElements = updateAdminElements;
-      // Función para obtener el estado actual (importante para los hijos)
-      window.getCurrentAdminStatus = () => window.currentAdminStatus;
-      
-      // Escuchar cambios desde TopUtility
-      window.addEventListener('adminStatusChanged', function(event) {
-        const { isAdmin, source } = event.detail;
-        console.log(`🔄 [PEOPLE] Estado admin cambiado desde ${source}:`, isAdmin);
-        currentAdminStatus = isAdmin;
-        window.currentAdminStatus = isAdmin;
-        updateAdminElements(isAdmin);
-      });
-      
-      // Inicializar estado admin al cargar la página
-      checkAdminStatus();
-      
-      // Verificar estado cada 5 minutos
-      setInterval(() => {
-        console.log('⏰ [PEOPLE] Verificación periódica del estado admin');
-        checkAdminStatus();
-      }, 300000);
-      
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-          console.log('👁️ [PEOPLE] Tab visible, verificando admin status');
-          checkAdminStatus();
-        }
-      });
-      
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'adminToken') {
-          console.log('🔄 [PEOPLE] Token cambiado en localStorage:', e.newValue ? 'Token añadido' : 'Token eliminado');
-          if (e.newValue) {
-            checkAdminStatus();
-          } else {
-            currentAdminStatus = false;
-            window.currentAdminStatus = false;
-            updateAdminElements(false);
-          }
-        }
-      });
-
-       // ============= GESTIÓN DE NOTIFICACIONES PENDIENTES =============
-
-      setTimeout(() => {
-        const pendingNotifications = JSON.parse(
-          localStorage.getItem("pendingNotifications") || "[]",
-        );
-        if (pendingNotifications.length > 0) {
-          console.log(
-            `📋 [NEWS] Encontradas ${pendingNotifications.length} notificaciones pendientes en localStorage`,
-          );
-
-          if (
-            window.notificationSystem &&
-            window.notificationSystem.isInitialized
-          ) {
-            console.log(
-              "🔄 [NEWS] Forzando procesamiento de notificaciones pendientes",
-            );
-
-            pendingNotifications.forEach((notification, index) => {
-              setTimeout(() => {
-                window.notificationSystem.notify(
-                  notification.message,
-                  notification.type,
-                  notification.duration,
-                );
-              }, index * 200);
-            });
-
-            localStorage.removeItem("pendingNotifications");
-          }
-        }
-      }, 1000);
-    });
-  </script>
 </BaseLayout>
+
+<style>
+  .max-w-custom {
+    max-width: 1200px;
+  }
+</style>

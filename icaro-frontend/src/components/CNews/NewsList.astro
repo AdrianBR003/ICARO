@@ -1,275 +1,68 @@
 ---
-import NewsCard from "@/components/CNews/CCNewsList/NewsCard.astro";
-import NewsAdd from "@/components/CNews/NewsAdd.astro";
-import NewsEdit from "@/components/CNews/CCNewsList/NewsEdit.astro";
-import NewsDelete from "@/components/CNews/CCNewsList/NewsDelete.astro";
-
-interface News {
-  id: string;
-  title: string;
-  description: string;
-  publicationDate?: string;
-  link?: string;
-}
+import NewsCard from "@/components/CNews/NewsCard.astro";
+import NewsAdd from "@/components/CNews/modals/NewsAdd.astro";
+import NewsEdit from "@/components/CNews/modals/NewsEdit.astro";
+import NewsDelete from "@/components/CNews/modals/NewsDelete.astro";
+import SearchFilter from "@/components/CCommon/SearchFilter.astro";
+import Loader from "@/components/CCommon/Loader.astro"; 
+import type { News } from "@/types/news";
 
 interface Props {
   news: News[];
-  isAdmin?: boolean;
 }
 
-const { news, isAdmin = false } = Astro.props;
+const { news } = Astro.props;
+const hasQuery = Astro.url.searchParams.has("query");
+
+const initialLoaderText = news.length > 0 
+  ? "Conectando..." 
+  : (hasQuery ? "No se encontraron resultados" : "No hay noticias disponibles");
 ---
 
-<div id="news-list-container">
-  <NewsAdd isAdmin={isAdmin} />
+<div id="news-page-wrapper" class="relative min-h-[400px]">
+  
+  <Loader 
+    id="news-list-loader" 
+    text={initialLoaderText}
+  />
 
-  <div class="mb-6">
-    <div class="relative max-w-md mx-auto">
-      <input
-        type="text"
-        id="search-input"
-        placeholder="Buscar noticias..."
-        class="w-full px-4 py-2 pl-10 pr-4 text-gray-700 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006D38] focus:border-transparent transition-all"
-      />
-      <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-        <svg
-          class="w-5 h-5 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </div>
-    </div>
+  <NewsAdd />
+
+  <div class="w-full max-w-custom mb-6 relative z-[60]">
+    <SearchFilter
+      inputId="news-search"
+      placeholder="Buscar noticias por título o descripción..."
+      baseURL={Astro.url.pathname}
+    />
   </div>
 
-  <div class="space-y-6" id="news-list">
+  <div id="content-area" class="transition-opacity duration-500 opacity-0">
     {
-      news.map((newsItem, index) => {
-        const validatedNews = {
-          ...newsItem,
-          id: newsItem.id || `news-${index}`,
-          title: newsItem.title || "Sin título",
-          description: newsItem.description || "Sin descripción",
-        };
-        return <NewsCard news={validatedNews} isAdmin={isAdmin} />;
-      })
+      news.length > 0 && (
+        <div id="news-list-container" class="space-y-4">
+          {news.map((newsItem) => (
+            <article class="news-card-item" data-news-id={newsItem.id}>
+              <NewsCard news={newsItem} />
+            </article>
+          ))}
+        </div>
+      )
     }
   </div>
 
-  <!-- Componentes hijos para funcionalidades específicas -->
   <NewsEdit />
   <NewsDelete />
-
-  <script is:inline define:vars={{ isAdmin }}>
-    document.addEventListener("DOMContentLoaded", function () {
-      console.log("🔔 [NewsList] Componente cargado");
-
-      // ============= CONFIGURACIÓN =============
-      const ASSETS_BASE_URL = "http://localhost:8080/assets/news";
-      const imageCache = new Map();
-      let currentAdminStatus = false;
-
-      // ============= SISTEMA DE AUTENTICACIÓN =============
-      function getAuthHeaders() {
-        const token = localStorage.getItem("adminToken");
-        const headers = { "Content-Type": "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-        return headers;
-      }
-
-      async function checkAdminStatus() {
-        try {
-          const token = localStorage.getItem("adminToken");
-          if (!token) {
-            currentAdminStatus = false;
-            updateAdminElements(false);
-            return false;
-          }
-
-          const response = await fetch(
-            "http://localhost:8080/api/auth/verify",
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            },
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            currentAdminStatus = data.authenticated && data.isAdmin;
-            updateAdminElements(currentAdminStatus);
-            return currentAdminStatus;
-          } else {
-            throw new Error("Token inválido");
-          }
-        } catch (error) {
-          localStorage.removeItem("adminToken");
-          currentAdminStatus = false;
-          updateAdminElements(false);
-          return false;
-        }
-      }
-
-      function updateAdminElements(isAdmin) {
-        const adminButtons = document.querySelectorAll(
-          '[id^="admin-buttons-"]',
-        );
-        adminButtons.forEach((button) => {
-          button.classList.toggle("hidden", !isAdmin);
-        });
-      }
-
-      // ============= FUNCIONALIDAD DE IMÁGENES =============
-      window.loadNewsImages = function () {
-        const images = document.querySelectorAll("img[data-news-image]");
-
-        images.forEach((img) => {
-          const newsId = img.getAttribute("data-news-image");
-          if (!newsId) return;
-
-          if (img.dataset.imageLoaded === "true") return;
-
-          if (imageCache.has(newsId)) {
-            const cachedUrl = imageCache.get(newsId);
-            if (cachedUrl) {
-              img.src = cachedUrl;
-              img.dataset.imageLoaded = "true";
-            }
-            return;
-          }
-
-          loadNewsImage(newsId, img);
-        });
-      };
-
-      function loadNewsImage(newsId, imgElement) {
-        const extensions = ["webp", "jpg", "jpeg", "png"];
-        let currentIndex = 0;
-
-        function tryNextExtension() {
-          if (currentIndex >= extensions.length) {
-            imageCache.set(newsId, null);
-            return;
-          }
-
-          const ext = extensions[currentIndex];
-          const imageUrl = `${ASSETS_BASE_URL}/${newsId}.${ext}`;
-
-          const testImg = new Image();
-
-          testImg.onload = function () {
-            imgElement.src = imageUrl;
-            imgElement.dataset.imageLoaded = "true";
-            imageCache.set(newsId, imageUrl);
-          };
-
-          testImg.onerror = function () {
-            currentIndex++;
-            tryNextExtension();
-          };
-
-          testImg.src = imageUrl;
-        }
-
-        tryNextExtension();
-      }
-
-      // ============= BÚSQUEDA =============
-      function setupSearch() {
-        const searchInput = document.getElementById("search-input");
-        const newsList = document.getElementById("news-list");
-
-        if (!searchInput || !newsList) return;
-
-        const newsCards = Array.from(newsList.children);
-
-        searchInput.addEventListener("input", (e) => {
-          const searchTerm = e.target.value.toLowerCase().trim();
-
-          newsCards.forEach((card) => {
-            const title =
-              card.querySelector("h3")?.textContent.toLowerCase() || "";
-            const description =
-              card.querySelector(".text-gray-600")?.textContent.toLowerCase() ||
-              "";
-            const matches =
-              title.includes(searchTerm) || description.includes(searchTerm);
-            card.style.display = matches ? "" : "none";
-          });
-        });
-      }
-
-      // ============= OBSERVADOR PARA NUEVAS IMÁGENES =============
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-            setTimeout(() => window.loadNewsImages(), 100);
-          }
-        });
-      });
-
-      const newsListElement = document.getElementById("news-list");
-      if (newsListElement) {
-        observer.observe(newsListElement, { childList: true, subtree: true });
-      }
-
-      // ============= NOTIFICACIONES =============
-      window.addNotification = function(type, message) {
-        console.log("🔍 addNotification llamado:", { type, message });
-        try {
-          const notifications = JSON.parse(
-            localStorage.getItem("pendingNotifications") || "[]",
-          );
-
-          const notification = {
-            id: `stored-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            message,
-            type,
-            duration: 4000,
-            timestamp: Date.now(),
-          };
-
-          notifications.push(notification);
-          localStorage.setItem(
-            "pendingNotifications",
-            JSON.stringify(notifications),
-          );
-
-          console.log(
-            "💾 Notificación guardada en localStorage para mostrar después de recargar:",
-            notification,
-          );
-
-          return notification.id;
-        } catch (error) {
-          console.error("❌ Error guardando notificación:", error);
-        }
-      }
-
-      // ============= FUNCIONES GLOBALES COMPARTIDAS =============
-      window.getCurrentAdminStatus = () => currentAdminStatus;
-      window.getAuthHeaders = getAuthHeaders;
-      window.updateAdminElements = updateAdminElements;
-
-      // Escuchar cambios de estado admin
-      window.addEventListener("adminStatusChanged", function (event) {
-        currentAdminStatus = event.detail.isAdmin;
-        updateAdminElements(currentAdminStatus);
-      });
-
-      // ============= INICIALIZACIÓN =============
-      checkAdminStatus();
-      window.loadNewsImages();
-      setupSearch();
-
-      console.log(
-        "✅ [NewsList] Inicialización completa con todas las funcionalidades",
-      );
-    });
-  </script>
 </div>
+
+<script>
+  import { initNewsList } from "@/utils/news/newsListUtils";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initNewsList();
+  });
+</script>
+
+<style>
+  .space-y-4 > * + * { margin-top: 1rem; }
+  .max-w-custom { max-width: 1200px; }
+</style>

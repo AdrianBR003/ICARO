@@ -4,6 +4,10 @@ package com.icaro.icarobackend.controller;
 import com.icaro.icarobackend.model.Work;
 import com.icaro.icarobackend.service.OrcidService;
 import com.icaro.icarobackend.service.WorkService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +41,32 @@ public class WorkController {
 
     @GetMapping("/{orcid}")
     public ResponseEntity<List<Work>> getWorkOrcid(@PathVariable("orcid") String orcid) {
-         return ResponseEntity.ok(orcidService.fetchWorks(orcid));
+        return ResponseEntity.ok(orcidService.fetchWorks(orcid));
     }
+
+    // Metodo para la paginacion:
+
+    @GetMapping("/paged")
+    public ResponseEntity<Page<Work>> getWorksPaged(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String projectId, // Nuevo
+            @RequestParam(required = false) String tag,       // Nuevo
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Sort stableSort = Sort.by(Sort.Order.desc("publicationDate"), Sort.Order.desc("id"));
+        Pageable pageable = PageRequest.of(page, size, stableSort);
+        Page<Work> works = workService.getWorksPaged(query, projectId, tag, pageable);
+        return ResponseEntity.ok(works);
+    }
+
+    /**
+     * Endpoint para obtener la lista de etiquetas únicas (para el filtro superior).
+     */
+    @GetMapping("/tags")
+    public ResponseEntity<List<String>> getUniqueTags() {
+        return ResponseEntity.ok(workService.getAllUniqueTags());
+    }   
 
     // ---------- METODOS VERIFICACION -------------
 
@@ -47,13 +75,13 @@ public class WorkController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> saveWork(@RequestBody Work work) {
         this.workService.saveWork(work);
-        return  ResponseEntity.ok().build();
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/delete/{putCode}")
+    @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteWork(@PathVariable("putCode") String putCode) {
-        this.workService.deleteWork(putCode);
+    public ResponseEntity<?> deleteWork(@PathVariable("id") String id) {
+        this.workService.deleteWork(id);
         return ResponseEntity.ok().build();
     }
 

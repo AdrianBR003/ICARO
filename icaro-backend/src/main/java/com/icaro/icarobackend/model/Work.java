@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 public class Work {
     @Id
-    String putCode;             // Local Identificator
+    String id;             // Local Identificator
     String orcidOwner;
     private String title;
     private String description;
@@ -24,14 +24,7 @@ public class Work {
     private List<String> ownerOrcids; // OIDS Participants, para en un futuro enlazar a un perfil con las publicaciones
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate projectDate;
-
     private String projectId; // ID del proyecto al que pertenece
-
-    /**
-     * Esta variable es muy importante tener en cuenta su estructura:
-     *  <p>> En la posición 0 -> Tipo de Work, ej: Journal-Article, Conference-paper, .. </p>
-     *  > En las siguientes (a partir de la 0) -> Tags aparte, que no sean el proyectoID porque eso se guarda en la anterior variable
-     */
     private List<String> tags;
 
 

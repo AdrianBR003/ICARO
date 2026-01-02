@@ -1,0 +1,76 @@
+---
+// SearchFilter.astro
+interface Props {
+  inputId: string;
+  placeholder?: string;
+  baseURL: string; // Se mantiene por si quisieras usarlo, aunque el script gestiona la navegación
+}
+
+const { inputId, placeholder = "Buscar...", baseURL } = Astro.props;
+
+// Obtenemos la query inicial para saber si mostrar la X al cargar
+const query = Astro.url.searchParams.get("query") || "";
+---
+
+<div class="mb-10 relative search-container">
+  <form class="relative max-w-full" onsubmit="return false;" role="search">
+    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"></path>
+      </svg>
+    </span>
+
+    <input
+      id={inputId}
+      type="search"
+      autocomplete="off"
+      name="query"
+      value={query}
+      placeholder={placeholder}
+      class="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition"
+    />
+
+    <button
+      type="button"
+      id={inputId + "-clear"}
+      class="search-clear-btn"
+      aria-label="Eliminar búsqueda"
+      style={`display: ${query ? 'flex' : 'none'}`} 
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </form>
+</div>
+
+<style>
+  .search-clear-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    /* display: flex;  <-- LO QUITAMOS DE AQUÍ porque lo controlamos con JS/Inline style */
+    align-items: center;
+    padding-left: 0.75rem;
+    padding-right: 1rem;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    background: transparent;
+    border: none;
+  }
+  .search-clear-btn:hover {
+    color: #374151;
+  }
+
+  /* Ocultar la X nativa del navegador para que no salga doble */
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
+</style>

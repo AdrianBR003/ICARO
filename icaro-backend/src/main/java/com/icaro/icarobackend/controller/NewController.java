@@ -1,30 +1,29 @@
 package com.icaro.icarobackend.controller;
 
+import com.icaro.icarobackend.dto.NewsImageDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+
 import com.icaro.icarobackend.model.New;
 import com.icaro.icarobackend.service.NewService;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/news")
 public class NewController {
 
-    NewService newService;
 
-    private String uploadDir = "src/main/resources/static/assets/news";
-
+    private final NewService newService;
 
     public NewController(NewService newService) {
         this.newService = newService;
@@ -34,80 +33,108 @@ public class NewController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<List<New>> findAll(){
+    public ResponseEntity<List<New>> findAll() {
         return ResponseEntity.ok().body(newService.findAll());
     }
 
-    @GetMapping("/check-image/{id}")
-    public ResponseEntity<Map<String, Object>> checkImageExists(@PathVariable String id) {
-        Map<String, Object> response = new HashMap<>();
-
-        String[] extensions = {"jpg", "png", "webp"};
-        String foundExtension = null;
-
-        for (String ext : extensions) {
-            Path imagePath = Paths.get(uploadDir, id + "." + ext);
-            if (Files.exists(imagePath)) {
-                foundExtension = ext;
-                break;
-            }
+    @GetMapping("/check/{id}")
+    public ResponseEntity<Boolean> checkNewsId(@PathVariable String id) {
+        boolean exists = newService.findById(id).isPresent();
+        if (exists) {
+            return ResponseEntity.ok(true);
+        } else {
+            return ResponseEntity.status(404).body(false);
         }
-        log.info("Check image exists for id {}", id);
-        response.put("exists", foundExtension != null);
-        response.put("extension", foundExtension);
-        response.put("imageUrl", foundExtension != null ?
-                "/assets/news/" + id + "." + foundExtension :
-                "/assets/news/default.jpg");
-
-        return ResponseEntity.ok(response);
     }
 
+    /**
+     * Devuelve la información del page seleccionado.
+     */
+    @GetMapping("/page")
+    public Page<New> getAllNews(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            Sort stableSort = Sort.by(
+                    Order.desc("publicationDate"),
+                    Order.desc("id")
+            );
+
+            pageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    stableSort
+            );
+        }
+        return newService.findPage(pageable);
+    }
+
+
+    /**
+     * Devuelve una página (Page<New>) de resultados de búsqueda.
+     */
+    @GetMapping("/search")
+    public ResponseEntity<Page<New>> searchNews(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Sort stableSort = Sort.by(
+                Order.desc("publicationDate"),
+                Order.desc("id")
+        );
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                stableSort
+        );
+
+        Page<New> results = newService.searchNews(query, pageable);
+
+        return ResponseEntity.ok(results);
+    }
+
+    // Imagen en el carousel
+
     @GetMapping("/Hnews")
-    public ResponseEntity<List<New>> getHighlightedNews(){
-        return ResponseEntity.ok().body(newService.getHighlightedNews());
+    public ResponseEntity<List<New>> getHighlightedNews() {
+        List<New> highlightedNews = newService.getHighlightedNews();
+        return ResponseEntity.ok(highlightedNews);
+    }
+
+    @GetMapping("/check-image/{newsId}")
+    public ResponseEntity<NewsImageDTO> checkNewsImage(@PathVariable String newsId) {
+        NewsImageDTO response = newService.checkNewsImage(newsId);
+        return ResponseEntity.ok(response);
     }
 
     // ---------- METODOS CON VERIFICACION -------------
 
 
-    @PostMapping("/create")
+    @PostMapping("/add")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> create(@RequestBody New n){
-        if(this.newService.findById(n.getId()).isEmpty()){
-            this.newService.addNew(n);
-            log.info("Creando news" + n );
-            return ResponseEntity.status(HttpStatus.CREATED).body(n);
-        }else{
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(n);
+    public ResponseEntity<New> addNew(@RequestBody New newData) {
+        if (this.newService.addNew(newData)) {
+            return new ResponseEntity<>(newData, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(newData, HttpStatus.CONFLICT);
         }
     }
 
-    @DeleteMapping("/delete/{id}")
+    @PostMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> delete(@PathVariable String id){
-        if(this.newService.findById(id).isEmpty()){
-            log.info("Eliminando news" + id );
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(id);
-        }else{
-            this.newService.removeNewId(id);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(id);
+    public ResponseEntity<New> update(@RequestBody New news) {
+        if (this.newService.updateNew(news)) {
+            return new ResponseEntity<>(news, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
 
-    @PostMapping("/{id}")
+    @DeleteMapping("/delete/{newsId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> findById(@RequestBody New n){
-        this.newService.addNew(n);
-        return ResponseEntity.status(HttpStatus.CREATED).body(n);
+    public ResponseEntity<New> delete(@PathVariable("newsId") String newsId) {
+        if(this.newService.deleteNew(newsId)){
+            return new ResponseEntity<>(HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
     }
-
-    @PostMapping("/save")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> save(@RequestBody New n){
-        this.newService.addNew(n);
-        log.info("Guardando news" + n );
-        return ResponseEntity.status(HttpStatus.CREATED).body(n);
-    }
-
-
 }

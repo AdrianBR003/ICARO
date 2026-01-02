@@ -1,75 +1,264 @@
 ---
-const navItems = [
-  { title: "HOME", href: "/", hasDropdown: true },
-  { title: "NEWS", href: "/news", hasDropdown: true },
-  { title: "PROJECTS", href: "/projects", hasDropdown: true },
-  { title: "RESEARCH", href: "/research", hasDropdown: true },
-  { title: "PEOPLE", href: "/people", hasDropdown: true },
+interface NavItem {
+  title: string;
+  href: string;
+  hasDropdown?: boolean;
+}
 
+const navItems: NavItem[] = [
+  { title: "HOME", href: "/" },
+  { title: "NEWS", href: "/news" },
+  { title: "PROJECTS", href: "/projects" },
+  { title: "RESEARCH", href: "/research" },
+  { title: "PEOPLE", href: "/people" },
 ];
+
+// Obtener la ruta actual para marcar el item activo
+const currentPath = Astro.url.pathname;
+
+const isActive = (href: string): boolean => {
+  if (href === '/') {
+    return currentPath === '/';
+  }
+  return currentPath.startsWith(href);
+};
 ---
 
-<nav class="bg-white border-b border-gray-200">
-  <div
-    class="container mx-auto px-4
-           flex flex-col md:flex-row
-           items-center md:justify-center
-           h-auto md:h-14 relative"
-  >
-    <!-- botón desplegable -->
-    <button
-      id="menu-btn"
-      class="md:hidden p-2 self-end absolute right-0 top-3"
-      aria-label="Toggle menu"
-    >
-      <svg
-        class="h-6 w-6 text-slate-700"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
+<nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  <div class="container mx-auto px-4 relative">
+    <!-- Header móvil con botón hamburguesa -->
+    <div class="flex items-center justify-between h-16 md:hidden">
+      <span class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+        Menú
+      </span>
+      <button
+        id="menu-btn"
+        class="p-2 rounded-md hover:bg-gray-100 transition-colors"
+        aria-label="Toggle menu"
+        aria-expanded="false"
       >
-        <path d="M3 6h18M3 12h18M3 18h18"></path>
-      </svg>
-    </button>
+        <svg
+          id="menu-icon"
+          class="h-6 w-6 text-slate-700 transition-transform duration-200"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path class="hamburger" d="M3 6h18M3 12h18M3 18h18"></path>
+          <path class="close hidden" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
 
-    <!-- menú -->
+    <!-- Menú de navegación -->
     <ul
       id="menu"
-      class="hidden flex-col md:flex md:flex-row
-         gap-0 md:gap-6
-         w-full md:w-auto
-         justify-center"
+      class="
+        md:flex md:flex-row md:items-center md:justify-center md:h-14
+        hidden flex-col
+        md:gap-1
+        overflow-hidden md:overflow-visible
+        transition-all duration-300 ease-in-out
+        max-h-0 md:max-h-none
+        pb-0 md:pb-0
+      "
+      role="menubar"
     >
-      {
-        navItems.map((i) => (
-          <li class="border-b md:border-none">
-            <a
-              href={i.href}
-              class="flex items-center w-full
-               h-12 md:h-14 px-4
-               uppercase text-sm tracking-wide text-slate-800
-               hover:bg-slate-700 hover:text-white
-               transition-colors"
-            >
-              {i.title}
-            </a>
-          </li>
-        ))
-      }
+      {navItems.map((item) => (
+        <li role="none" class="w-full md:w-auto">
+          <a
+            href={item.href}
+            role="menuitem"
+            class={`
+              nav-link
+              ${isActive(item.href) ? 'nav-link-active' : ''}
+            `}
+          >
+            <span>{item.title}</span>
+            {isActive(item.href) && (
+              <span class="active-indicator" aria-hidden="true"></span>
+            )}
+          </a>
+        </li>
+      ))}
     </ul>
   </div>
 </nav>
 
-<script is:inline>
-  document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("menu-btn");
-    const menu = document.getElementById("menu");
-    if (!btn || !menu) return;
+<style>
+  /* Estilos base del nav link */
+  .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #334155;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+  }
 
-    btn.addEventListener("click", () => {
-      menu.classList.toggle("hidden");
-      menu.classList.toggle("flex");
-    });
+  /* Desktop styles */
+  @media (min-width: 768px) {
+    .nav-link {
+      height: 3.5rem;
+      padding: 0 1.25rem;
+      border-left: none;
+      border-bottom: 3px solid transparent;
+    }
+
+    .nav-link:hover {
+      background: #3b4f6b;
+      color: white;
+    }
+  }
+
+  /* Mobile styles */
+  @media (max-width: 767px) {
+    .nav-link {
+      border-left: 3px solid transparent;
+      background: white;
+    }
+
+    .nav-link:hover {
+      background: #f8fafc;
+      border-left-color: #3b4f6b;
+    }
+
+    .nav-link:active {
+      background: #f1f5f9;
+    }
+  }
+
+  /* Link activo */
+  .nav-link-active {
+    color: #3b4f6b;
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .nav-link-active {
+      border-bottom-color: #3b4f6b;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .nav-link-active {
+      border-left-color: #3b4f6b;
+      background: #f8fafc;
+    }
+  }
+
+  /* Indicador visual para móvil */
+  .active-indicator {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background: #3b4f6b;
+    border-radius: 50%;
+  }
+
+  @media (min-width: 768px) {
+    .active-indicator {
+      display: none;
+    }
+  }
+
+  /* Animación del menú móvil */
+  #menu.menu-open {
+    max-height: 500px;
+    padding-bottom: 1rem;
+  }
+</style>
+
+<script>
+  // Módulo para manejar el menú móvil
+  class MobileMenu {
+    private btn: HTMLElement | null;
+    private menu: HTMLElement | null;
+    private hamburgerIcon: SVGPathElement | null;
+    private closeIcon: SVGPathElement | null;
+    private isOpen: boolean = false;
+
+    constructor() {
+      this.btn = document.getElementById("menu-btn");
+      this.menu = document.getElementById("menu");
+      this.hamburgerIcon = document.querySelector(".hamburger");
+      this.closeIcon = document.querySelector(".close");
+
+      this.init();
+    }
+
+    private init(): void {
+      if (!this.btn || !this.menu) return;
+
+      this.btn.addEventListener("click", () => this.toggle());
+      
+      // Cerrar menú al hacer clic en un link
+      const links = this.menu.querySelectorAll("a");
+      links.forEach(link => {
+        link.addEventListener("click", () => {
+          if (window.innerWidth < 768) {
+            this.close();
+          }
+        });
+      });
+
+      // Cerrar menú al cambiar de responsive a desktop
+      window.addEventListener("resize", () => {
+        if (window.innerWidth >= 768 && this.isOpen) {
+          this.close();
+        }
+      });
+    }
+
+    private toggle(): void {
+      this.isOpen ? this.close() : this.open();
+    }
+
+    private open(): void {
+      if (!this.menu || !this.btn) return;
+
+      this.menu.classList.remove("hidden");
+      this.menu.classList.add("flex", "menu-open");
+      this.btn.setAttribute("aria-expanded", "true");
+      this.isOpen = true;
+
+      // Cambiar icono
+      if (this.hamburgerIcon && this.closeIcon) {
+        this.hamburgerIcon.classList.add("hidden");
+        this.closeIcon.classList.remove("hidden");
+      }
+    }
+
+    private close(): void {
+      if (!this.menu || !this.btn) return;
+
+      this.menu.classList.remove("menu-open");
+      setTimeout(() => {
+        this.menu?.classList.add("hidden");
+        this.menu?.classList.remove("flex");
+      }, 300);
+
+      this.btn.setAttribute("aria-expanded", "false");
+      this.isOpen = false;
+
+      // Cambiar icono
+      if (this.hamburgerIcon && this.closeIcon) {
+        this.hamburgerIcon.classList.remove("hidden");
+        this.closeIcon.classList.add("hidden");
+      }
+    }
+  }
+
+  // Inicializar cuando el DOM esté listo
+  document.addEventListener("DOMContentLoaded", () => {
+    new MobileMenu();
   });
 </script>

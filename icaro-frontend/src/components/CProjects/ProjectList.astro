@@ -1,88 +1,68 @@
 ---
-import ProjectCard from "./CCProjectsList/ProjectCard.astro";
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  colaborators: string[];
-  firstprojectDate: string | " ... ";
-  secondprojectDate: string | " ... ";
-  relatedWorks: {
-    type: string;
-    title: string;
-    year: string;
-    link: string | null;
-  }[];
-}
+import ProjectCard from "@/components/CProjects/ProjectCard.astro";
+import ProjectAdd from "@/components/CProjects/modals/ProjectAdd.astro";
+import ProjectEdit from "@/components/CProjects/modals/ProjectEdit.astro";
+import ProjectDelete from "@/components/CProjects/modals/ProjectDelete.astro";
+import SearchFilter from "@/components/CCommon/SearchFilter.astro";
+import Loader from "@/components/CCommon/Loader.astro"; 
+import type { Project } from "@/types/project";
 
 interface Props {
   projects: Project[];
-  isAdmin?: boolean;
 }
 
-const { projects, isAdmin = false } = Astro.props;
+const { projects } = Astro.props;
+const hasQuery = Astro.url.searchParams.has("query");
+const initialLoaderText = projects.length > 0 
+  ? "Conectando..." 
+  : (hasQuery ? "No se encontraron resultados" : "No hay proyectos disponibles");
 ---
 
-<div class="space-y-6" id="projects-list">
-  {projects.map((project) => (
-    <ProjectCard project={project} isAdmin={isAdmin} />
-  ))}
+<div id="projects-page-wrapper" class="relative min-h-[400px]">
+  
+  <Loader 
+    id="project-list-loader" 
+    text={initialLoaderText}
+  />
+
+  <ProjectAdd />
+
+  <div class="w-full max-w-custom mb-6 relative z-[60]">
+    <SearchFilter
+      inputId="project-search"
+      placeholder="Buscar proyectos por título..."
+      baseURL={Astro.url.pathname}
+    />
+  </div>
+
+  <div id="content-area" class="transition-opacity duration-500 opacity-0">
+    {
+      projects.length > 0 && (
+        <div id="project-list-container" class="space-y-6">
+          {projects.map((projectItem) => (
+            <article class="project-card-item" data-project-id={projectItem.id}>
+              <ProjectCard Project={projectItem} />
+            </article>
+          ))}
+        </div>
+      )
+    }
+  </div>
+
+  <ProjectEdit />
+  <ProjectDelete />
 </div>
 
-<script is:inline>
-  document.addEventListener("DOMContentLoaded", function () {
-    const searchInput = document.getElementById("search-input");
-    if (searchInput) {
-      searchInput.addEventListener("input", function () {
-        const searchTerm = this.value.toLowerCase();
-        const projects = document.querySelectorAll(".project-card");
+<script>
+  import { initProjectList } from "@/utils/projects/projectListUtils";
 
-        projects.forEach((project) => {
-          const title = project
-            .querySelector("h3")
-            .textContent.toLowerCase();
-          const description = project
-            .querySelector("p")
-            .textContent.toLowerCase();
-          const matches =
-            title.includes(searchTerm) ||
-            description.includes(searchTerm);
-          project.style.display = matches ? "block" : "none";
-        });
-      });
-    }
-
-    const projectCards = document.querySelectorAll('.project-card[data-expandable="true"]');
-    projectCards.forEach((card) => {
-      card.addEventListener('click', function(e) {
-        if (e.target.tagName === 'A' || e.target.closest('a')) {
-          return;
-        }
-        
-        // Evitar que los botones de admin activen la expansión
-        if (e.target.closest('.edit-btn') || e.target.closest('.delete-btn')) {
-          return;
-        }
-        
-        const projectId = this.getAttribute('data-project-id');
-        const projectCard = document.querySelector(
-          `.project-card[data-project-id="${projectId}"]`,
-        );
-        projectCard.classList.toggle('expanded');
-      });
-    });
-
-    const expandButtons = document.querySelectorAll(".expand-btn");
-    expandButtons.forEach((button) => {
-      button.addEventListener("click", function (e) {
-        e.stopPropagation(); 
-        const projectId = this.getAttribute("data-project-id");
-        const projectCard = document.querySelector(
-          `.project-card[data-project-id="${projectId}"]`,
-        );
-        projectCard.classList.toggle("expanded");
-      });
-    });
+  // Lógica delegada al util
+  document.addEventListener("DOMContentLoaded", () => {
+    initProjectList();
   });
 </script>
+
+<style>
+  .space-y-6 > * + * { margin-top: 1.5rem; }
+  .max-w-custom { max-width: 1200px; }
+</style>

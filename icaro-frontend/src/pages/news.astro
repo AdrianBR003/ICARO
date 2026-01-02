@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Header from "@/components/CCommon/Header.astro";
 import NavBar from "@/components/CCommon/NavBar.astro";
@@ -6,28 +8,11 @@ import TopUtility from "@/components/CCommon/TopUtility.astro";
 import CTitle from "@/components/CCommon/TitlePages.astro";
 import NewsList from "@/components/CNews/NewsList.astro";
 import "@/styles/index.css";
+import type { News } from "@/types/news";
+import Paginate from "@/components/CCommon/Paginate.astro";
+import { loadNewsPages } from "@/utils/news/newsPageLoader";
+const { news, totalPages, currentPage } = await loadNewsPages(Astro.url);
 
-let newsData = [];
-
-try {
-  const API_BASE = import.meta.env.API_URL || 'http://localhost:8080';
-  const res = await fetch(`${API_BASE}/api/news/all`);
-  if (res.ok) newsData = await res.json();
-} catch {
-  console.error('❌ [NEWS] Error fetch news');
-  newsData = [{
-  }];
-}
-
-const formattedNews = newsData.map(item => ({
-  id: item.id?.toString() || '1',
-  title: item.title || 'Sin título',
-  description: item.description || 'Sin descripción',
-  link: item.link || `/news/${item.id}`,
-  publicationDate: item.publicationDate || null
-}));
-
-let isAdmin = false; 
 ---
 
 <BaseLayout>
@@ -44,126 +29,21 @@ let isAdmin = false;
   <section class="w-full px-4 mx-auto max-w-custom">
     <div class="text-center mb-10">
       <p class="text-lg text-gray-600 mx-auto max-w-2xl">
-        Nuestro grupo de investigación se especializa en telecomunicación y procesamiento de señales.
+        Nuestro grupo de investigación se especializa en telecomunicación y
+        procesamiento de señales.
       </p>
     </div>
-
-    <NewsList news={formattedNews} isAdmin={isAdmin} />
+    <NewsList news={news} />
+    <Paginate
+      totalPages={totalPages}
+      currentPage={currentPage}
+      astroURL={Astro.url}
+    />
   </section>
 </BaseLayout>
 
-<script is:inline>
-document.addEventListener('DOMContentLoaded', function () {
-  console.log('🚀 [NEWS] Página iniciada');
-  
-  // ============= SISTEMA DE AUTENTICACIÓN JWT =============
-  
-  function getAuthHeaders() {
-    const token = localStorage.getItem('adminToken');
-    
-    const headers = {
-      'Content-Type': 'application/json'
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    return headers;
-  }
-  
-  // ============= GESTIÓN DEL ESTADO ADMIN =============
-  let currentAdminStatus = false;
-  
-  async function checkAdminStatus() {
-    console.log('🔐 [NEWS] Verificando estado admin...');
-    
-    try {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        currentAdminStatus = false;
-        return false;
-      }
-
-      const response = await fetch('http://localhost:8080/api/auth/verify', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        currentAdminStatus = data.authenticated && data.isAdmin;
-        return currentAdminStatus;
-      } else {
-        throw new Error('Token inválido');
-      }
-    } catch (error) {
-      localStorage.removeItem('adminToken');
-      currentAdminStatus = false;
-      return false;
-    }
-  }
-  
-  window.addEventListener('adminStatusChanged', function(event) {
-    const { isAdmin, source } = event.detail;
-    console.log(`🔄 [NEWS] Estado admin cambiado desde ${source}:`, isAdmin);
-    currentAdminStatus = isAdmin;
-  });
-  
-  checkAdminStatus();
-  
-  // Verificar estado cada 5 minutos para detectar tokens expirados
-  setInterval(() => {
-    checkAdminStatus();
-  }, 300000);
-
-  // Verificar al volver a la pestaña
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      checkAdminStatus();
-    }
-  });
-
-  // Escuchar cambios en localStorage
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'adminToken') {
-      if (e.newValue) {
-        checkAdminStatus();
-      } else {
-        currentAdminStatus = false;
-      }
-    }
-  });
-
-  // ============= GESTIÓN DE NOTIFICACIONES PENDIENTES =============
-
-  setTimeout(() => {
-  const pendingNotifications = JSON.parse(localStorage.getItem('pendingNotifications') || '[]');
-  if (pendingNotifications.length > 0) {
-    console.log(`📋 [NEWS] Encontradas ${pendingNotifications.length} notificaciones pendientes en localStorage`);
-    
-    if (window.notificationSystem && window.notificationSystem.isInitialized) {
-      console.log('🔄 [NEWS] Forzando procesamiento de notificaciones pendientes');
-      
-      pendingNotifications.forEach((notification, index) => {
-        setTimeout(() => {
-          window.notificationSystem.notify(notification.message, notification.type, notification.duration);
-        }, index * 200);
-      });
-      
-      localStorage.removeItem('pendingNotifications');
-    }
-  }
-}, 1000);
-
-});
-
-window.refreshNews = function() {
-  window.location.reload();
-};
-</script>
-
 <style>
-  .max-w-custom { 
-    max-width: 1200px; 
+  .max-w-custom {
+    max-width: 1200px;
   }
 </style>
