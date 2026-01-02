@@ -3,16 +3,18 @@ interface SearchConfig {
   searchEndpoint: string;
   baseUrl: string;
   debounceMs?: number;
+  // Opcion para formatear los datos (People)
+  formatter?: (item: any) => { title: string; description: string };
 }
 
 export function setupAdvancedSearch(config: SearchConfig) {
-  const { inputId, searchEndpoint, baseUrl, debounceMs = 300 } = config;
+  const { inputId, searchEndpoint, baseUrl, debounceMs = 300, formatter } = config;
 
   const searchInput = document.getElementById(inputId) as HTMLInputElement;
   const form = searchInput?.closest("form");
 
   if (!searchInput || !form) {
-    console.warn("[SearchFilter] Input o form no encontrado");
+    console.warn("[SearchFilter] Input or form not found");
     return;
   }
 
@@ -77,7 +79,7 @@ export function setupAdvancedSearch(config: SearchConfig) {
     }
   });
 
-  // --- Fetch Logic (Corregida con URL Object) ---
+  // --- Fetch Logic ---
 
   async function fetchSuggestions(searchTerm: string) {
     try {
@@ -87,7 +89,6 @@ export function setupAdvancedSearch(config: SearchConfig) {
         return;
       }
 
-      // Construcción robusta de la URL para el backend
       const url = new URL(searchEndpoint, window.location.origin);
       url.searchParams.set("query", searchTerm);
       url.searchParams.set("page", "0");
@@ -133,18 +134,24 @@ export function setupAdvancedSearch(config: SearchConfig) {
       </div>
       <div class="suggestions-list">
         ${results
-          .map(
-            (result: any) => `
-          <div class="suggestion-item" data-title="${escapeHtml(result.title)}">
-            <div class="suggestion-title">
-              ${highlightText(result.title, searchTerm)}
-            </div>
-            <div class="suggestion-description">
-              ${truncate(result.description, 80)}
-            </div>
-          </div>
-        `
-          )
+          .map((result: any) => {
+            const { title, description } = formatter 
+              ? formatter(result) 
+              : { title: result.title, description: result.description };
+          
+            const finalTitle = title || "Sin título";
+            const finalDesc = description || "";
+
+            return `
+            <div class="suggestion-item" data-title="${escapeHtml(finalTitle)}">
+              <div class="suggestion-title">
+                ${highlightText(finalTitle, searchTerm)}
+              </div>
+              <div class="suggestion-description">
+                ${truncate(finalDesc, 80)}
+              </div>
+            </div>`;
+          })
           .join("")}
       </div>
       ${
@@ -160,7 +167,7 @@ export function setupAdvancedSearch(config: SearchConfig) {
 
     suggestionsContainer.style.display = "block";
 
-    // Click en Item Sugerido
+    // Click en Item
     suggestionsContainer
       .querySelectorAll(".suggestion-item")
       .forEach((item) => {
@@ -169,12 +176,12 @@ export function setupAdvancedSearch(config: SearchConfig) {
           if (title) {
             searchInput.value = title;
             hideSuggestions();
-            navigateToSearch(title); 
+            navigateToSearch(title);
           }
         });
       });
 
-    // Click en "Ver todos"
+    // Click en Footer
     const footer = suggestionsContainer.querySelector(".suggestions-footer");
     if (footer) {
       footer.addEventListener("click", () => {
@@ -186,37 +193,27 @@ export function setupAdvancedSearch(config: SearchConfig) {
     }
   }
 
+  // --- Navigation Logic ---
 
-  // --- Función: Navegación Acumulativa ---
   function navigateToSearch(query: string) {
     const currentUrl = new URL(window.location.href);
     const targetBase = new URL(baseUrl, window.location.origin);
 
-    // ¿Estamos en la misma página (ej: /research)?
     if (currentUrl.pathname === targetBase.pathname) {
-      
-      // 1. Actualizamos SOLO la query
       if (query) {
         currentUrl.searchParams.set("query", query);
       } else {
-        currentUrl.searchParams.delete("query"); // Si borra el texto, quitamos param
+        currentUrl.searchParams.delete("query");
       }
-      
-      // 2. Reseteamos paginación (siempre a la 1 al filtrar)
       currentUrl.searchParams.set("page", "1");
-
-      // 3. NO TOCAMOS LOS DEMÁS FILTROS
-      // (tag, project, projectId se quedan como están)
-
       window.location.href = currentUrl.toString();
     } else {
-      // Si venimos de otra página, vamos limpios
       targetBase.searchParams.set("query", query);
       window.location.href = targetBase.toString();
     }
   }
 
-  // --- Estados Visuales y Helpers ---
+  // --- Visual States & Helpers ---
 
   function showNoResults() {
     suggestionsContainer.innerHTML = `<div class="suggestions-empty">Sin resultados</div>`;
@@ -255,7 +252,7 @@ export function setupAdvancedSearch(config: SearchConfig) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
-  // --- Inyección de Estilos ---
+  // --- Styles ---
   function injectStyles() {
     if (document.getElementById("search-filter-styles")) return;
     const style = document.createElement("style");
@@ -284,7 +281,7 @@ export function setupAdvancedSearch(config: SearchConfig) {
         text-align: center; font-size: 0.8rem; color: #3b82f6; font-weight: 500; cursor: pointer;
       }
       .suggestions-footer:hover { background: #eff6ff; }
-      .suggestions-loading, .suggestions-empty, .suggestions-error { padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.9rem; }
+      .suggestions-empty, .suggestions-error { padding: 1.5rem; text-align: center; color: #64748b; font-size: 0.9rem; }
       .suggestions-error { color: #dc2626; }
     `;
     document.head.appendChild(style);
