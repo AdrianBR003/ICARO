@@ -37,13 +37,13 @@ const formattedSecondDate = formatDate(project.secondProjectDate);
   >
     <button
       type="button"
-      class="edit-btn group p-2 rounded-full bg-white/90 shadow-sm border border-gray-200 transition-all duration-300 hover:bg-green-50 hover:ring-[#006D38]/30 transform hover:-translate-y-0.5"
+      class="edit-btn group/edit p-2 rounded-full bg-white/90 shadow-sm border border-gray-200 transition-all duration-300 hover:bg-green-50 hover:ring-[#006D38]/30 transform hover:-translate-y-0.5"
       data-entity-data={projectJson}
       title="Editar Proyecto"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-600 transition-colors group-hover:text-[#006D38]"
+        class="h-5 w-5 text-gray-600 transition-colors group-hover/edit:text-[#006D38]"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -55,14 +55,14 @@ const formattedSecondDate = formatDate(project.secondProjectDate);
 
     <button
       type="button"
-      class="delete-btn group p-2 rounded-full bg-white/90 shadow-sm border border-gray-200 transition-all duration-300 hover:bg-red-50 hover:ring-red-500/30 transform hover:-translate-y-0.5"
+      class="delete-btn group/delete p-2 rounded-full bg-white/90 shadow-sm border border-gray-200 transition-all duration-300 hover:bg-red-50 hover:ring-red-500/30 transform hover:-translate-y-0.5"
       data-entity-id={project.id}
       data-entity-title={project.title}
       title="Eliminar Proyecto"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-600 transition-colors group-hover:text-red-600"
+        class="h-5 w-5 text-gray-600 transition-colors group-hover/delete:text-red-600"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
