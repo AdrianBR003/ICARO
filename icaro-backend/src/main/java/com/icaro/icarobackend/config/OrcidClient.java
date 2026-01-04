@@ -16,7 +16,7 @@ public class OrcidClient {
     @Value("${orcid.api.base-url}")
     private String apiBaseUrl;
 
-    @Value("${orcid.adpi.accept-header:application/vnd.orcid+json}")
+    @Value("${orcid.api.accept-header:application/vnd.orcid+json}")
     private String acceptHeader;
 
     @Value("${orcid.api.connect-timeout}")
@@ -33,6 +33,7 @@ public class OrcidClient {
      * <p>ORCID Conecta pero no responde 10 s -> return ReadTimeoutException</p>
      *
      * <p>Rerencia a los datos en application.properties</p>
+     *
      * @param builder
      * @return
      */

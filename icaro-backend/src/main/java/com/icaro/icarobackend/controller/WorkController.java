@@ -2,7 +2,6 @@ package com.icaro.icarobackend.controller;
 
 
 import com.icaro.icarobackend.model.Work;
-import com.icaro.icarobackend.service.OrcidService;
 import com.icaro.icarobackend.service.WorkService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,11 +18,9 @@ import java.util.List;
 public class WorkController {
 
     private final WorkService workService;
-    private final OrcidService orcidService;
 
-    public WorkController(WorkService workService, OrcidService orcidService) {
+    public WorkController(WorkService workService) {
         this.workService = workService;
-        this.orcidService = orcidService;
     }
 
     // ---------- METODOS SIN VERIFICACION -------------
@@ -37,11 +34,6 @@ public class WorkController {
     @GetMapping("/all")
     public ResponseEntity<List<Work>> getAllWorks() {
         return ResponseEntity.ok(workService.getAllWorks());
-    }
-
-    @GetMapping("/{orcid}")
-    public ResponseEntity<List<Work>> getWorkOrcid(@PathVariable("orcid") String orcid) {
-        return ResponseEntity.ok(orcidService.fetchWorks(orcid));
     }
 
     // Metodo para la paginacion:

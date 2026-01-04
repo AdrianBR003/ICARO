@@ -2,7 +2,6 @@ package com.icaro.icarobackend.controller;
 
 import com.icaro.icarobackend.model.Investigator;
 import com.icaro.icarobackend.service.InvestigatorService;
-import com.icaro.icarobackend.service.OrcidService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,7 +23,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -36,11 +34,9 @@ public class InvestigatorController {
 
 
     private final InvestigatorService investigatorService;
-    private final OrcidService orcidService;
 
-    public InvestigatorController(InvestigatorService investigatorService, OrcidService orcidService) {
+    public InvestigatorController(InvestigatorService investigatorService) {
         this.investigatorService = investigatorService;
-        this.orcidService = orcidService;
     }
 
     // ---------- METODOS SIN VERIFICACION -------------
@@ -104,33 +100,6 @@ public class InvestigatorController {
         return ResponseEntity.ok().build();
     }
 
-
-    /**
-     * Endpoint intermediaria con API ORCID
-     *
-     * @param orcid
-     * @return
-     */
-    @GetMapping("/{orcid}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Investigator> getInvestigatorOrcid(@PathVariable String orcid) {
-        Investigator inv = this.orcidService.fetchInvestigator(orcid);
-        return ResponseEntity.ok(inv);
-    }
-
-
-    /**
-     * Endpoint que guarda el Investigator y sus trabajos asociados
-     *
-     * @param orcid
-     * @return
-     */
-    @PostMapping("/{orcid}/save")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Investigator> saveInvestigator(@PathVariable String orcid) {
-        Investigator inv = this.investigatorService.syncAndMergeInvestigator(orcid);
-        return ResponseEntity.ok(inv);
-    }
 
     /**
      * Endpoint que sube la imagen a partir de la url uploaDir

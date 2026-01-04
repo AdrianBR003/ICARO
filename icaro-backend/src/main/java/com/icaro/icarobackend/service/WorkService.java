@@ -23,16 +23,14 @@ import java.util.stream.Collectors;
 public class WorkService {
 
     WorkRepository workRepository;
-    OrcidService orcidService;
     ProjectRepository projectRepository;
 
     @Autowired
     private MongoTemplate mongoTemplate; // Lo vamos a utilizar para coger los datos resultantes por los filtros
 
 
-    public WorkService(WorkRepository workRepository, OrcidService orcidService, ProjectRepository projectRepository) {
+    public WorkService(WorkRepository workRepository, ProjectRepository projectRepository) {
         this.workRepository = workRepository;
-        this.orcidService = orcidService;
         this.projectRepository = projectRepository;
     }
 

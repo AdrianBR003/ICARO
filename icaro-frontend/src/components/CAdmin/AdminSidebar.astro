@@ -1,0 +1,72 @@
+---
+const currentPath = Astro.url.pathname;
+const menuItems = [
+  { 
+    name: "Dashboard", 
+    path: "/admin/dashboard", 
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>' 
+  },
+  { 
+    name: "Importar (ORCID)", 
+    path: "/admin/orcid", 
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>' 
+  }
+];
+---
+
+<aside class="w-64 bg-[#1D293D] min-h-screen flex flex-col fixed left-0 top-0 z-50 shadow-xl transition-all duration-300">
+  
+  <div class="h-20 flex items-center px-6 border-b border-slate-700/50 bg-[#1D293D]/50">
+    <div class="w-9 h-9 bg-[#006D38] rounded-lg flex items-center justify-center text-white font-bold mr-3 shadow-md">
+      <span class="text-lg">I</span>
+    </div>
+    <div>
+      <h1 class="font-bold text-white text-lg leading-tight tracking-wide">Admin<span class="text-[#006D38] font-extrabold">Panel</span></h1>
+      <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Gestión TST</p>
+    </div>
+  </div>
+
+  <nav class="flex-1 py-8 px-4 space-y-3">
+    {menuItems.map((item) => {
+      const isActive = currentPath === item.path;
+      return (
+        <a 
+          href={item.path} 
+          class={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group font-medium ${
+            isActive 
+              ? "bg-[#006D38] text-white shadow-md shadow-green-900/20" // Activo: Verde corporativo intenso
+              : "text-slate-300 hover:bg-white/10 hover:text-white" // Inactivo: Gris claro, hover blanco sutil
+          }`}
+        >
+          <span class={`transition-colors ${isActive ? "text-white" : "text-slate-400 group-hover:text-white"}`} set:html={item.icon}></span>
+          <span>{item.name}</span>
+        </a>
+      );
+    })}
+  </nav>
+
+  <div class="p-4 border-t border-slate-700/50 bg-[#151e2e]">
+    <a href="/" class="flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+      Volver a la Web
+    </a>
+    
+    <button 
+      id="admin-logout-btn"
+      class="w-full flex items-center justify-center gap-2 bg-slate-800/50 hover:bg-red-600 text-slate-300 hover:text-white py-2.5 rounded-lg transition-all text-sm font-semibold border border-slate-700 hover:border-red-600 group"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+      Cerrar Sesión
+    </button>
+  </div>
+</aside>
+
+<script>
+  const btn = document.getElementById('admin-logout-btn');
+  if(btn) {
+    btn.addEventListener('click', () => {
+      localStorage.removeItem('adminToken'); 
+      window.location.href = '/login';
+    });
+  }
+</script>

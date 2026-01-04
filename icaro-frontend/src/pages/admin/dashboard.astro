@@ -1,0 +1,126 @@
+---
+export const prerender = false;
+import AdminLayout from "@/layouts/AdminLayout.astro";
+
+const mockLogs = [
+  { time: "10:42:15", user: "admin", action: "LOGIN_SUCCESS", ip: "192.168.1.10" },
+  { time: "10:40:00", user: "system", action: "CRON_JOB_START", ip: "localhost" },
+  { time: "10:39:55", user: "system", action: "DB_BACKUP_OK", ip: "localhost" },
+  { time: "09:15:22", user: "inv_garcia", action: "PROFILE_UPDATE", ip: "192.168.1.45" },
+  { time: "09:10:01", user: "admin", action: "FETCH_ORCID_REQ", ip: "192.168.1.10" },
+  { time: "08:55:00", user: "system", action: "SERVER_STARTUP", ip: "localhost" },
+  { time: "08:54:58", user: "system", action: "DOCKER_INIT", ip: "localhost" },
+  { time: "08:54:55", user: "system", action: "BOOT_SEQ", ip: "localhost" },
+  { time: "08:50:00", user: "system", action: "SHUTDOWN_SIGNAL", ip: "localhost" },
+  { time: "08:49:50", user: "admin", action: "LOGOUT", ip: "192.168.1.10" },
+  { time: "08:30:12", user: "inv_perez", action: "LOGIN_FAIL", ip: "192.168.1.88" },
+  { time: "08:25:00", user: "inv_perez", action: "LOGIN_ATTEMPT", ip: "192.168.1.88" },
+];
+---
+
+<AdminLayout title="Panel de Control">
+  
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    
+    <div class="lg:col-span-1 flex flex-col gap-6">
+        
+        <div class="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] border border-slate-200 overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-bold text-[#1D293D] text-lg">Backend Status</h3>
+                    <span class="flex items-center gap-2 px-3 py-1 bg-[#006D38]/10 text-[#006D38] text-xs rounded-full font-bold border border-[#006D38]/20">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006D38] opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#006D38]"></span>
+                    </span>
+                    ONLINE
+                    </span>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Servicio:</span>
+                        <span class="font-medium text-[#1D293D]">Spring Boot API</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Versión:</span>
+                        <span class="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600 text-xs">v3.2.0-release</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-500">Memoria:</span>
+                        <div class="w-24 bg-slate-100 rounded-full h-2 mt-1.5 relative overflow-hidden">
+                            <div class="bg-[#006D38] h-full rounded-full" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border-t border-slate-100 p-4 grid grid-cols-2 gap-3">
+                <button class="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:border-amber-300 transition-all text-sm font-semibold group" title="Reiniciar Servicio">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    Reiniciar
+                </button>
+                <button class="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-300 transition-all text-sm font-semibold group" title="Detener Servicio">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Detener
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex items-center justify-between">
+             <div class="text-sm text-slate-500">Investigadores</div>
+             <div class="text-2xl font-bold text-[#1D293D]">24</div>
+        </div>
+
+    </div>
+
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] border border-slate-200 h-full flex flex-col">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-[#1D293D] text-lg flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Live Logs
+                </h3>
+                <span class="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">/var/log/auth.log</span>
+            </div>
+            
+            <div class="flex-1 bg-[#151e2e] m-2 rounded-lg p-4 overflow-y-auto max-h-[400px] font-mono text-xs shadow-inner">
+                <ul class="space-y-1.5">
+                    {mockLogs.map((log) => (
+                        <li class="flex gap-3 text-slate-300 hover:bg-white/5 p-0.5 rounded transition-colors">
+                            <span class="text-slate-500 select-none">[{log.time}]</span>
+                            <span class={
+                                log.action.includes('FAIL') ? "text-red-400 font-bold" :
+                                log.action.includes('SUCCESS') || log.action.includes('OK') ? "text-[#006D38] font-bold text-green-400" :
+                                "text-blue-300"
+                            }>{log.action}</span>
+                            <span class="text-slate-400">user:<span class="text-white">{log.user}</span></span>
+                            <span class="text-slate-600 ml-auto">@{log.ip}</span>
+                        </li>
+                    ))}
+                    <li class="flex gap-2 text-emerald-500 mt-2 animate-pulse">
+                        <span>_</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="p-3 text-right">
+                <button class="text-xs text-slate-500 hover:text-[#1D293D] font-medium transition-colors">
+                    Ver historial completo →
+                </button>
+            </div>
+        </div>
+    </div>
+
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 min-h-[250px] p-6 relative overflow-hidden group">
+    <div class="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        <p class="text-slate-400 font-medium">Espacio reservado para Métricas de Rendimiento</p>
+    </div>
+    <div class="w-full h-full border-2 border-dashed border-slate-100 rounded-lg flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
+    </div>
+  </div>
+
+</AdminLayout>
