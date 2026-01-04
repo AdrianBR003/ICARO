@@ -5,17 +5,29 @@ let currentOrcid: string | null = null;
 
 export function initPeopleDeleteModal() {
   const confirmBtn = document.getElementById("confirm-delete-btn") as HTMLButtonElement;
+  // 1. Seleccionamos el botón de cancelar
+  const cancelBtn = document.getElementById("cancel-delete-btn") as HTMLButtonElement;
   const titleSpan = document.getElementById("delete-people-title");
 
-  // 1. Suscripción
+  // Suscripción
   modalStore.subscribe(state => {
     if (state.isOpen && state.type === 'delete') {
-      currentOrcid = state.data?.id || null; // Usamos 'id' porque así lo manda el Controller
+      currentOrcid = state.data?.id || null;
       if (titleSpan) titleSpan.textContent = state.data?.title || "este usuario";
     }
   });
 
-  // 2. Acción
+  // 2. Lógica para Cancelar (NUEVO)
+  if (cancelBtn) {
+    // Usamos cloneNode para limpiar listeners anteriores si la función se llama varias veces, 
+    // o simplemente addEventListener si solo se inicializa una vez.
+    // Aquí hago lo simple:
+    cancelBtn.onclick = () => {
+      modalActions.close();
+    };
+  }
+
+  // 3. Acción Confirmar
   if (confirmBtn) {
     const newBtn = confirmBtn.cloneNode(true) as HTMLButtonElement;
     confirmBtn.parentNode?.replaceChild(newBtn, confirmBtn);

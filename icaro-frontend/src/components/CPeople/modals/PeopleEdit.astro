@@ -4,58 +4,128 @@
   role="dialog"
   aria-modal="true"
 >
-  <div class="modal-overlay absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+  <div
+    class="modal-overlay absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+  >
+  </div>
 
-  <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+  <div
+    class="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+  >
     <div class="p-8">
-      <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+      <div
+        class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100"
+      >
         <h3 class="text-2xl font-bold text-gray-800">Editar Investigador</h3>
-        </div>
+      </div>
 
       <form id="edit-people-form" class="space-y-6">
         <div>
-          <label class="block mb-2 text-sm font-semibold text-gray-700">ORCID (ID)</label>
-          <input type="text" name="orcid" readonly class="w-full px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-500 cursor-not-allowed outline-none" />
+          <label class="block mb-2 text-sm font-semibold text-gray-700"
+            >ORCID (ID)</label
+          >
+          <input
+            type="text"
+            name="orcid"
+            readonly
+            class="w-full px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-500 cursor-not-allowed outline-none"
+          />
         </div>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">Nombre *</label>
-            <input type="text" name="givenNames" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none" />
+            <label class="block mb-2 text-sm font-semibold text-gray-700"
+              >Nombre *</label
+            >
+            <input
+              type="text"
+              name="givenNames"
+              required
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#006D38] outline-none"
+            />
           </div>
           <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">Apellidos *</label>
-            <input type="text" name="familyName" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none" />
+            <label class="block mb-2 text-sm font-semibold text-gray-700"
+              >Apellidos *</label
+            >
+            <input
+              type="text"
+              name="familyName"
+              required
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#006D38] outline-none"
+            />
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block mb-2 text-sm font-semibold text-gray-700">Cargo / Rol</label>
-              <input type="text" name="role" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none" />
-            </div>
-            <div>
-              <label class="block mb-2 text-sm font-semibold text-gray-700">Email</label>
-              <input type="email" name="email" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none" />
-            </div>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block mb-2 text-sm font-semibold text-gray-700">Oficina</label>
-              <input type="text" name="office" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none" />
-            </div>
-            <div>
-              <label class="block mb-2 text-sm font-semibold text-gray-700">Teléfono</label>
-              <input type="text" name="phone" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none" />
-            </div>
+          <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700"
+              >Cargo / Rol</label
+            >
+            <input
+              type="text"
+              name="role"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#006D38] outline-none"
+            />
           </div>
           <div>
-            <label class="block mb-2 text-sm font-semibold text-gray-700">Biografía</label>
-            <textarea name="biography" rows="3" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#006D38] outline-none resize-none"></textarea>
+            <label class="block mb-2 text-sm font-semibold text-gray-700"
+              >Email</label
+            >
+            <input
+              type="email"
+              name="email"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#006D38] outline-none"
+            />
           </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700"
+              >Oficina</label
+            >
+            <input
+              type="text"
+              name="office"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#006D38] outline-none"
+            />
+          </div>
+          <div>
+            <label class="block mb-2 text-sm font-semibold text-gray-700"
+              >Teléfono</label
+            >
+            <input
+              type="text"
+              name="phone"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#006D38] outline-none"
+            />
+          </div>
+        </div>
+        <div>
+          <label class="block mb-2 text-sm font-semibold text-gray-700"
+            >Biografía</label
+          >
+          <textarea
+            name="biography"
+            rows="3"
+            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-1 focus:ring-[#006D38] outline-none resize-none"
+          ></textarea>
+        </div>
 
         <div class="flex justify-end gap-4 pt-6 border-t border-gray-100 mt-6">
-          <button id="cancel-edit-btn" type="button" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">Cancelar</button>
-          <button type="submit" class="px-8 py-2.5 bg-[#006D38] text-white rounded-lg hover:bg-[#005229] font-bold shadow-md">Guardar Cambios</button>
+          <button
+            id="cancel-edit-btn"
+            type="button"
+            class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium transition-all duration-300 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400 hover:shadow-sm transform hover:-translate-y-0.5 active:scale-95"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="px-8 py-2.5 bg-[#006D38] text-white rounded-lg font-bold shadow-md hover:bg-[#005229] hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95"
+          >
+            Guardar Cambios
+          </button>
         </div>
       </form>
     </div>

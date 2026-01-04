@@ -26,6 +26,7 @@ const publicationDate = news.publicationDate?.toString() || "";
       data-news-link={news.link || ""}
       data-news-publicationdate={publicationDate}
       aria-label={`Editar noticia: ${news.title}`}
+      title="Editar Noticia"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -45,6 +46,8 @@ const publicationDate = news.publicationDate?.toString() || "";
       data-news-id={news.id}
       data-news-title={news.title}
       aria-label={`Eliminar noticia: ${news.title}`}
+      title="Eliminar Noticia"
+
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
