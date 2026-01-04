@@ -5,49 +5,55 @@
   <div class="modal-overlay"></div>
   <div class="modal-content">
     <h3 id="modalTitle" class="text-xl font-bold mb-4">Editar Noticia</h3>
-    
+
     <form id="editForm" class="space-y-4">
       <!-- ID oculto -->
       <input type="hidden" id="editId" />
 
       <div>
-        <label for="editIdDisplay" class="block text-sm font-medium text-gray-700">
+        <label
+          for="editIdDisplay"
+          class="block text-sm font-medium text-gray-700"
+        >
           ID de Noticia
         </label>
-        <input 
-          type="text" 
-          id="editIdDisplay" 
-          name="editIdDisplay" 
-          readonly 
-          class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm" 
+        <input
+          type="text"
+          id="editIdDisplay"
+          name="editIdDisplay"
+          readonly
+          class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm outline-none"
         />
-      </div>  
+      </div>
 
       <!-- Título -->
       <div>
         <label for="editTitle" class="block text-sm font-medium text-gray-700">
           Título *
         </label>
-        <input 
-          type="text" 
-          id="editTitle" 
-          name="editTitle" 
-          required 
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" 
+        <input
+          type="text"
+          id="editTitle"
+          name="editTitle"
+          required
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-[#006D38] focus:border-[#006D38] outline-none"
         />
       </div>
 
       <!-- Descripción -->
       <div>
-        <label for="editDescription" class="block text-sm font-medium text-gray-700">
+        <label
+          for="editDescription"
+          class="block text-sm font-medium text-gray-700"
+        >
           Descripción *
         </label>
-        <textarea 
-          id="editDescription" 
-          name="editDescription" 
-          rows="5" 
-          required 
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm "
+        <textarea
+          id="editDescription"
+          name="editDescription"
+          rows="5"
+          required
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-[#006D38] focus:border-[#006D38] outline-none"
         ></textarea>
       </div>
 
@@ -56,34 +62,37 @@
         <label for="editLink" class="block text-sm font-medium text-gray-700">
           Enlace (URL)
         </label>
-        <input 
-          type="url" 
-          id="editLink" 
-          name="editLink" 
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" 
+        <input
+          type="url"
+          id="editLink"
+          name="editLink"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-[#006D38] focus:border-[#006D38] outline-none"
         />
       </div>
 
       <!-- Fecha de publicación -->
       <div>
-        <label for="editpublicationDate" class="block text-sm font-medium text-gray-700">
+        <label
+          for="editpublicationDate"
+          class="block text-sm font-medium text-gray-700"
+        >
           Fecha Publicación
         </label>
-        <input 
-          type="date" 
-          id="editpublicationDate" 
-          name="editpublicationDate" 
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" 
+        <input
+          type="date"
+          id="editpublicationDate"
+          name="editpublicationDate"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-[#006D38] focus:border-[#006D38] outline-none"
         />
       </div>
 
       <!-- Destacar noticia -->
       <div class="flex items-center">
-        <input 
-          type="checkbox" 
-          id="editHighlighted" 
-          name="editHighlighted" 
-          class="h-4 w-4 text-cyan-600 border-gray-300 rounded" 
+        <input
+          type="checkbox"
+          id="editHighlighted"
+          name="editHighlighted"
+          class="h-4 w-4 text-cyan-600 border-gray-300 rounded"
         />
         <label for="editHighlighted" class="ml-2 block text-sm text-gray-900">
           Destacar noticia
@@ -91,17 +100,18 @@
       </div>
 
       <!-- Botones -->
-      <div class="flex justify-end space-x-3 pt-4">
-        <button 
-          type="button" 
-          class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+      <div class="flex justify-end gap-3 pt-4">
+        <button
+          type="button"
           onclick="window.hideModal()"
+          class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium transition-all duration-300 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400 hover:shadow-sm transform hover:-translate-y-0.5 active:scale-95"
         >
           Cancelar
         </button>
-        <button 
-          type="submit" 
-          class="px-4 py-2 bg-[#006D38] text-white rounded-md hover:bg-[#005229] transition-colors"
+
+        <button
+          type="submit"
+          class="px-4 py-2 bg-[#006D38] text-white rounded-lg font-bold shadow-md hover:bg-[#005229] hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95"
         >
           Guardar Cambios
         </button>
@@ -155,9 +165,9 @@
 
 <script>
   import { initializeEditModal } from "@/utils/news/modals/newsEditModal";
-  
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeEditModal);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeEditModal);
   } else {
     initializeEditModal();
   }

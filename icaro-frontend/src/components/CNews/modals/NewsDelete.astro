@@ -4,20 +4,21 @@ import { initializeDeleteModal } from "@/utils/news/modals/newsDeleteModal.js";
 
 <div
   id="deleteNewsModal"
-  class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+  class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
 >
-  <div 
-    class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md" 
+  <div
+    class="modal-content relative bg-white rounded-lg shadow-xl w-full max-w-md"
     onclick="event.stopPropagation()"
   >
     <div class="p-6">
-
       <!-- Icono -->
-      <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
-        <svg 
-          class="w-6 h-6 text-red-600" 
-          fill="none" 
-          stroke="currentColor" 
+      <div
+        class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full"
+      >
+        <svg
+          class="w-6 h-6 text-red-600"
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
           <path
@@ -36,7 +37,7 @@ import { initializeDeleteModal } from "@/utils/news/modals/newsDeleteModal.js";
 
       <div class="mb-6 text-gray-700 text-center">
         <p class="mb-3">
-          ¿Estás seguro de que deseas eliminar la noticia  
+          ¿Estás seguro de que deseas eliminar la noticia
           <strong id="deleteNewsTitle" class="text-gray-900"></strong>?
         </p>
 
@@ -61,7 +62,7 @@ import { initializeDeleteModal } from "@/utils/news/modals/newsDeleteModal.js";
         <button
           type="button"
           id="cancelNewsDeleteBtn"
-          class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors flex-1 font-medium text-gray-700"
+          class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium transition-all duration-300 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400 hover:shadow-sm transform hover:-translate-y-0.5 active:scale-95"
         >
           Cancelar
         </button>
@@ -69,12 +70,11 @@ import { initializeDeleteModal } from "@/utils/news/modals/newsDeleteModal.js";
         <button
           type="button"
           id="confirmNewsDeleteBtn"
-          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex-1 font-medium"
+          class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg font-bold shadow-md hover:bg-red-700 hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95"
         >
           Sí, eliminar
         </button>
       </div>
-
     </div>
   </div>
 </div>

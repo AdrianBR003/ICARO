@@ -19,7 +19,7 @@ const publicationDate = news.publicationDate?.toString() || "";
     class="absolute top-3 right-3 flex flex-col gap-2 admin-control hidden z-20"
   >
     <button
-      class="edit-btn p-2 rounded-full bg-white/90 hover:bg-gray-100 transition-colors shadow-sm border border-gray-200"
+      class="edit-btn group p-2 rounded-full bg-white/90 shadow-sm border border-gray-200 transition-all duration-300 hover:bg-green-50 hover:ring-[#006D38]/30 transform hover:-translate-y-0.5"
       data-news-id={news.id}
       data-news-title={news.title}
       data-news-description={news.description}
@@ -29,7 +29,7 @@ const publicationDate = news.publicationDate?.toString() || "";
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-600"
+        class="h-5 w-5 text-gray-600 transition-colors group-hover:text-[#006D38]"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
@@ -41,14 +41,14 @@ const publicationDate = news.publicationDate?.toString() || "";
 
     <button
       type="button"
-      class="delete-btn p-2 rounded-full bg-white/90 hover:bg-red-100 transition-colors shadow-sm border border-gray-200"
+      class="delete-btn group p-2 rounded-full bg-white/90 shadow-sm border border-gray-200 transition-all duration-300 hover:bg-red-50 hover:ring-red-500/30 transform hover:-translate-y-0.5"
       data-news-id={news.id}
       data-news-title={news.title}
       aria-label={`Eliminar noticia: ${news.title}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 text-gray-600"
+        class="h-5 w-5 text-gray-600 transition-colors group-hover:text-red-600"
         viewBox="0 0 20 20"
         fill="currentColor"
       >
