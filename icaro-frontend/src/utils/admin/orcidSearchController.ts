@@ -143,7 +143,7 @@ async function handleSearchSubmit(e: Event) {
     } catch (error) {
         const msg = error instanceof Error ? error.message : "Error desconocido";
         showStatus(msg, "error");
-        if (msg.includes("Sesión")) setTimeout(() => window.location.href = '/login', 2000);
+        if (msg.includes("Sesión")) setTimeout(() => window.location.href = '/', 2000);
     } finally {
         setLoading(false);
     }

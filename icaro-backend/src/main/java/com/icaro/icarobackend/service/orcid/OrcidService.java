@@ -221,8 +221,11 @@ public class OrcidService {
         Investigator person = (Investigator) investigatorRepository.findByOrcid(dto.getOrcidId())
                 .orElse(new Investigator());
 
+        // Construimos el nombre completo para usarlo luego en los participantes
+        String fullName = (dto.getFirstName() + " " + dto.getLastName()).trim();
+
         person.setOrcid(dto.getOrcidId());
-        person.setGivenNames(dto.getFirstName() + " " + dto.getLastName());
+        person.setGivenNames(fullName);
         person.setRole(dto.getRole());
         person.setOffice(dto.getOffice());
         person.setEmail(dto.getEmail());
@@ -239,11 +242,20 @@ public class OrcidService {
                 Work work = workRepository.findByPutCode(item.getPutCode())
                         .orElse(new Work());
 
+                // Vinculación por IDs de ORCID (Dueños)
                 work.setOrcidOwner(dto.getOrcidId());
                 if (work.getOwnerOrcids() == null) work.setOwnerOrcids(new ArrayList<>());
                 if (!work.getOwnerOrcids().contains(dto.getOrcidId())) {
                     work.getOwnerOrcids().add(dto.getOrcidId());
                 }
+
+                if (work.getParticipants() == null) {
+                    work.setParticipants(new ArrayList<>());
+                }
+                if (!work.getParticipants().contains(fullName)) {
+                    work.getParticipants().add(fullName);
+                }
+                // -------------------------------------------------------
 
                 work.setTitle(item.getTitle());
                 work.setPutCode(item.getPutCode());

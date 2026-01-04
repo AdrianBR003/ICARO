@@ -4,149 +4,121 @@ import "@/styles/index.css";
 ---
 
 <BaseLayout>
-  <div
-    class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4"
-  >
+  <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    
     <div class="w-full max-w-md">
-      <div class="text-center mb-8">
-        <div
-          class="bg-white rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center shadow-lg"
-        >
-          <svg
-            class="w-10 h-10 text-[#2c3e50]"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-              clip-rule="evenodd"></path>
-          </svg>
-        </div>
-        <h1 class="text-2xl font-bold text-[#2c3e50] mb-2">
-          Panel de Administración
-        </h1>
-        <p class="text-slate-600">Grupo de Investigación TST</p>
-      </div>
-
-      <div
-        class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden"
-      >
-        <div class="bg-gradient-to-r from-[#2c3e50] to-[#34495e] px-6 py-4">
-          <h2 class="text-white font-semibold text-center">Iniciar Sesión</h2>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10">
+        
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#1D293D] text-white mb-4 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold text-[#1D293D] tracking-tight">Admin Portal</h1>
+          <p class="text-sm text-slate-500 mt-1 font-medium">Grupo de Investigación TST</p>
+          <p class="text-sm text-slate-500 mt-1 font-medium">Universidad de Jaén</p>
         </div>
 
-        <div class="p-6">
-          <form id="loginForm" class="space-y-5">
-            <div>
-              <label
-                for="username"
-                class="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Usuario
-              </label>
+        <div id="message" class="hidden mb-6 p-4 rounded-lg text-sm font-medium border-l-4 transition-all duration-300">
+          </div>
+
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label for="username" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
+              Usuario
+            </label>
+            <div class="relative">
               <input
                 type="text"
                 id="username"
                 name="username"
                 required
-                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2c3e50] focus:border-transparent transition-all duration-200 bg-slate-50"
-                placeholder="Ingrese su usuario"
+                class="w-full pl-4 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-sm focus:bg-white focus:border-[#1D293D] focus:ring-1 focus:ring-[#1D293D] transition-all outline-none"
               />
             </div>
+          </div>
 
-            <div>
-              <label
-                for="password"
-                class="block text-sm font-medium text-slate-700 mb-2"
-              >
-                Contraseña
-              </label>
+          <div>
+            <label for="password" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
+              Contraseña
+            </label>
+            <div class="relative">
               <input
                 type="password"
                 id="password"
                 name="password"
                 required
-                class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#2c3e50] focus:border-transparent transition-all duration-200 bg-slate-50"
-                placeholder="Ingrese su contraseña"
+                class="w-full pl-4 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-sm focus:bg-white focus:border-[#1D293D] focus:ring-1 focus:ring-[#1D293D] transition-all outline-none"
               />
             </div>
-
-            <div class="flex justify-center">
-              <button
-                type="submit"
-                id="loginButton"
-                class="w-auto bg-gradient-to-r from-[#2c3e50] to-[#34495e] hover:from-[#34495e] hover:to-[#2c3e50] text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-[#2c3e50] focus:ring-opacity-50"
-              >
-                Confirmar
-              </button>
-            </div>
-          </form>
-
-          <!-- Message Area -->
-          <div
-            id="message"
-            class="mt-4 p-3 rounded-lg text-sm text-center hidden"
-          >
           </div>
-        </div>
 
-        <!-- Footer -->
-        <div class="bg-slate-50 px-6 py-3 text-center">
-          <p class="text-xs text-slate-500">
-            Universidad de Jaén - Sistema de Administración
-          </p>
-        </div>
+          <div class="pt-2">
+            <button
+              type="submit"
+              id="loginButton"
+              class="w-full bg-[#1D293D] hover:bg-[#006D38] text-white font-bold py-3.5 px-4 rounded-lg shadow-lg shadow-slate-200 hover:shadow-green-900/20 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <span>Acceder al Panel</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </form>
+
       </div>
 
-      <!-- Back to site link -->
-      <div class="text-center mt-6">
+      <div class="text-center mt-8 space-y-4">
         <a
           href="/"
-          class="text-slate-600 hover:text-[#2c3e50] text-sm transition-colors duration-200"
+          class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-[#1D293D] transition-colors"
         >
-          ← Volver al sitio web
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Volver al sitio público
         </a>
       </div>
     </div>
   </div>
 
   <style>
+    /* Animación suave para el spinner */
     .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border: 2px solid #ffffff;
       border-radius: 50%;
       border-top-color: transparent;
-      animation: spin 1s ease-in-out infinite;
+      animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
 
+    /* Estilos de mensajes (Minimalistas) */
     .message.success {
-      background-color: #d1fae5;
-      color: #065f46;
-      border: 1px solid #a7f3d0;
+      background-color: #ecfdf5; /* green-50 */
+      color: #065f46; /* green-800 */
+      border-color: #10b981; /* green-500 */
     }
 
     .message.error {
-      background-color: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fecaca;
+      background-color: #fef2f2; /* red-50 */
+      color: #991b1b; /* red-800 */
+      border-color: #ef4444; /* red-500 */
     }
-
-    /* Custom focus styles */
-    input:focus {
-      box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
-    }
-
-    button:focus {
-      box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.3);
+    
+    /* Input autofill fix para que no salga azul */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active{
+        -webkit-box-shadow: 0 0 0 30px #f8fafc inset !important;
+        -webkit-text-fill-color: #334155 !important;
     }
   </style>
 
@@ -179,16 +151,17 @@ import "@/styles/index.css";
             const data = await response.json();
             if (data.authenticated && data.isAdmin) {
               showMessage(
-                "Ya tienes una sesión activa. Redirigiendo...",
+                "Sesión activa detectada. Redirigiendo...",
                 "success"
               );
               setTimeout(() => {
                 window.location.href = "/admin/dashboard";
-              }, 1500);
+              }, 1000);
             }
           }
         } catch (error) {
           console.error("Error checking existing auth:", error);
+          // Silencioso: si falla la verificación, simplemente dejamos que se loguee de nuevo
         }
       }
 
@@ -219,7 +192,7 @@ import "@/styles/index.css";
             localStorage.setItem("adminToken", data.token);
 
             showMessage(
-              "¡Inicio de sesión exitoso! Redirigiendo...",
+              "Credenciales verificadas. Accediendo...",
               "success"
             );
 
@@ -236,14 +209,14 @@ import "@/styles/index.css";
 
             setTimeout(() => {
               window.location.href = "/admin/dashboard";
-            }, 1500);
+            }, 1000);
           } else {
-            showMessage(data.error || "Credenciales incorrectas", "error");
+            showMessage(data.error || "Usuario o contraseña incorrectos", "error");
           }
         } catch (error) {
           console.error("Login error:", error);
           showMessage(
-            "Error de conexión. Por favor, inténtelo de nuevo.",
+            "Error de conexión con el servidor.",
             "error"
           );
         } finally {
@@ -253,10 +226,15 @@ import "@/styles/index.css";
 
       function showMessage(text, type) {
         messageDiv.textContent = text;
-        messageDiv.className = `message ${type}`;
+        // Reseteamos clases base y añadimos tipo
+        messageDiv.className = `mb-6 p-4 rounded-lg text-sm font-medium border-l-4 transition-all duration-300 message ${type}`;
         messageDiv.classList.remove("hidden");
 
         if (type === "error") {
+          // Vibración visual sutil si hay error
+          loginForm.classList.add('animate-pulse');
+          setTimeout(() => loginForm.classList.remove('animate-pulse'), 500);
+          
           setTimeout(() => {
             hideMessage();
           }, 5000);
@@ -272,20 +250,18 @@ import "@/styles/index.css";
 
         if (loading) {
           loginButton.innerHTML =
-            '<span class="loading-spinner"></span> Iniciando sesión...';
-          loginButton.classList.add("opacity-75");
+            '<div class="loading-spinner"></div> <span class="ml-2">Verificando...</span>';
+          loginButton.classList.add("opacity-80", "cursor-wait");
         } else {
-          loginButton.innerHTML = "Iniciar Sesión";
-          loginButton.classList.remove("opacity-75");
+          loginButton.innerHTML = `
+            <span>Acceder al Panel</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          `;
+          loginButton.classList.remove("opacity-80", "cursor-wait");
         }
       }
-
-      // Handle Enter key
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !loginButton.disabled) {
-          loginForm.dispatchEvent(new Event("submit"));
-        }
-      });
     });
   </script>
 </BaseLayout>
