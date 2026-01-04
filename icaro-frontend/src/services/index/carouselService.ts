@@ -1,85 +1,46 @@
-// carouselService.ts
-import type { News, NewsImageResponse } from "@/types/news";
-import { 
-  loadWithLoader, 
-  subscribeToBackendStatus 
-} from "@/services/general/loaderService";
+import type { News } from "@/types/news";
 
 const API_URL = "http://localhost:8080/api/news/Hnews";
-const IMAGE_CHECK_URL = "http://localhost:8080/api/news/check-image";
 const DEFAULT_IMAGE = "http://localhost:8080/assets/news/default.png";
 
 export async function fetchHighlightedNews(): Promise<News[]> {
   console.log('🌐 [CAROUSEL] Fetching desde:', API_URL);
   const response = await fetch(API_URL);
   
-  console.log('📥 [CAROUSEL] Response status:', response.status);
-  
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
   
   const news: News[] = await response.json();
-  console.log('📦 [CAROUSEL] Noticias recibidas:', news);
-  console.log('📊 [CAROUSEL] Cantidad:', news?.length || 0);
-  
   return news || [];
-}
-
-export async function checkNewsImage(
-  newsId: string
-): Promise<NewsImageResponse | null> {
-  if (!newsId) return null;
-  try {
-    const response = await fetch(`${IMAGE_CHECK_URL}/${newsId}`);
-    if (!response.ok) return null;
-    const data: NewsImageResponse = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error al verificar imagen para noticia ${newsId}:`, error);
-    return null;
-  }
-}
-
-export async function loadNewsImage(
-  imgElement: HTMLImageElement,
-  newsId: string
-): Promise<void> {
-  const imageData = await checkNewsImage(newsId);
-  if (imageData?.exists && imageData.imageURL) {
-    const fullImageUrl = imageData.imageURL.startsWith("http")
-      ? imageData.imageURL
-      : `http://localhost:8080${imageData.imageURL}`;
-    imgElement.src = fullImageUrl;
-  } else {
-    imgElement.src = DEFAULT_IMAGE;
-  }
 }
 
 export function truncateText(text: string, maxLength: number): string {
   if (!text || text.length <= maxLength) return text;
   return text.substring(0, maxLength).trim() + "...";
 }
-
 export function createNewsCard(news: News): string {
   const truncatedDescription = truncateText(
     news.description || "Sin descripción disponible",
     200
   );
+
   const publicationDate = news.publicationDate?.toString() || "Sin fecha";
 
   return `
-    <article class="shrink-0 snap-center bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-row w-full">
-      <div class="flex-shrink-0 w-80 bg-white overflow-hidden flex items-center justify-center p-6">
+    <article class="shrink-0 snap-center bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-row w-full h-full">
+      
+      <div class="flex-shrink-0 w-80 h-64 sm:h-72 bg-white p-4 flex items-center justify-center">
         <img
-          src="${DEFAULT_IMAGE}"
+          src="${DEFAULT_IMAGE}" 
           alt="Imagen de la noticia: ${news.title || "Noticia destacada"}"
-          data-news-image="${news.id || ""}"
-          class="w-full h-full object-contain transition-opacity duration-300"
+          data-news-image="${news.id}" 
+          class="w-full h-full object-cover rounded-lg shadow-sm transition-opacity duration-300"
           loading="lazy"
           onerror="this.src='${DEFAULT_IMAGE}'"
         />
       </div>
+
       <div class="p-8 flex-1 flex flex-col min-w-0 bg-white">
         <h3 class="text-2xl font-bold mb-4 text-gray-900 leading-tight">
           ${news.title || "Sin título"}
@@ -113,99 +74,4 @@ export function createNewsCard(news: News): string {
       </div>
     </article>
   `;
-}
-
-export async function mountCarousel(ids: { 
-    containerId: string; 
-    loaderId: string; 
-    prevBtnId: string; 
-    nextBtnId: string;
-}) {
-  const container = document.getElementById(ids.containerId);
-  const prevBtn = document.getElementById(ids.prevBtnId);
-  const nextBtn = document.getElementById(ids.nextBtnId);
-
-  if (!container) {
-    console.error('❌ [CAROUSEL] Contenedor no encontrado');
-    return;
-  }
-
-  console.log('✅ [CAROUSEL] Montando carousel...');
-
-  let isLoading = false;
-
-  function renderNews(news: News[]): void {
-    console.log('🎨 [CAROUSEL] Renderizando', news.length, 'noticias');
-    container.innerHTML = news.map(createNewsCard).join('');
-
-    const images = container.querySelectorAll('img[data-news-image]');
-    images.forEach((img) => {
-      const imgEl = img as HTMLImageElement;
-      if (imgEl.dataset.newsImage) {
-        loadNewsImage(imgEl, imgEl.dataset.newsImage);
-      }
-    });
-  }
-
-  function clearCarousel(): void {
-    console.log('🧹 [CAROUSEL] Limpiando contenido (Protegiendo loader)');
-    const children = Array.from(container.children);
-    children.forEach(child => {
-      if (child.id !== ids.loaderId) {
-        child.remove();
-      }
-    });
-  }
-
-  async function loadCarouselData(): Promise<void> {
-    if (isLoading) {
-      console.log('⏸️ [CAROUSEL] Ya hay una carga en progreso');
-      return;
-    }
-    
-    isLoading = true;
-    console.log('🚀 [CAROUSEL] Iniciando carga...');
-
-    try {
-      await loadWithLoader(
-        ids.loaderId,
-        fetchHighlightedNews,
-        {
-          onSuccess: renderNews,
-          onEmpty: clearCarousel,
-          // Función explícita para verificar si el array está vacío
-          checkEmpty: (data: News[]) => {
-            const isEmpty = !data || data.length === 0;
-            console.log(`🔍 [CAROUSEL] checkEmpty: ${isEmpty} (length: ${data?.length})`);
-            return isEmpty;
-          },
-          messages: {
-            loading: 'Cargando noticias destacadas...',
-            error: 'Error en el servidor',
-            empty: 'No hay noticias disponibles'
-          }
-        }
-      );
-    } finally {
-      isLoading = false;
-      console.log('✔️ [CAROUSEL] Carga finalizada');
-    }
-  }
-
-  // Configurar navegación
-  const scrollAmount = 600;
-  prevBtn?.addEventListener('click', () => {
-    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-  });
-  nextBtn?.addEventListener('click', () => {
-    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-  });
-
-  // Carga inicial
-  await loadCarouselData();
-
-  // Suscripción reactiva al backend
-  subscribeToBackendStatus(ids.loaderId, loadCarouselData, {
-    error: 'Error en el servidor'
-  });
 }

@@ -1,14 +1,12 @@
 ---
-// SearchFilter.astro
 interface Props {
   inputId: string;
   placeholder?: string;
-  baseURL: string; // Se mantiene por si quisieras usarlo, aunque el script gestiona la navegación
+  baseURL: string; 
 }
 
 const { inputId, placeholder = "Buscar...", baseURL } = Astro.props;
 
-// Obtenemos la query inicial para saber si mostrar la X al cargar
 const query = Astro.url.searchParams.get("query") || "";
 ---
 
@@ -50,7 +48,6 @@ const query = Astro.url.searchParams.get("query") || "";
     right: 0;
     top: 0;
     bottom: 0;
-    /* display: flex;  <-- LO QUITAMOS DE AQUÍ porque lo controlamos con JS/Inline style */
     align-items: center;
     padding-left: 0.75rem;
     padding-right: 1rem;
@@ -64,7 +61,6 @@ const query = Astro.url.searchParams.get("query") || "";
     color: #374151;
   }
 
-  /* Ocultar la X nativa del navegador para que no salga doble */
   input[type="search"]::-webkit-search-decoration,
   input[type="search"]::-webkit-search-cancel-button,
   input[type="search"]::-webkit-search-results-button,
