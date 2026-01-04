@@ -1,5 +1,6 @@
 package com.icaro.icarobackend.dto.orcid;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.util.List;
 
@@ -13,6 +14,7 @@ public class OrcidPreviewDTO {
     private List<OrcidWorkDTO> works;
 
     @Data
+    @AllArgsConstructor
     public static class OrcidWorkDTO {
         private String title;
         private String year;

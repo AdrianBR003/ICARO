@@ -13,3 +13,13 @@ export interface OrcidPreviewDTO {
     email: string | null;
     works: OrcidWork[];
 }
+
+export interface AnalyzedWork {
+    putCode: string;
+    title: string;
+    year: string;
+    type: string;
+    isDuplicate: boolean;
+    duplicateReason?: string;
+    existingWorkId?: number;
+}

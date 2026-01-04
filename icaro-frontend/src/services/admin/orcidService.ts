@@ -1,4 +1,5 @@
 import type { OrcidPreviewDTO } from "@/types/orcid";
+import type { AnalyzedWork } from "@/types/orcid";
 
 const API_BASE = "http://localhost:8080/api/auth/orcid-test";
 
@@ -47,4 +48,41 @@ export async function fetchOrcidPreview(orcidId: string): Promise<OrcidPreviewDT
         // Propagamos el error para que el controlador lo muestre
         throw error;
     }
+}
+
+export async function importOrcidProfile(data: any): Promise<void> {
+    const token = localStorage.getItem('adminToken');
+    if (!token) throw new Error("Sesión caducada");
+
+    const response = await fetch(`${API_BASE}/import`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+        throw new Error("Error al guardar los datos en el servidor.");
+    }
+}
+
+export async function checkOrcidDuplicates(orcidId: string, works: any[]): Promise<AnalyzedWork[]> {
+    const token = localStorage.getItem('adminToken');
+    if (!token) throw new Error("Sesión caducada");
+
+    const response = await fetch(`${API_BASE}/check-duplicates`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ orcidId, works })
+    });
+
+    if (!response.ok) throw new Error("Error verificando duplicados");
+    
+    const data = await response.json();
+    return data.works;
 }
