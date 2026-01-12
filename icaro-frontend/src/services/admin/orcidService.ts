@@ -1,7 +1,6 @@
 import type { OrcidPreviewDTO } from "@/types/orcid";
 import type { AnalyzedWork } from "@/types/orcid";
-
-const API_BASE = "http://localhost:8080/api/auth/orcid-test";
+import { API_BASE } from "@/configAPI";
 
 /**
  * Obtiene la previsualización de datos de un investigador desde ORCID.
@@ -18,7 +17,7 @@ export async function fetchOrcidPreview(orcidId: string): Promise<OrcidPreviewDT
     }
 
     try {
-        const response = await fetch(`${API_BASE}/preview/${orcidId}`, {
+        const response = await fetch(`${API_BASE}/auth/orcid-test/preview/${orcidId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -54,7 +53,7 @@ export async function importOrcidProfile(data: any): Promise<void> {
     const token = localStorage.getItem('adminToken');
     if (!token) throw new Error("Sesión caducada");
 
-    const response = await fetch(`${API_BASE}/import`, {
+    const response = await fetch(`${API_BASE}/auth/orcid-test/import`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -72,7 +71,7 @@ export async function checkOrcidDuplicates(orcidId: string, works: any[]): Promi
     const token = localStorage.getItem('adminToken');
     if (!token) throw new Error("Sesión caducada");
 
-    const response = await fetch(`${API_BASE}/check-duplicates`, {
+    const response = await fetch(`${API_BASE}/auth/orcid-test/check-duplicates`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,

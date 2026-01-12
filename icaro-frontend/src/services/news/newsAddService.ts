@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080/api/news";
+import { API_BASE } from "@/configAPI";
 
 export interface CreateNewsData {
   id: string;
@@ -21,7 +21,7 @@ export interface CreateNewsResponse {
 export async function checkIdExists(id: string): Promise<boolean> {
   try {
     const response = await fetch(
-      `${API_BASE}/check/${encodeURIComponent(id)}`
+      `${API_BASE}/news/check/${encodeURIComponent(id)}`
     );
 
     if (response.ok) {
@@ -48,7 +48,7 @@ export async function createNews(
   authHeaders: HeadersInit
 ): Promise<CreateNewsResponse> {
   try {
-    const response = await fetch(`${API_BASE}/add`, {
+    const response = await fetch(`${API_BASE}/news/add`, {
       method: "POST",
       headers: authHeaders,
       body: JSON.stringify(newsData),

@@ -1,6 +1,7 @@
 import { backendStatus } from "@/stores/backendStatusStore";
 import type { News, NewsPage } from "@/types/news";
 import { hideLoader, updateLoaderState } from "../general/loaderService";
+import { API_BASE } from "@/configAPI";
 
 interface ApiNewsItem {
   id?: string;
@@ -10,8 +11,6 @@ interface ApiNewsItem {
   publicationDate?: string;
   authors?: string;
 }
-
-const API_BASE = "http://localhost:8080";
 
 function formatNewsItem(item: ApiNewsItem): News {
   if (item.id == null || item.id.length == 0) {
@@ -35,7 +34,7 @@ export async function fetchNewsPage(
   page: number = 0,
   size: number = 5
 ): Promise<NewsPage> {
-  const url = new URL(`${API_BASE}/api/news/page`);
+  const url = new URL(`${API_BASE}/news/page`);
   url.searchParams.append("page", page.toString());
   url.searchParams.append("size", size.toString());
 
@@ -62,7 +61,7 @@ export async function fetchNewsPage(
  * Obtiene TODAS las noticias en una sola llamada.
  */
 export async function fetchAllNews(): Promise<News[]> {
-  const url = `${API_BASE}/api/news/all`;  
+  const url = `${API_BASE}/news/all`;  
   try {
     const res = await fetch(url);
     if (!res.ok) {
@@ -88,7 +87,7 @@ export async function searchNews(
   size: number = 5
 ): Promise<NewsPage> {
 
-  const url = new URL(`${API_BASE}/api/news/search`);
+  const url = new URL(`${API_BASE}/news/search`);
 
   url.searchParams.append("query", query);
   url.searchParams.append("page", page.toString());

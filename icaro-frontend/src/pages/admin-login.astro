@@ -1,31 +1,57 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import "@/styles/index.css";
+import { API_BASE } from "@/configAPI";
 ---
 
 <BaseLayout>
   <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-    
     <div class="w-full max-w-md">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10">
-        
+      <div
+        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10"
+      >
         <div class="text-center mb-8">
-          <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#1D293D] text-white mb-4 shadow-md">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          <div
+            class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#1D293D] text-white mb-4 shadow-md"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              ></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-bold text-[#1D293D] tracking-tight">Admin Portal</h1>
-          <p class="text-sm text-slate-500 mt-1 font-medium">Grupo de Investigación TST</p>
-          <p class="text-sm text-slate-500 mt-1 font-medium">Universidad de Jaén</p>
+          <h1 class="text-2xl font-bold text-[#1D293D] tracking-tight">
+            Admin Portal
+          </h1>
+          <p class="text-sm text-slate-500 mt-1 font-medium">
+            Grupo de Investigación TST
+          </p>
+          <p class="text-sm text-slate-500 mt-1 font-medium">
+            Universidad de Jaén
+          </p>
         </div>
 
-        <div id="message" class="hidden mb-6 p-4 rounded-lg text-sm font-medium border-l-4 transition-all duration-300">
-          </div>
+        <div
+          id="message"
+          class="hidden mb-6 p-4 rounded-lg text-sm font-medium border-l-4 transition-all duration-300"
+        >
+        </div>
 
         <form id="loginForm" class="space-y-5">
           <div>
-            <label for="username" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
+            <label
+              for="username"
+              class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5"
+            >
               Usuario
             </label>
             <div class="relative">
@@ -40,7 +66,10 @@ import "@/styles/index.css";
           </div>
 
           <div>
-            <label for="password" class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">
+            <label
+              for="password"
+              class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5"
+            >
               Contraseña
             </label>
             <div class="relative">
@@ -61,13 +90,22 @@ import "@/styles/index.css";
               class="w-full bg-[#1D293D] hover:bg-[#006D38] text-white font-bold py-3.5 px-4 rounded-lg shadow-lg shadow-slate-200 hover:shadow-green-900/20 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
             >
               <span>Acceder al Panel</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
               </svg>
             </button>
           </div>
         </form>
-
       </div>
 
       <div class="text-center mt-8 space-y-4">
@@ -75,8 +113,18 @@ import "@/styles/index.css";
           href="/"
           class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-[#1D293D] transition-colors"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
           Volver al sitio público
         </a>
@@ -96,10 +144,11 @@ import "@/styles/index.css";
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
-    /* Estilos de mensajes (Minimalistas) */
     .message.success {
       background-color: #ecfdf5; /* green-50 */
       color: #065f46; /* green-800 */
@@ -111,21 +160,18 @@ import "@/styles/index.css";
       color: #991b1b; /* red-800 */
       border-color: #ef4444; /* red-500 */
     }
-    
-    /* Input autofill fix para que no salga azul */
+
     input:-webkit-autofill,
-    input:-webkit-autofill:hover, 
-    input:-webkit-autofill:focus, 
-    input:-webkit-autofill:active{
-        -webkit-box-shadow: 0 0 0 30px #f8fafc inset !important;
-        -webkit-text-fill-color: #334155 !important;
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 30px #f8fafc inset !important;
+      -webkit-text-fill-color: #334155 !important;
     }
   </style>
 
-  <script is:inline>
+  <script is:inline define:vars={{ API_BASE }}>
     document.addEventListener("DOMContentLoaded", () => {
-      const API_BASE = "http://localhost:8080/api";
-
       const loginForm = document.getElementById("loginForm");
       const loginButton = document.getElementById("loginButton");
       const messageDiv = document.getElementById("message");
@@ -161,7 +207,6 @@ import "@/styles/index.css";
           }
         } catch (error) {
           console.error("Error checking existing auth:", error);
-          // Silencioso: si falla la verificación, simplemente dejamos que se loguee de nuevo
         }
       }
 
@@ -180,45 +225,32 @@ import "@/styles/index.css";
         try {
           const response = await fetch(`${API_BASE}/auth/login`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
           });
 
-          const data = await response.json();
+          const text = await response.text(); 
 
-          if (data.success && data.token) {
+          let data = {};
+          try {
+            data = text ? JSON.parse(text) : {};
+          } catch (e) {
+            console.warn("La respuesta no era un JSON válido:", text);
+          }
+
+          if (response.ok && data.token) {
             localStorage.setItem("adminToken", data.token);
-
-            showMessage(
-              "Credenciales verificadas. Accediendo...",
-              "success"
-            );
-
-            // Emit event for other components
-            window.dispatchEvent(
-              new CustomEvent("adminLoginSuccess", {
-                detail: {
-                  token: data.token,
-                  username: username,
-                  isAdmin: true,
-                },
-              })
-            );
-
-            setTimeout(() => {
-              window.location.href = "/admin/dashboard";
-            }, 1000);
+            showMessage("Login correcto", "success");
+            window.location.href = "/admin/dashboard";
           } else {
-            showMessage(data.error || "Usuario o contraseña incorrectos", "error");
+            showMessage(
+              data.error || "Error en el login (Credenciales inválidas)",
+              "error"
+            );
           }
         } catch (error) {
-          console.error("Login error:", error);
-          showMessage(
-            "Error de conexión con el servidor.",
-            "error"
-          );
+          console.error("Error de red:", error);
+          showMessage("El servidor no responde", "error");
         } finally {
           setLoading(false);
         }
@@ -226,15 +258,13 @@ import "@/styles/index.css";
 
       function showMessage(text, type) {
         messageDiv.textContent = text;
-        // Reseteamos clases base y añadimos tipo
         messageDiv.className = `mb-6 p-4 rounded-lg text-sm font-medium border-l-4 transition-all duration-300 message ${type}`;
         messageDiv.classList.remove("hidden");
 
         if (type === "error") {
-          // Vibración visual sutil si hay error
-          loginForm.classList.add('animate-pulse');
-          setTimeout(() => loginForm.classList.remove('animate-pulse'), 500);
-          
+          loginForm.classList.add("animate-pulse");
+          setTimeout(() => loginForm.classList.remove("animate-pulse"), 500);
+
           setTimeout(() => {
             hideMessage();
           }, 5000);

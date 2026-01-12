@@ -1,22 +1,15 @@
 import { atom } from "nanostores";
+import { API_BASE } from "@/configAPI";
 
 export interface AdminState {
   isAdmin: boolean;
   username: string;
 }
 
-/* Pieza de estado -> Sera exportada para que otros componentes 
-   puedan importarla
-*/
-
 export const adminState = atom<AdminState>({
   isAdmin: false,
   username: "",
 });
-
-// Funciones para modificar el estado del AdminState
-
-const API_BASE = 'http://localhost:8080/api';
 
 // Funcion para verificar el token contra el backend
 export async function checkAdminStatus() {
@@ -32,7 +25,6 @@ export async function checkAdminStatus() {
 
     if(response.ok){
         const data = await response.json(); 
-        // Mandamos el token al backend, si es válido, actualizamos el estado
         adminState.set({
             isAdmin: data.authenticated && data.isAdmin,
             username: data.username
@@ -52,18 +44,17 @@ export function logoutAdmin(){
     adminState.set({ isAdmin: false, username: "" });
 }
 
-// Función de inicializació automática (la que actualiza la información del token)
-if(typeof window !== 'undefined'){ // si se ha cargado la pagina en el cliente
+if(typeof window !== 'undefined'){ 
     checkAdminStatus(); 
-    setInterval(checkAdminStatus, 300000); // comprueba cada 5 min el estado del token
+    setInterval(checkAdminStatus, 300000);
     document.addEventListener('visibilitychange', ()=> {
         if(!document.hidden){
-            checkAdminStatus(); // Comprobar si se minimiza la página
+            checkAdminStatus(); 
         }
     })
     window.addEventListener('storage', (e) => {
         if (e.key === 'adminToken'){
-            checkAdminStatus(); // Sincronización entre pestañas
+            checkAdminStatus(); 
         }
     })
 }

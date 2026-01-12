@@ -1,5 +1,5 @@
 
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE } from "@/configAPI";
 
 export async function createProjectService(projectData: any): Promise<Response> {
   const token = localStorage.getItem("adminToken");
@@ -13,7 +13,7 @@ export async function createProjectService(projectData: any): Promise<Response> 
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/project/save`, {
+    const response = await fetch(`${API_BASE}/project/save`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(projectData),

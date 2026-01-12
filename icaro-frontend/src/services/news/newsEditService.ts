@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8080/api/news";
+import { API_BASE } from "@/configAPI";
 
 export interface UpdateNewsData {
   id: string;
@@ -20,7 +20,7 @@ export async function updateNews(
   authHeaders: HeadersInit
 ): Promise<UpdateNewsResponse> {
   try {
-    const response = await fetch(`${API_BASE}/update`, {
+    const response = await fetch(`${API_BASE}/news/update`, {
       method: "POST",
       headers: authHeaders,
       body: JSON.stringify(newsData),

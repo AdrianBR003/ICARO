@@ -1,13 +1,10 @@
 import type { ProjectPageDTO, RelatedWorkDTO } from "@/types/project";
 import type { ProjectSelector } from "@/types/project";
-
-
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE } from "@/configAPI";
 
 export async function fetchAllProjectsList(): Promise<[]> {
   try {
-    // Intenta usar el endpoint ligero optimizado
-    const response = await fetch(`${API_BASE_URL}/api/project/selector`);
+    const response = await fetch(`${API_BASE}/project/selector`);
     
     if (!response.ok) {
       throw new Error("Error fetching project list for selector");
@@ -41,7 +38,7 @@ export async function fetchProjectsPaged(
       params.append("query", query);
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/project/paged?${params.toString()}`);
+    const response = await fetch(`${API_BASE}/project/paged?${params.toString()}`);
 
     if (!response.ok) {
       throw new Error(`HTTP Error: ${response.status}`);
@@ -72,7 +69,7 @@ export async function fetchProjectsPaged(
 export async function fetchRelatedWorksByProject(projectId: string): Promise<RelatedWorkDTO[]> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/project-work/project/${projectId}/works`
+      `${API_BASE}/project-work/project/${projectId}/works`
     );
     
     if (!response.ok) {

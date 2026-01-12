@@ -1,5 +1,6 @@
 ---
 import type { News } from "@/types/news";
+import { API_URL } from "@/configAPI";
 
 interface Props {
   news: News;
@@ -68,12 +69,12 @@ const publicationDate = news.publicationDate?.toString() || "";
     class="flex-shrink-0 w-full md:w-80 bg-white overflow-hidden flex items-center justify-center p-4"
   >
     <img
-      src="http://localhost:8080/assets/news/default.png"
+      src=`${API_URL}/assets/news/default.png`
       alt={`Imagen de la noticia: ${news.title}`}
       data-news-image={news.id}
       class="w-full h-48 md:h-full object-contain transition-opacity duration-300 bg-white"
       loading="lazy"
-      onerror="this.src='http://localhost:8080/assets/news/default.png'"
+      onerror="this.src=`${API_URL}/assets/news/default.png`"
     />
   </div>
 

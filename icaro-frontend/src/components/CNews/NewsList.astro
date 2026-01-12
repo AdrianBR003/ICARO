@@ -19,16 +19,11 @@ const initialLoaderText = news.length > 0
   : (hasQuery ? "No se encontraron resultados" : "No hay noticias disponibles");
 ---
 
-<div id="news-page-wrapper" class="relative min-h-[400px]">
+<div id="news-page-wrapper" class="flex flex-col gap-4"> 
   
-  <Loader 
-    id="news-list-loader" 
-    text={initialLoaderText}
-  />
-
   <NewsAdd />
 
-  <div class="w-full max-w-custom mb-6 relative z-[60]">
+  <div class="w-full max-w-custom relative z-[60]">
     <SearchFilter
       inputId="news-search"
       placeholder="Buscar noticias por título o descripción..."
@@ -36,22 +31,30 @@ const initialLoaderText = news.length > 0
     />
   </div>
 
-  <div id="content-area" class="transition-opacity duration-500 opacity-0">
-    {
-      news.length > 0 && (
-        <div id="news-list-container" class="space-y-4">
-          {news.map((newsItem) => (
-            <article class="news-card-item" data-news-id={newsItem.id}>
-              <NewsCard news={newsItem} />
-            </article>
-          ))}
-        </div>
-      )
-    }
-  </div>
+  <div class="relative min-h-[400px]">
+    
+    <Loader 
+      id="news-list-loader" 
+      text={initialLoaderText}
+    />
 
-  <NewsEdit />
+    <div id="content-area" class="transition-opacity duration-500 opacity-0">
+      {
+        news.length > 0 && (
+          <div id="news-list-container" class="space-y-4">
+            {news.map((newsItem) => (
+              <article class="news-card-item" data-news-id={newsItem.id}>
+                <NewsCard news={newsItem} />
+              </article>
+            ))}
+          </div>
+        )
+      }
+    </div>
+
+  </div> <NewsEdit />
   <NewsDelete />
+
 </div>
 
 <script>

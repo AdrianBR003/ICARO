@@ -3,8 +3,7 @@ import {
   createNewsCard,
 } from "@/services/index/carouselService";
 
-// 1. IMPORTANTE: Importa tu factory aquí
-// Ajusta la ruta a donde tengas el archivo ImageLoaderFactory
+import { API_URL } from "@/configAPI";
 import { createImageLoader } from "@/utils/general/imageLoaderFactory"; 
 import { backendStatus } from "@/stores/backendStatusStore";
 
@@ -69,10 +68,8 @@ export function setupCarousel(
         return;
       }
 
-      // 2. Renderiza las tarjetas de noticias
       slider.innerHTML = highlightedNews.map(createNewsCard).join("");
-
-      // 3. Oculta el loader
+      
       if (carouselLoader) {
         carouselLoader.style.opacity = "0";
         setTimeout(() => {
@@ -80,18 +77,13 @@ export function setupCarousel(
         }, 300);
       }
 
-      // 4. USAR TU FACTORY PARA CARGAR IMÁGENES
-      // Esto sustituye a la función 'loadAllImages' antigua
       const carouselImageLoader = createImageLoader({
-        basePath: "http://localhost:8080/assets/news", // La misma ruta que usas en NewsList
+        basePath: `${API_URL}/assets/news`,
         dataAttribute: "data-news-image",
       });
 
-      // Carga inmediata de lo que ya está en el DOM
       carouselImageLoader.loadImages();
 
-      // Configurar el observer por si el slider cambia o añade elementos dinámicamente
-      // (Es buena práctica aunque en este caso cargamos todo de golpe)
       try {
         carouselImageLoader.setupObserver(sliderId);
       } catch (e) {

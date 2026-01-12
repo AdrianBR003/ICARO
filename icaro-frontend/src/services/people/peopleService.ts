@@ -1,6 +1,5 @@
 import type { PeoplePageDTO } from "@/types/people";
-
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE } from "@/configAPI";
 
 /**
  * Obtiene investigadores paginados y filtrados por nombre/apellido.
@@ -20,7 +19,7 @@ export async function fetchPeoplePaged(
       params.append("query", query);
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/investigators/paged?${params.toString()}`);
+    const response = await fetch(`${API_BASE}/investigators/paged?${params.toString()}`);
 
     if (!response.ok) {
       throw new Error(`HTTP Error: ${response.status}`);

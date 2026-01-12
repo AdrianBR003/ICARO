@@ -36,17 +36,6 @@ public class ProjectController {
         return ResponseEntity.ok(this.projectService.findAll());
     }
 
-    @PostMapping("/save")
-    public ResponseEntity<?> addProject(@RequestBody Project project) {
-        log.info("adding project {}", project);
-        if(this.projectService.findById(project.getId()).isPresent()){
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }else{
-            this.projectService.save(project);
-            return ResponseEntity.ok().build();
-        }
-    }
-
     @GetMapping("/selector")
     public ResponseEntity<List<ProjectSelectorDTO>> getProjectsForSelector() {
         return ResponseEntity.ok(projectService.getProjectTitles());
@@ -73,6 +62,18 @@ public class ProjectController {
 
     // ---------- METODOS CON VERIFICACION -------------
 
+
+    @PostMapping("/save")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addProject(@RequestBody Project project) {
+        log.info("adding project {}", project);
+        if(this.projectService.findById(project.getId()).isPresent()){
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }else{
+            this.projectService.save(project);
+            return ResponseEntity.ok().build();
+        }
+    }
 
     @PostMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")

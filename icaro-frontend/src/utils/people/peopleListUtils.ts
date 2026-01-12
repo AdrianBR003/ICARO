@@ -2,12 +2,12 @@ import { backendStatus } from "@/stores/backendStatusStore";
 import { updateLoaderState, hideLoader } from "@/services/general/loaderService";
 import { initializeAdminUI } from "@/utils/general/adminUI";
 import { setupAdvancedSearch } from "@/utils/general/searchFilter";
-
 import { initializePeopleModalController } from "@/utils/people/peopleModalController";
 import { initializePeopleAddModal } from "@/utils/people/modals/peopleAddModals";
 import { initPeopleEditModal } from "@/utils/people/modals/peopleEditModals";
 import { initPeopleDeleteModal } from "@/utils/people/modals/peopleDeleteModals";
 import { initPersonImageLoader } from "./peopleImageHelpers";
+import { API_BASE} from "@/configAPI";
 
 export function initPeopleList() {
   const LOADER_ID = 'people-list-loader';
@@ -49,17 +49,13 @@ export function initPeopleList() {
   refreshState();
   backendStatus.subscribe(refreshState);
 
-  // 2. Inicializar UI de Admin
   initializeAdminUI();
-  
-  // 3. Inicializar Controladores de Modales
   initializePeopleModalController();
   initializePeopleAddModal();
   initPeopleEditModal();
   initPeopleDeleteModal();
   initPersonImageLoader();
 
-  // 4. CONFIGURACIÓN DEL BUSCADOR 
   const searchInput = document.getElementById('search-people') as HTMLInputElement;
   if (currentQuery && searchInput) searchInput.value = currentQuery;
 
@@ -68,7 +64,7 @@ export function initPeopleList() {
     
     clearBtnId: "search-people-clear", 
     
-    searchEndpoint: "http://localhost:8080/api/investigators/paged",
+    searchEndpoint: `${API_BASE}/investigators/paged`,
     baseUrl: "/people",
     debounceMs: 300,
     formatter: (person) => {
@@ -81,6 +77,4 @@ export function initPeopleList() {
       };
     }
   });
-
-  console.log("🚀 [PEOPLE] Inicializado correctamente con Buscador");
 }

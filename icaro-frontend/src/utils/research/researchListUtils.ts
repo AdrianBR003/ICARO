@@ -3,23 +3,17 @@ import { setupAdvancedSearch } from "@/utils/general/searchFilter";
 import { initializeResearchModalController } from "@/utils/research/researchModalController"; 
 import { backendStatus } from "@/stores/backendStatusStore";
 import { updateLoaderState, hideLoader } from "@/services/general/loaderService";
+import { API_BASE } from "@/configAPI";
 
 export function initResearchList() {
   const LOADER_ID = 'research-list-loader';
   const contentArea = document.getElementById('content-area');
   const listContainer = document.getElementById('research-list-container');
-  
-  // Si listContainer es null, es que NO hay datos renderizados
   const hasData = listContainer !== null; 
-  
-  // --- CORRECCIÓN LÓGICA CLIENTE ---
   const urlParams = new URLSearchParams(window.location.search);
-  const currentQuery = urlParams.get('query');
-  
-  // Detectar si hay CUALQUIER filtro activo (excluyendo paginación)
+  const currentQuery = urlParams.get('query');  
   const isFiltering = Array.from(urlParams.keys())
     .some(key => key !== 'page' && key !== 'size');
-  // ---------------------------------
 
   const refreshState = () => {
     const status = backendStatus.get();
@@ -39,7 +33,6 @@ export function initResearchList() {
         ? "No se encontraron resultados con los filtros actuales" 
         : "No hay publicaciones disponibles";
         
-      // FORZAMOS EL ESTADO 'empty'
       updateLoaderState(LOADER_ID, 'empty', msg);
       return;
     }
@@ -64,7 +57,7 @@ export function initResearchList() {
   setupAdvancedSearch({
     inputId: "search-research",
     clearBtnId: "search-research-clear", 
-    searchEndpoint: "http://localhost:8080/api/works/paged", 
+    searchEndpoint: `${API_BASE}/works/paged`, 
     baseUrl: window.location.pathname,
     debounceMs: 300,
     formatter: (work) => {

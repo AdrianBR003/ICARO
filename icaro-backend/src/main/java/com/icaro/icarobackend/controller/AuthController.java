@@ -4,10 +4,12 @@ import com.icaro.icarobackend.config.JwtUtil;
 import com.icaro.icarobackend.model.User;
 import com.icaro.icarobackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,21 +36,27 @@ public class AuthController {
             User user = userOpt.get();
 
             if (passwordEncoder.matches(loginRequest.password(), user.getPasswordHash())) {
+
+                // Generar Token
                 String token = jwtUtil.generateToken(user.getUsername());
 
-                return ResponseEntity.ok(Map.of(
-                        "success", true,
-                        "token", token,
-                        "isAdmin", user.isAdmin(),
-                        "message", "Login exitoso"
-                ));
+                // Construir respuesta exitosa
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("token", token);
+                response.put("username", user.getUsername());
+                response.put("isAdmin", Boolean.TRUE.equals(user.isAdmin()));
+                response.put("message", "Login exitoso");
+
+                return ResponseEntity.ok(response);
             }
         }
 
-        return ResponseEntity.status(401).body(Map.of(
-                "success", false,
-                "error", "Credenciales incorrectas"
-        ));
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("error", "Credenciales incorrectas");
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     @GetMapping("/verify")

@@ -1,8 +1,10 @@
 import type { Investigator } from "@/types/investigator";
+import { API_BASE } from "@/configAPI";
 
 export const getAllInvestigators = async (): Promise<Investigator[]> =>{
     try{
-        const res = await fetch("http://localhost:8080/api/investigators/all");
+        const res = await fetch(`${API_BASE}/investigators/all`);
+
         if(!res.ok){
             throw new Error(`Error HTTP: ${res.status}`);
         }
