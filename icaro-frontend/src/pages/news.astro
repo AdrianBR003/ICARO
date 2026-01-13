@@ -9,8 +9,23 @@ import "@/styles/index.css";
 import type { News } from "@/types/news";
 import Paginate from "@/components/CCommon/Paginate.astro";
 import { loadNewsPages } from "@/utils/news/newsPageLoader";
-const { news, totalPages, currentPage } = await loadNewsPages(Astro.url);
+ 
+// 1. Definimos estado inicial por defecto (Fail-safe)
+let news = [];
+let totalPages = 1;
+let currentPage = 1;
+let serverError = false; // Nueva bandera para avisar al hijo
 
+// 2. Intentamos la carga SSR
+try {
+  const data = await loadNewsPages(Astro.url);
+  news = data.news;
+  totalPages = data.totalPages;
+  currentPage = data.currentPage;
+} catch (e) {
+  console.error("⚠️ [SSR] Fallo al cargar noticias desde Spring Boot:", e);
+  serverError = true; // Marcamos que hubo error
+}
 ---
 
 <BaseLayout>
@@ -31,12 +46,18 @@ const { news, totalPages, currentPage } = await loadNewsPages(Astro.url);
         procesamiento de señales.
       </p>
     </div>
-    <NewsList news={news} />
-    <Paginate
-      totalPages={totalPages}
-      currentPage={currentPage}
-      astroURL={Astro.url}
+    <NewsList 
+      news={news} 
+      serverError={serverError} 
     />
+    
+    { !serverError && totalPages > 1 && (
+      <Paginate
+        totalPages={totalPages}
+        currentPage={currentPage}
+        astroURL={Astro.url}
+      />
+    )}
   </section>
 </BaseLayout>
 

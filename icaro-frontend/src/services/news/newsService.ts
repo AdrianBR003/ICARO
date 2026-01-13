@@ -38,16 +38,33 @@ export async function fetchNewsPage(
   url.searchParams.append("page", page.toString());
   url.searchParams.append("size", size.toString());
 
+  if (import.meta.env.SSR) {
+      console.log(`🚀 [SSR-DEBUG] Petición interna a: ${url.toString()}`);
+  }
 
   try {
-    const res = await fetch(url.toString());
+    // CAMBIO: Añadimos headers explícitos
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json' // Importante para que Spring sepa qué devolver
+      }
+    });
     
     if (!res.ok) {
-      throw new Error(`NewService - HTTP Error ${res.status}`);
+        // Logueamos el texto de error que devuelve Spring (a veces explica el 400)
+        const errorText = await res.text(); 
+        console.error(`❌ [SSR-ERROR] Status: ${res.status} - Body: ${errorText}`);
+        throw new Error(`NewService - HTTP Error ${res.status}`);
     }
 
+    // Ojo: Si ya leímos el body con res.text() arriba para el error, 
+    // no podemos hacer res.json() abajo directamente sin clonar.
+    // Como el error lanza throw, aquí abajo el body sigue intacto si entra al OK.
     const pageData: NewsPage = (await res.json()) as NewsPage;
     
+    // ... resto del código ...
     pageData.content = pageData.content.map(formatNewsItem);
     return pageData;
 

@@ -9,14 +9,25 @@ import type { News } from "@/types/news";
 
 interface Props {
   news: News[];
+  serverError?: boolean; // Hacemos esta prop opcional
 }
 
-const { news } = Astro.props;
+const { news, serverError = false } = Astro.props;
 const hasQuery = Astro.url.searchParams.has("query");
+const hasNews = news.length > 0;
 
-const initialLoaderText = news.length > 0 
-  ? "Conectando..." 
-  : (hasQuery ? "No se encontraron resultados" : "No hay noticias disponibles");
+// Lógica de mensaje inicial robusta
+let initialLoaderText = "";
+
+if (serverError) {
+  // CASO 1: Falló el backend en SSR
+  initialLoaderText = "El servidor no responde temporalmente.";
+} else if (!hasNews) {
+  // CASO 2: Todo bien, pero no hay datos
+  initialLoaderText = hasQuery 
+    ? "No se encontraron resultados" 
+    : "No hay noticias disponibles";
+}
 ---
 
 <div id="news-page-wrapper" class="flex flex-col gap-4"> 
@@ -33,33 +44,36 @@ const initialLoaderText = news.length > 0
 
   <div class="relative min-h-[400px]">
     
-    <Loader 
-      id="news-list-loader" 
-      text={initialLoaderText}
-    />
+    <div id="news-list-loader-wrapper" class={hasNews ? "hidden" : ""}>
+        <Loader 
+          id="news-list-loader" 
+          text={initialLoaderText}
+        />
+    </div>
 
-    <div id="content-area" class="transition-opacity duration-500 opacity-0">
+    <div id="content-area" class="transition-opacity duration-300">
       {
-        news.length > 0 && (
+        hasNews && (
           <div id="news-list-container" class="space-y-4">
-            {news.map((newsItem) => (
-              <article class="news-card-item" data-news-id={newsItem.id}>
-                <NewsCard news={newsItem} />
-              </article>
-            ))}
+             {news.map((newsItem) => (
+               <article class="news-card-item" data-news-id={newsItem.id}>
+                 <NewsCard news={newsItem} />
+               </article>
+             ))}
           </div>
         )
       }
     </div>
 
-  </div> <NewsEdit />
+  </div> 
+
+  <NewsEdit />
   <NewsDelete />
 
 </div>
 
 <script>
   import { initNewsList } from "@/utils/news/newsListUtils";
-
   document.addEventListener("DOMContentLoaded", () => {
     initNewsList();
   });

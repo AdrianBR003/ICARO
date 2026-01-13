@@ -51,20 +51,19 @@ public class NewController {
      * Devuelve la información del page seleccionado.
      */
     @GetMapping("/page")
-    public Page<New> getAllNews(Pageable pageable) {
-        if (pageable.getSort().isUnsorted()) {
-            Sort stableSort = Sort.by(
-                    Order.desc("publicationDate"),
-                    Order.desc("id")
-            );
-
-            pageable = PageRequest.of(
-                    pageable.getPageNumber(),
-                    pageable.getPageSize(),
-                    stableSort
-            );
-        }
-        return newService.findPage(pageable);
+    public ResponseEntity<Page<New>> getAllNews(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        // Construimos el Pageable manualmente con tu ordenación deseada
+        Sort stableSort = Sort.by(
+                Sort.Order.desc("publicationDate"),
+                Sort.Order.desc("id")
+        );
+        
+        Pageable pageable = PageRequest.of(page, size, stableSort);
+        
+        return ResponseEntity.ok(newService.findPage(pageable));
     }
 
 

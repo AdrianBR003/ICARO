@@ -7,7 +7,7 @@ const isServer = import.meta.env.SSR;
 
 // En Docker, Node necesita la URL interna del contenedor backend
 // Leemos la variable de entorno que pusimos en el docker-compose o usamos el fallback
-const INTERNAL_BACKEND = process.env.INTERNAL_API_URL || "http://icaro_backend:8080";
+const INTERNAL_BACKEND = process.env.INTERNAL_API_URL || "http://icaro-backend:8080";
 
 export const API_BASE = isDev
     // 1. DESARROLLO (Local): Ataca directo al puerto 8080 de tu máquina
