@@ -6,6 +6,8 @@ import {
   type CreateNewsData 
 } from "@/services/news/newsAddService";
 
+import { uploadEntityImage } from "@/services/general/imageService";
+
 // ============= LÓGICA DE NEGOCIO (ID) =============
 
 type IdStatus = "loading" | "valid" | "invalid" | "idle";
@@ -105,39 +107,35 @@ async function handleVerifyClick() {
 async function handleFormSubmit(event: Event) {
   event.preventDefault();
 
-  // Obtener funciones globales
   const getAuthHeaders = (window as any).getAuthHeaders;
   const addNotification = (window as any).addNotification;
 
-  if (!getAuthHeaders) {
-    console.error("[addModal] Funciones de adminUI no encontradas");
-    return;
-  }
+  if (!getAuthHeaders) return;
 
+  const headers = getAuthHeaders(); // Obtenemos headers (Authorization + Content-Type)
   const form = event.target as HTMLFormElement;
   const formData = new FormData(form);
 
-  // 1. Validar campos obligatorios
+  // Validación
   const id = (formData.get("id") as string)?.trim();
   const title = (formData.get("title") as string)?.trim();
   const description = (formData.get("description") as string)?.trim();
 
   if (!id || !title || !description) {
-    if(addNotification) addNotification("error", "ID, Título y Descripción son obligatorios.");
+    if (addNotification) addNotification("error", "ID, Título y Descripción son obligatorios.");
     return;
   }
 
-  // 2. Verificar ID una última vez
-  setIdStatus("loading", "Verificando ID final...");
+  // Verificar ID
+  setIdStatus("loading", "Verificando ID...");
   const idExists = await checkIdExists(id);
 
   if (idExists) {
     setIdStatus("invalid", "Este ID ya está en uso.");
-    if(addNotification) addNotification("error", "El ID ya existe.");
+    if (addNotification) addNotification("error", "El ID ya existe.");
     return;
   }
 
-  // 3. Preparar datos
   const newsData: CreateNewsData = {
     id,
     title,
@@ -146,22 +144,44 @@ async function handleFormSubmit(event: Event) {
     link: (formData.get("link") as string)?.trim() || null,
   };
 
-  // 4. Llamar al servicio
-  const result = await createNews(newsData, getAuthHeaders());
+  if (addNotification) addNotification("info", "Guardando noticia...");
+
+  // Crear noticia (Texto)
+  const result = await createNews(newsData, headers);
 
   if (result.success) {
-    if(addNotification) addNotification("success", result.message);
-    
-    // Limpiamos
+    // Subir imagen si existe
+    const imageInput = form.querySelector('input[type="file"]') as HTMLInputElement;
+    let uploadError = false;
+
+    if (imageInput && imageInput.files && imageInput.files.length > 0) {
+      if (addNotification) addNotification("info", "Subiendo imagen...");
+      
+      try {
+        const file = imageInput.files[0];
+        // Pasamos 'headers' y el servicio se encarga de borrar el Content-Type sobrante
+        await uploadEntityImage('news', id, file, headers);
+        console.log("✅ Imagen subida");
+      } catch (error: any) {
+        console.error("❌ Error imagen:", error);
+        uploadError = true;
+        if (addNotification) addNotification("warning", "Noticia creada, pero falló la imagen: " + error.message);
+      }
+    }
+
+    if (!uploadError && addNotification) {
+        addNotification("success", "¡Guardado con éxito!");
+    }
+
+    // Limpieza y Cierre
     form.reset();
     resetIdField();
-    
-    // Cerramos via Store (El controller se encarga de ocultar el HTML)
     modalActions.close();
     
-    setTimeout(() => window.location.reload(), 500);
+    setTimeout(() => window.location.reload(), 1000);
+
   } else {
-    if(addNotification) addNotification("error", `Error al crear: ${result.message}`);
+    if (addNotification) addNotification("error", `Error al crear: ${result.message}`);
   }
 }
 

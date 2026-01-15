@@ -1,10 +1,9 @@
-import { createImageLoader } from "@/utils/general/imageLoaderFactory";
 import { initializeAdminUI } from "@/utils/general/adminUI";
 import { setupAdvancedSearch } from "@/utils/general/searchFilter";
 import { initializeModalController } from "@/utils/news/newsModalController";
 import { backendStatus } from "@/stores/backendStatusStore";
-import { updateLoaderState, hideLoader, showLoader } from "@/services/general/loaderService"; // Asegúrate de tener showLoader si lo usas
-import { API_BASE, API_URL } from "@/configAPI"; // Importamos del archivo que creamos antes
+import { updateLoaderState, hideLoader, showLoader } from "@/services/general/loaderService";
+import { API_BASE, API_URL } from "@/configAPI"; 
 
 export function initNewsList() {
   const LOADER_ID = 'news-list-loader';
@@ -76,17 +75,4 @@ export function initNewsList() {
       };
     }
   });
-
-  // Carga de imágenes (Lazy Loading)
-  if (hasData) {
-      const newsImageLoader = createImageLoader({
-        // CAMBIO IMPORTANTE: Usamos API_BASE (/api) en producción 
-        // para que Nginx mande la petición de imágenes al Backend.
-        // Si usas API_URL (""), la petición iría a Astro y daría 404.
-        basePath: `${API_BASE}/assets/news`, 
-        dataAttribute: "data-news-image",
-      });
-      newsImageLoader.loadImages();
-      newsImageLoader.setupObserver("news-list-container");
-  }
 }

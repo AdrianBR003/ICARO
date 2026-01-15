@@ -170,7 +170,9 @@ import { API_BASE } from "@/configAPI";
     }
   </style>
 
-  <script is:inline define:vars={{ API_BASE }}>
+  <script is:inline>
+    const API_BASE = "/api";
+
     document.addEventListener("DOMContentLoaded", () => {
       const loginForm = document.getElementById("loginForm");
       const loginButton = document.getElementById("loginButton");
@@ -189,6 +191,7 @@ import { API_BASE } from "@/configAPI";
           const token = localStorage.getItem("adminToken");
           if (!token) return;
 
+          // Aquí usará /api/auth/verify -> Nginx -> Backend
           const response = await fetch(`${API_BASE}/auth/verify`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -223,13 +226,14 @@ import { API_BASE } from "@/configAPI";
         hideMessage();
 
         try {
+          // Aquí usará /api/auth/login -> Nginx -> Backend
           const response = await fetch(`${API_BASE}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
           });
 
-          const text = await response.text(); 
+          const text = await response.text();
 
           let data = {};
           try {
@@ -241,7 +245,8 @@ import { API_BASE } from "@/configAPI";
           if (response.ok && data.token) {
             localStorage.setItem("adminToken", data.token);
             showMessage("Login correcto", "success");
-            window.location.href = "/admin/dashboard";
+            // Redirigir al dashboard (asegúrate de que esta ruta existe)
+            window.location.href = "/admin/dashboard"; 
           } else {
             showMessage(
               data.error || "Error en el login (Credenciales inválidas)",

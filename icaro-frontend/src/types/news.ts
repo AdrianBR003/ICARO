@@ -7,6 +7,7 @@ export interface News {
   publicationDate?: string;
   highlighted?: boolean;
   createdAt?: string;
+  imageName?: string; 
 }
 
 // index/Carrousel

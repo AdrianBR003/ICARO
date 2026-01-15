@@ -1,4 +1,5 @@
 ---
+
 ---
 
 <div id="editModal" class="modal hidden">
@@ -86,89 +87,132 @@
         />
       </div>
 
-      <!-- Destacar noticia -->
-      <div class="flex items-center">
-        <input
-          type="checkbox"
-          id="editHighlighted"
-          name="editHighlighted"
-          class="h-4 w-4 text-cyan-600 border-gray-300 rounded"
-        />
-        <label for="editHighlighted" class="ml-2 block text-sm text-gray-900">
-          Destacar noticia
-        </label>
-      </div>
-
-      <!-- Botones -->
-      <div class="flex justify-end gap-3 pt-4">
-        <button
-          type="button"
-          onclick="window.hideModal()"
-          class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium transition-all duration-300 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400 hover:shadow-sm transform hover:-translate-y-0.5 active:scale-95"
+      <div class="mt-4 border-t border-gray-100 pt-4">
+        <label class="block mb-2 text-sm font-semibold text-gray-700"
+          >Imagen Destacada</label
         >
-          Cancelar
-        </button>
 
-        <button
-          type="submit"
-          class="px-4 py-2 bg-[#006D38] text-white rounded-lg font-bold shadow-md hover:bg-[#005229] hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95"
-        >
-          Guardar Cambios
-        </button>
+        <div class="flex items-start gap-6">
+          <div
+            id="edit-image-preview-container"
+            class="hidden relative group w-24 h-24 flex-shrink-0"
+          >
+            <img
+              id="edit-image-preview"
+              src=""
+              alt="Actual"
+              class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm"
+            />
+            <div class="absolute inset-0 bg-black/5 rounded-lg"></div>
+          </div>
+
+          <div class="flex-grow">
+            <input
+              type="file"
+              id="edit-image-input"
+              name="image"
+              accept="image/png, image/jpeg, image/jpg, image/webp"
+              class="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-xs file:font-semibold
+                file:bg-green-50 file:text-[#006D38]
+                hover:file:bg-green-100
+                cursor-pointer"
+            />
+            <p class="mt-1 text-xs text-gray-500">
+              Sube un archivo solo si quieres <b>cambiar</b> la imagen actual.
+            </p>
+          </div>
+
+          <!-- Destacar noticia -->
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="editHighlighted"
+              name="editHighlighted"
+              class="h-4 w-4 text-cyan-600 border-gray-300 rounded"
+            />
+            <label
+              for="editHighlighted"
+              class="ml-2 block text-sm text-gray-900"
+            >
+              Destacar noticia
+            </label>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onclick="window.hideModal()"
+              class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium transition-all duration-300 hover:bg-gray-100 hover:text-gray-900 hover:border-gray-400 hover:shadow-sm transform hover:-translate-y-0.5 active:scale-95"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              class="px-4 py-2 bg-[#006D38] text-white rounded-lg font-bold shadow-md hover:bg-[#005229] hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95"
+            >
+              Guardar Cambios
+            </button>
+          </div>
+        </div>
       </div>
     </form>
+
+    <style>
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .modal:not(.hidden) {
+        display: flex;
+      }
+
+      .modal-overlay {
+        position: absolute;
+        inset: 0;
+        background: transparent;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        width: 100%;
+        max-width: 48rem;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 1.5rem;
+        position: relative;
+        z-index: 101;
+      }
+
+      /* Scroll locking */
+      body.modal-open {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+      }
+    </style>
+
+    <script>
+      import { initializeEditModal } from "@/utils/news/modals/newsEditModal";
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeEditModal);
+      } else {
+        initializeEditModal();
+      }
+    </script>
   </div>
 </div>
-
-<style>
-  .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    background: rgba(0, 0, 0, 0.5);
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-
-  .modal:not(.hidden) {
-    display: flex;
-  }
-
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: transparent;
-  }
-
-  .modal-content {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    width: 100%;
-    max-width: 48rem;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 1.5rem;
-    position: relative;
-    z-index: 101;
-  }
-
-  /* Scroll locking */
-  body.modal-open {
-    overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
-  }
-</style>
-
-<script>
-  import { initializeEditModal } from "@/utils/news/modals/newsEditModal";
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initializeEditModal);
-  } else {
-    initializeEditModal();
-  }
-</script>

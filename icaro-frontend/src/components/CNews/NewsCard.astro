@@ -1,6 +1,7 @@
 ---
 import type { News } from "@/types/news";
 import { API_URL } from "@/configAPI";
+import { API_BASE } from "@/configAPI";
 
 interface Props {
   news: News;
@@ -9,6 +10,13 @@ interface Props {
 const { news } = Astro.props;
 const cardId = `news-card-${news.id}`;
 const publicationDate = news.publicationDate?.toString() || "";
+
+
+// 1. Si hay imageName en DB: pedimos a Nginx (/uploads/...)
+// 2. Si no: pedimos a la carpeta public del frontend (/assets/...)
+const imageUrl = news.imageName 
+  ? `/uploads/news/${news.imageName}` 
+  : `/assets/imagedefault.webp`; 
 ---
 
 <div
@@ -69,12 +77,11 @@ const publicationDate = news.publicationDate?.toString() || "";
     class="flex-shrink-0 w-full md:w-80 bg-white overflow-hidden flex items-center justify-center p-4"
   >
     <img
-      src=`${API_URL}/assets/news/default.png`
-      alt={`Imagen de la noticia: ${news.title}`}
-      data-news-image={news.id}
-      class="w-full h-48 md:h-full object-contain transition-opacity duration-300 bg-white"
+      src={imageUrl}
+      alt={news.title}
+      class="w-full h-full object-cover"
       loading="lazy"
-      onerror="this.src=`${API_URL}/assets/news/default.png`"
+        onerror={`this.onerror=null; this.src='${API_BASE}/assets/news/default.png';`}
     />
   </div>
 

@@ -1,5 +1,4 @@
 package com.icaro.icarobackend.service;
-import com.icaro.icarobackend.dto.NewsImageDTO;
 import com.icaro.icarobackend.model.New;
 import com.icaro.icarobackend.repository.NewRepository;
 
@@ -119,25 +118,8 @@ public class NewService {
         }
     }
 
-    public NewsImageDTO checkNewsImage(String newsId) {
-        try {
-            // Construye la ruta donde debería estar la imagen
-            String imagePath = "/assets/news/" + newsId + ".png";
-            Path fullPath = Paths.get("src/main/resources/static" + imagePath);
-
-            // Verifica si el archivo existe
-            boolean exists = Files.exists(fullPath);
-
-            if (exists) {
-                return new NewsImageDTO(true, imagePath);
-            } else {
-                // Si no existe, devuelve la imagen por defecto
-                return new NewsImageDTO(false, "/assets/news/default.png");
-            }
-        } catch (Exception e) {
-            // En caso de error, devuelve la imagen por defecto
-            return new NewsImageDTO(false, "/assets/news/default.png");
-        }
+    public New save(New newsItem) {
+        return newRepository.save(newsItem);
     }
 
     public List<New> getHighlightedNews() {

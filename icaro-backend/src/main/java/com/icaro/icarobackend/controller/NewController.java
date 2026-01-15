@@ -1,10 +1,9 @@
 package com.icaro.icarobackend.controller;
 
-import com.icaro.icarobackend.dto.NewsImageDTO;
+import com.icaro.icarobackend.service.storage.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-
 import com.icaro.icarobackend.model.New;
 import com.icaro.icarobackend.service.NewService;
 import org.springframework.data.domain.Page;
@@ -13,9 +12,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -24,9 +26,11 @@ public class NewController {
 
 
     private final NewService newService;
+    private final StorageService storageService;
 
-    public NewController(NewService newService) {
+    public NewController(NewService newService, StorageService storageService) {
         this.newService = newService;
+        this.storageService = storageService;
     }
 
     // ---------- METODOS SIN VERIFICACION -------------
@@ -90,7 +94,6 @@ public class NewController {
         return ResponseEntity.ok(results);
     }
 
-    // Imagen en el carousel
 
     @GetMapping("/Hnews")
     public ResponseEntity<List<New>> getHighlightedNews() {
@@ -98,14 +101,52 @@ public class NewController {
         return ResponseEntity.ok(highlightedNews);
     }
 
-    @GetMapping("/check-image/{newsId}")
-    public ResponseEntity<NewsImageDTO> checkNewsImage(@PathVariable String newsId) {
-        NewsImageDTO response = newService.checkNewsImage(newsId);
-        return ResponseEntity.ok(response);
-    }
 
     // ---------- METODOS CON VERIFICACION -------------
 
+    @PostMapping("/{id}/image")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> uploadImage(
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        // 1. Buscar la noticia
+        Optional<New> newsOptional = newService.findById(id);
+        if (newsOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        New newsItem = newsOptional.get();
+
+        // 2. Obtener y limpiar el nombre original
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+        
+        // Si el nombre es muy largo (ej: más de 50 caracteres), rechazamos
+        if (originalFilename.length() > 50) {
+            return ResponseEntity.badRequest()
+                .body("El nombre del archivo es demasiado largo (máx 50 caracteres). Por favor, renómbralo.");
+        }
+        
+        // Comprobación de seguridad básica (que no esté vacío o tenga caracteres raros)
+        if (originalFilename.contains("..")) {
+             return ResponseEntity.badRequest().body("Nombre de archivo inválido.");
+        }
+
+        try {
+            // 3. Guardar el archivo usando el nombre original
+            // Se guardará en: /app/uploads/news/foto-conferencia.jpg
+            storageService.store(file, "news", originalFilename);
+
+            // 4. ACTUALIZAR LA BASE DE DATOS
+            // Guardamos el nombre en la entidad para que el frontend sepa cuál cargar
+            newsItem.setImageName(originalFilename);
+            newService.save(newsItem); 
+
+            return ResponseEntity.ok().body("Imagen subida: " + originalFilename);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al subir la imagen: " + e.getMessage());
+        }
+    }
 
     @PostMapping("/add")
     @PreAuthorize("hasRole('ADMIN')")
