@@ -78,19 +78,17 @@ public class InvestigatorController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // ACTUALIZAR (PUT)
     @PutMapping("/save/{orcid}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateInvestigator(@PathVariable String orcid, @RequestBody Investigator investigator) {
-        // Validar si NO existe
-        if (investigatorService.findInvestigatorbyOID(orcid).isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND) // 404 Not Found
-                    .body("Error: No se encuentra el investigador con ORCID " + orcid);
+        try {
+            Investigator updated = investigatorService.updateInvestigator(orcid, investigator);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error actualizando: " + e.getMessage());
         }
-        investigator.setOrcid(orcid);
-        Investigator updated = investigatorService.saveInvestigator(investigator);
-        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/delete/{orcid}")
@@ -100,51 +98,21 @@ public class InvestigatorController {
         return ResponseEntity.ok().build();
     }
 
-
-    /**
-     * Endpoint que sube la imagen a partir de la url uploaDir
-     *
-     * @param image
-     * @param orcid
-     * @return
-     */
-    @PostMapping("/upload-image")
+    @PostMapping("/{id}/image")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> uploadImage(
-            @RequestParam("image") MultipartFile image,
-            @RequestParam("orcid") String orcid) {
+    public ResponseEntity<?> uploadImage(@PathVariable String id, @RequestParam("file") MultipartFile file) {
 
-        try {
-            if (image.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "No image provided"));
-            }
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("El archivo está vacío");
+        }
 
-            // Crear directorio si no existe
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
+        boolean success = investigatorService.uploadImage(id, file);
 
-            // Determinar extensión del archivo original
-            String originalFilename = image.getOriginalFilename();
-            String extension = originalFilename != null ?
-                    originalFilename.substring(originalFilename.lastIndexOf(".") + 1) : "jpg";
-
-            // Guardar como img_{orcid}.{ext}
-            String filename = "img_" + orcid + "." + extension;
-            Path filePath = uploadPath.resolve(filename);
-
-            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("imageUrl", "/static/assets/people/" + filename);
-
-            return ResponseEntity.ok(response);
-
-        } catch (IOException e) {
-            return ResponseEntity.status(500)
-                    .body(Map.of("error", "Failed to save image: " + e.getMessage()));
+        if (success) {
+            return ResponseEntity.ok().body("{\"message\": \"Imagen subida correctamente\"}");
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al subir la imagen o usuario no encontrado");
         }
     }
 

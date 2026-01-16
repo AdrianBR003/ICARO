@@ -20,4 +20,5 @@ public class Investigator {
     private String phone;
     private String office;
     private String biography;
+    private String imageName;
 }

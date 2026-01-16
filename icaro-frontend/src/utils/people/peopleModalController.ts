@@ -6,7 +6,7 @@ let scrollPosition = 0;
 export function initializePeopleModalController() {
   if (isInitialized) return;
 
-  // 1. Suscripción al Store para mostrar/ocultar modales visualmente
+  // 1. Suscripción al Store
   modalStore.subscribe((state) => {
     if (state.isOpen && state.type) {
       openModalUI(state.type);
@@ -15,40 +15,51 @@ export function initializePeopleModalController() {
     }
   });
 
-  // 2. Escuchar Clics (Delegación)
+  // 2. Escuchar Clics
   attachButtonListeners();
   
-  // 3. Escuchar Teclado (ESC) y Overlay
+  // 3. Escuchar Teclado y Overlay
   attachGlobalListeners();
 
   isInitialized = true;
+  console.log('✅ [PeopleModalController] Inicializado');
 }
 
 function attachButtonListeners() {
-  // Escuchamos en todo el wrapper para capturar clics en tarjetas dinámicas
   const container = document.getElementById("people-page-wrapper");
-  
-  // Botón Añadir (que está dentro de PeopleAdd.astro, pero lo controlamos aquí o en su propio archivo)
-  // Nota: A veces el botón de añadir tiene su propio ID, si es así, se puede gestionar en peopleAddModal.ts
-  // Pero si usa la clase standard, lo capturamos aquí.
   
   if (container) {
     container.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
 
-      // A. Click en EDITAR
+      // --- A. Click en EDITAR ---
       const editBtn = target.closest('.edit-btn');
       if (editBtn) {
         e.preventDefault();
         e.stopPropagation();
         
-        // Leemos el JSON que habremos puesto en el botón en PeopleCard
+        // 1. Leemos el JSON con los datos de texto
         const json = editBtn.getAttribute('data-entity-data');
+        
+        // 2. IMPORTANTE: Leemos el nombre de la imagen explícitamente
+        // (Esto es lo que añadimos en PeopleCard.astro)
+        const imageName = editBtn.getAttribute('data-person-imagename');
+
         if (json) {
           try {
             const personData = JSON.parse(json);
-            console.log('✏️ [Controller] Abriendo Edit para:', personData.orcid);
+            
+            // 3. Inyectamos el imageName en el objeto de datos
+            // Esto asegura que llegue al Store y luego al Modal
+            if (imageName) {
+                personData.imageName = imageName;
+            } else {
+                personData.imageName = null;
+            }
+
+            console.log('✏️ [Controller] Editando:', personData.orcid, 'Img:', personData.imageName);
             modalActions.open('edit', personData);
+
           } catch (err) {
             console.error("Error parsing person data", err);
           }
@@ -56,17 +67,17 @@ function attachButtonListeners() {
         return;
       }
 
-      // B. Click en ELIMINAR
+      // --- B. Click en ELIMINAR ---
       const deleteBtn = target.closest('.delete-btn');
       if (deleteBtn) {
         e.preventDefault();
         e.stopPropagation();
         
-        const id = deleteBtn.getAttribute('data-entity-id'); // ORCID
-        const name = deleteBtn.getAttribute('data-entity-title'); // Nombre completo (para el mensaje)
+        const id = deleteBtn.getAttribute('data-entity-id');
+        const name = deleteBtn.getAttribute('data-entity-title');
         
         if (id) {
-            console.log('🗑️ [Controller] Abriendo Delete para:', id);
+            console.log('🗑️ [Controller] Borrando:', id);
             modalActions.open('delete', { id, title: name });
         }
         return;
@@ -86,7 +97,6 @@ function openModalUI(type: ModalType) {
 
   if (!modalElement) return;
 
-  // Bloquear scroll
   scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
   document.body.classList.add('modal-open');
   document.body.style.top = `-${scrollPosition}px`;
@@ -104,21 +114,20 @@ function closeModalUI() {
 }
 
 function attachGlobalListeners() {
-  // Cerrar con ESC
+  // ESC
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modalStore.get().isOpen) modalActions.close();
   });
 
-  // Cerrar con Overlay o botones X
+  // Overlay
   const modals = ['add-people-modal', 'people-edit-modal', 'people-delete-modal'];
   modals.forEach(id => {
     const m = document.getElementById(id);
     m?.addEventListener('click', (e) => { if (e.target === m) modalActions.close(); });
   });
   
-  // Selectores de botones cerrar
-  // Ajusta estos selectores a los que uses en tus modales (.close-modal, #cancel-btn, etc)
-  const closeSelectors = ['.close-modal-btn', '#cancel-btn']; 
+  // Botones cerrar explícitos
+  const closeSelectors = ['.close-modal-btn', '#cancel-btn', '#cancel-edit-btn']; 
   closeSelectors.forEach(sel => {
       document.querySelectorAll(sel).forEach(btn => 
           btn.addEventListener('click', () => modalActions.close())
