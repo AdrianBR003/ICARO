@@ -1,56 +1,81 @@
+// /utils/news/modals/newsEditModal.ts
+
 import { modalStore, modalActions } from "@/stores/modalStore";
-import { updateNews, type UpdateNewsData } from "@/services/news/newsEditService";
+import {
+  updateNews,
+  type UpdateNewsData,
+} from "@/services/news/newsEditService";
 import { uploadEntityImage } from "@/services/general/imageService";
 
 /**
  * Rellena el formulario con los datos de la noticia al abrir el modal.
- * Se encarga de los campos de texto y de mostrar/ocultar la previsualización de la imagen.
  */
 function fillEditForm(data: any) {
   const form = document.getElementById("editForm") as HTMLFormElement;
-  if (!form) return;
+  if (!form) {
+    console.warn("⚠️ Formulario no encontrado");
+    return;
+  }
 
-  // Helper para asignar valores a inputs de forma segura
+  // Helper function para setear valores
   const setVal = (id: string, val: any) => {
-    const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement;
+    const el = document.getElementById(id) as
+      | HTMLInputElement
+      | HTMLTextAreaElement;
     if (el) el.value = val || "";
   };
 
-  // 1. Rellenar campos de texto
+  // 1. Campos de texto
   setVal("editId", data.id);
-  setVal("editIdDisplay", data.id); // Input readonly visual
+  setVal("editIdDisplay", data.id);
   setVal("editTitle", data.title);
   setVal("editDescription", data.description);
   setVal("editLink", data.link);
   setVal("editpublicationDate", data.publicationDate);
+  setVal("editCurrentImageName", data.imageName);
 
+  // 2. Checkbox - ARREGLADO
   const checkEl = document.getElementById("editHighlighted") as HTMLInputElement;
-  if (checkEl) checkEl.checked = data.highlighted || false;
 
+  if (checkEl) {
+    // Normalizar el valor a boolean estricto
+    const isHighlighted = Boolean(
+      data.highlighted === true ||
+        data.highlighted === "true" ||
+        data.highlighted === 1 ||
+        String(data.highlighted).toLowerCase() === "true"
+    );
+
+    console.log("🔍 Debug checkbox ANTES:", {
+      dataValue: data.highlighted,
+      typeOfData: typeof data.highlighted,
+      isHighlighted: isHighlighted,
+      checkboxCheckedBefore: checkEl.checked
+    });
+
+    // Método más directo y confiable
+    checkEl.checked = isHighlighted;
+
+    // Forzar actualización visual (importante en algunos navegadores)
+    checkEl.dispatchEvent(new Event('change', { bubbles: true }));
+
+    console.log("✅ Checkbox DESPUÉS:", {
+      checked: checkEl.checked,
+      hasAttribute: checkEl.hasAttribute("checked"),
+    });
+  }
+
+  // 3. Título del modal
   const modalTitle = document.getElementById("modalTitle");
   if (modalTitle) modalTitle.textContent = `Editar "${data.title}"`;
 
-  // 2. Gestionar la Imagen
-  const previewContainer = document.getElementById("edit-image-preview-container");
-  const previewImg = document.getElementById("edit-image-preview") as HTMLImageElement;
+  // 4. Limpiar input de archivo
   const fileInput = document.getElementById("edit-image-input") as HTMLInputElement;
-
-  // Limpiamos el input de archivo siempre que abrimos el modal
   if (fileInput) fileInput.value = "";
-
-  // Si la noticia tiene imagen (imageName), mostramos la previsualización desde Nginx
-  if (data.imageName && previewContainer && previewImg) {
-    previewImg.src = `/uploads/news/${data.imageName}`;
-    previewContainer.classList.remove("hidden");
-  } else if (previewContainer) {
-    // Si no tiene imagen, ocultamos el recuadro de previsualización
-    previewContainer.classList.add("hidden");
-  }
 }
 
 /**
- * Maneja el envío del formulario.
- * Realiza el proceso en dos pasos: 1. Actualizar datos (JSON) -> 2. Subir imagen (FormData)
+ * Maneja el submit del formulario.
  */
 async function handleFormSubmit(event: Event) {
   event.preventDefault();
@@ -63,85 +88,96 @@ async function handleFormSubmit(event: Event) {
     return;
   }
 
-  const headers = getAuthHeaders(); // Obtenemos las cabeceras una vez
+  const headers = getAuthHeaders();
 
-  // Validar campos obligatorios
   const id = (document.getElementById("editId") as HTMLInputElement).value.trim();
   const title = (document.getElementById("editTitle") as HTMLInputElement).value.trim();
-  const description = (document.getElementById("editDescription") as HTMLTextAreaElement).value.trim();
+  const description = (
+    document.getElementById("editDescription") as HTMLTextAreaElement
+  ).value.trim();
 
   if (!id || !title || !description) {
     addNotification("error", "ID, Título y Descripción son obligatorios.");
     return;
   }
 
+  // RECUPERAR EL NOMBRE DE LA IMAGEN ACTUAL
+  const currentImageName =
+    (document.getElementById("editCurrentImageName") as HTMLInputElement).value || null;
+
   // Preparar datos JSON
   const newsData: UpdateNewsData = {
     id,
     title,
     description,
-    link: (document.getElementById("editLink") as HTMLInputElement).value.trim() || null,
-    publicationDate: (document.getElementById("editpublicationDate") as HTMLInputElement).value || null,
+    link:
+      (document.getElementById("editLink") as HTMLInputElement).value.trim() || null,
+    publicationDate:
+      (document.getElementById("editpublicationDate") as HTMLInputElement).value || null,
     highlighted: (document.getElementById("editHighlighted") as HTMLInputElement).checked,
+    imageName: currentImageName,
   };
+
+  console.log("📤 Enviando datos:", newsData);
 
   if (addNotification) addNotification("info", "Actualizando noticia...");
 
-  // PASO 1: Llamada API para actualizar textos
+  // PASO 1: Actualizar JSON
   const result = await updateNews(newsData, headers);
 
   if (result.success) {
-    
-    // PASO 2: Verificar si hay una imagen NUEVA para subir
+    // PASO 2: Verificar si hay imagen NUEVA para subir
     const imageInput = document.getElementById("edit-image-input") as HTMLInputElement;
     let imageError = false;
 
     if (imageInput && imageInput.files && imageInput.files.length > 0) {
-        if (addNotification) addNotification("info", "Actualizando imagen...");
-        
-        try {
-            const file = imageInput.files[0];
-            // Usamos el servicio genérico (borrará el Content-Type automáticamente)
-            await uploadEntityImage('news', id, file, headers);
-            console.log("✅ Imagen actualizada");
-        } catch (error: any) {
-            console.error("❌ Error subiendo imagen:", error);
-            imageError = true;
-            addNotification("warning", "Datos actualizados, pero falló la imagen: " + error.message);
-        }
+      if (addNotification) addNotification("info", "Actualizando imagen...");
+      try {
+        const file = imageInput.files[0];
+        await uploadEntityImage("news", id, file, headers);
+        console.log("✅ Imagen actualizada");
+      } catch (error: any) {
+        console.error("❌ Error subiendo imagen:", error);
+        imageError = true;
+        addNotification(
+          "warning",
+          "Datos guardados, pero falló la nueva imagen: " + error.message
+        );
+      }
     }
 
-    // Finalización
     if (!imageError) {
-        addNotification("success", "Noticia actualizada correctamente");
+      addNotification("success", "Noticia actualizada correctamente");
     }
-    
-    modalActions.close();
-    
-    // Recarga para ver cambios (texto e imagen nueva)
-    setTimeout(() => window.location.reload(), 500);
 
+    modalActions.close();
+
+    // Recargar para ver los cambios
+    setTimeout(() => window.location.reload(), 500);
   } else {
     addNotification("error", `Error al actualizar: ${result.message}`);
   }
 }
 
-/**
- * Inicialización: Suscribe el modal al store y configura los eventos.
- */
 export function initializeEditModal() {
   const form = document.getElementById("editForm");
-  if (!form) return;
+  if (!form) {
+    console.error('❌ Formulario "editForm" no encontrado');
+    return;
+  }
 
-  // 1. Suscripción al Store: Cuando se abre el modal 'edit', rellena el formulario
-  modalStore.subscribe(state => {
-    if (state.isOpen && state.type === 'edit' && state.data) {
-      fillEditForm(state.data);
+  // Suscripción al store - SIMPLIFICADO
+  modalStore.subscribe((state) => {
+    if (state.isOpen && state.type === "edit" && state.data) {
+      console.log("📥 Datos recibidos del store:", state.data);
+      // Usar requestAnimationFrame para asegurar que el DOM está listo
+      requestAnimationFrame(() => {
+        fillEditForm(state.data);
+      });
     }
   });
 
-  // 2. Evento Submit
   form.addEventListener("submit", handleFormSubmit);
 
-  console.log("✅ [newsEditModal] Lógica de negocio inicializada");
+  console.log("✅ [newsEditModal] Inicializado");
 }

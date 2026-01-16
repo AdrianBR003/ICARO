@@ -1,3 +1,6 @@
+// /utils/news/modals/newsListUtils.ts
+
+
 import { initializeAdminUI } from "@/utils/general/adminUI";
 import { setupAdvancedSearch } from "@/utils/general/searchFilter";
 import { initializeModalController } from "@/utils/news/newsModalController";

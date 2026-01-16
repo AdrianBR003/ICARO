@@ -5,7 +5,7 @@ export interface News {
   authors?: string;
   link?: string;
   publicationDate?: string;
-  highlighted?: boolean;
+  highlighted: boolean; 
   createdAt?: string;
   imageName?: string; 
 }

@@ -10,6 +10,7 @@ interface ApiNewsItem {
   link?: string;
   publicationDate?: string;
   authors?: string;
+  highlighted?: boolean; 
   imageName?: string; 
 }
 
@@ -25,6 +26,7 @@ function formatNewsItem(item: ApiNewsItem): News {
     link: item.link || "Sin link",
     publicationDate: item.publicationDate || "",
     ...(item.authors && { authors: item.authors }),
+    highlighted: Boolean(item.highlighted === true),
     imageName: item.imageName || null,
   };
 }

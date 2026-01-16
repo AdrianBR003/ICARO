@@ -158,13 +158,15 @@ public class NewController {
         }
     }
 
-    @PostMapping("/update")
+    @PutMapping("/save/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<New> update(@RequestBody New news) {
+    public ResponseEntity<New> update(@PathVariable String id, @RequestBody New news) {        
+        news.setId(id); 
+
         if (this.newService.updateNew(news)) {
             return new ResponseEntity<>(news, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 

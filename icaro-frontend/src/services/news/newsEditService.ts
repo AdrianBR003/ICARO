@@ -1,3 +1,6 @@
+// /services/news/newsEditService.ts
+
+
 import { API_BASE } from "@/configAPI";
 
 export interface UpdateNewsData {
@@ -7,6 +10,7 @@ export interface UpdateNewsData {
   publicationDate?: string | null;
   link?: string | null;
   highlighted?: boolean;
+  imageName?: string | null;  
 }
 
 export interface UpdateNewsResponse {
@@ -20,7 +24,7 @@ export async function updateNews(
   authHeaders: HeadersInit
 ): Promise<UpdateNewsResponse> {
   try {
-    const response = await fetch(`${API_BASE}/news/${newsData.id}`, {
+    const response = await fetch(`${API_BASE}/news/save/${newsData.id}`, {
       method: "PUT", 
       headers: authHeaders,
       body: JSON.stringify(newsData),

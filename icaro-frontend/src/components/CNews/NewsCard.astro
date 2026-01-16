@@ -11,12 +11,15 @@ const { news } = Astro.props;
 const cardId = `news-card-${news.id}`;
 const publicationDate = news.publicationDate?.toString() || "";
 
+// ARREGLO: Asegurar que sea estrictamente "true" o "false"
+const highlightedStr = news.highlighted === true ? "true" : "false";
 
-// 1. Si hay imageName en DB: pedimos a Nginx (/uploads/...)
-// 2. Si no: pedimos a la carpeta public del frontend (/assets/...)
-const imageUrl = news.imageName 
-  ? `/uploads/news/${news.imageName}` 
-  : `/assets/imagedefault.webp`; 
+const imageUrl = news.imageName
+  ? `/uploads/news/${news.imageName}`
+  : `/assets/default.png`;
+
+// Debug en el servidor
+console.log(`[Card ${news.id}] highlighted:`, news.highlighted, '→', highlightedStr);
 ---
 
 <div
@@ -34,6 +37,8 @@ const imageUrl = news.imageName
       data-news-description={news.description}
       data-news-link={news.link || ""}
       data-news-publicationdate={publicationDate}
+      data-news-highlighted={highlightedStr}
+      data-news-imagename={news.imageName || ""}
       aria-label={`Editar noticia: ${news.title}`}
       title="Editar Noticia"
     >
@@ -56,7 +61,6 @@ const imageUrl = news.imageName
       data-news-title={news.title}
       aria-label={`Eliminar noticia: ${news.title}`}
       title="Eliminar Noticia"
-
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -81,7 +85,7 @@ const imageUrl = news.imageName
       alt={news.title}
       class="w-full h-full object-cover"
       loading="lazy"
-        onerror={`this.onerror=null; this.src='${API_BASE}/assets/news/default.png';`}
+      onerror={`this.onerror=null; this.src='${API_BASE}/assets/news/default.png';`}
     />
   </div>
 

@@ -1,4 +1,4 @@
-// Estado centralizado para todos los modales
+// /stores/modalStore.ts
 
 import { atom } from 'nanostores';
 
@@ -11,6 +11,7 @@ export interface ModalData {
   link?: string;
   publicationDate?: string;
   highlighted?: boolean;
+  imageName?: string | null;
   [key: string]: any;
 }
 
@@ -32,15 +33,20 @@ export const modalStore = atom<ModalState>(initialState);
 
 // Acciones
 export const modalActions = {
-  /**
-   * Abre un modal con datos opcionales
-   */
+
   open(type: ModalType, data: ModalData = {}) {
+    const normalizedData = {
+      ...data,
+      highlighted: data.highlighted === true || String(data.highlighted) === 'true'
+    };
+    
     modalStore.set({
       isOpen: true,
       type,
-      data,
+      data: normalizedData,
     });
+    
+    console.log('📦 Store actualizado:', modalStore.get()); 
   },
 
   /**
