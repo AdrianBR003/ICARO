@@ -1,22 +1,7 @@
 ---
 import AdminLayout from "@/layouts/AdminLayout.astro";
-// Importamos el componente que acabamos de crear
 import BackendStatus from "@/components/CAdmin/BackendStatus.astro";
-
-const mockLogs = [
-  { time: "10:42:15", user: "admin", action: "LOGIN_SUCCESS", ip: "192.168.1.10" },
-  { time: "10:40:00", user: "system", action: "CRON_JOB_START", ip: "localhost" },
-  { time: "10:39:55", user: "system", action: "DB_BACKUP_OK", ip: "localhost" },
-  { time: "09:15:22", user: "inv_garcia", action: "PROFILE_UPDATE", ip: "192.168.1.45" },
-  { time: "09:10:01", user: "admin", action: "FETCH_ORCID_REQ", ip: "192.168.1.10" },
-  { time: "08:55:00", user: "system", action: "SERVER_STARTUP", ip: "localhost" },
-  { time: "08:54:58", user: "system", action: "DOCKER_INIT", ip: "localhost" },
-  { time: "08:54:55", user: "system", action: "BOOT_SEQ", ip: "localhost" },
-  { time: "08:50:00", user: "system", action: "SHUTDOWN_SIGNAL", ip: "localhost" },
-  { time: "08:49:50", user: "admin", action: "LOGOUT", ip: "192.168.1.10" },
-  { time: "08:30:12", user: "inv_perez", action: "LOGIN_FAIL", ip: "192.168.1.88" },
-  { time: "08:25:00", user: "inv_perez", action: "LOGIN_ATTEMPT", ip: "192.168.1.88" },
-];
+import LiveLogs from "@/components/CAdmin/LiveLogs.astro"; 
 ---
 
 <AdminLayout title="Panel de Control">
@@ -35,41 +20,7 @@ const mockLogs = [
     </div>
 
     <div class="lg:col-span-2">
-        <div class="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] border border-slate-200 h-full flex flex-col">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="font-bold text-[#1D293D] text-lg flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    Live Logs
-                </h3>
-                <span class="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded">/var/log/auth.log</span>
-            </div>
-            
-            <div class="flex-1 bg-[#151e2e] m-2 rounded-lg p-4 overflow-y-auto max-h-[400px] font-mono text-xs shadow-inner">
-                <ul class="space-y-1.5">
-                    {mockLogs.map((log) => (
-                        <li class="flex gap-3 text-slate-300 hover:bg-white/5 p-0.5 rounded transition-colors">
-                            <span class="text-slate-500 select-none">[{log.time}]</span>
-                            <span class={
-                                log.action.includes('FAIL') ? "text-red-400 font-bold" :
-                                log.action.includes('SUCCESS') || log.action.includes('OK') ? "text-[#006D38] font-bold text-green-400" :
-                                "text-blue-300"
-                            }>{log.action}</span>
-                            <span class="text-slate-400">user:<span class="text-white">{log.user}</span></span>
-                            <span class="text-slate-600 ml-auto">@{log.ip}</span>
-                        </li>
-                    ))}
-                    <li class="flex gap-2 text-emerald-500 mt-2 animate-pulse">
-                        <span>_</span>
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="p-3 text-right">
-                <button class="text-xs text-slate-500 hover:text-[#1D293D] font-medium transition-colors">
-                    Ver historial completo →
-                </button>
-            </div>
-        </div>
+        <LiveLogs />
     </div>
 
   </div>
