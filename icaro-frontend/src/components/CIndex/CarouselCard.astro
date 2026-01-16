@@ -1,0 +1,72 @@
+---
+import type { News } from "@/types/news";
+
+interface Props {
+  news: News;
+}
+
+const { news } = Astro.props;
+
+const DEFAULT_IMAGE = "/assets/default.png";
+
+const imageUrl = news.imageName
+  ? `/uploads/news/${news.imageName}`
+  : DEFAULT_IMAGE;
+
+const description = news.description || "Sin descripción disponible";
+const truncatedDescription = description.length > 150
+  ? description.substring(0, 150).trim() + "..."
+  : description;
+
+const publicationDate = news.publicationDate
+  ? new Date(news.publicationDate).toLocaleDateString()
+  : "Sin fecha";
+---
+
+<div class="w-full flex-shrink-0 snap-center flex items-center justify-center p-2 sm:p-4 h-full">
+  
+  <article class="w-full max-w-[95%] sm:max-w-5xl bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col md:flex-row border border-gray-100">
+
+    <div class="w-full md:w-5/12 h-56 sm:h-64 md:h-auto min-h-[250px] bg-gray-50 flex items-center justify-center p-4 relative group overflow-hidden">
+      <img
+        src={imageUrl}
+        alt={`Imagen de la noticia: ${news.title || "Noticia destacada"}`}
+        class="w-full h-full object-contain rounded-lg shadow-sm transition-transform duration-500 group-hover:scale-105"
+        loading="lazy"
+        onerror={`this.onerror=null; this.src='${DEFAULT_IMAGE}'`}
+      />
+    </div>
+
+    <div class="p-5 sm:p-6 w-full md:w-7/12 flex flex-col justify-center bg-white">
+      
+      <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-3 text-gray-900 leading-tight line-clamp-2">
+        {news.title || "Sin título"}
+      </h3>
+
+      <div class="mb-3 flex items-center text-xs sm:text-sm text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-[#006D38] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span class="font-medium text-gray-800">Fecha:</span>
+        <span class="ml-1 text-gray-600">{publicationDate}</span>
+      </div>
+
+      <div class="mb-5 flex-1">
+        <p class="text-gray-600 leading-relaxed break-words text-sm line-clamp-3">
+          {truncatedDescription}
+        </p>
+      </div>
+
+      {news.link && (
+        <div class="mt-auto flex justify-end">
+          <a href={news.link} target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 bg-[#006D38] hover:bg-[#005229] text-white font-semibold text-xs sm:text-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+            Ver más
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+      )}
+    </div>
+  </article>
+</div>
