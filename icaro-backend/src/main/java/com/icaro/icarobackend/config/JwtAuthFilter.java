@@ -1,5 +1,6 @@
 package com.icaro.icarobackend.config;
 
+import com.icaro.icarobackend.service.admin.AuditService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,12 +15,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private AuditService auditService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -32,12 +36,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
 
             try {
+                // Intentamos validar el token
                 if (jwtUtil.validateToken(token)) {
+                    // --- CASO DE ÉXITO (LOGIN CORRECTO) ---
                     String username = jwtUtil.getUsernameFromToken(token);
                     boolean isAdmin = jwtUtil.getIsAdminFromToken(token);
 
                     Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-
                     authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
                     if (isAdmin) {
@@ -48,12 +53,35 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(username, null, authorities);
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                    System.out.println("Usuario autenticado: " + username + ", isAdmin: " + isAdmin);
-                    System.out.println("Authorities: " + authorities);
+                } else {
+                    // --- CASO 1: TOKEN EXISTE PERO ES INVÁLIDO (False) ---
+                    AuditService.recordAction(
+                            "Desconocido",
+                            "SESSION_INVALID",
+                            "SECURITY",
+                            "Intento de acceso con token rechazado",
+                            request.getRequestURI()
+                    );
                 }
             } catch (Exception e) {
-                System.out.println("Error procesando JWT: " + e.getMessage());
+                // --- CASO 2: EXCEPCIÓN (AQUÍ CAEN LOS TOKENS EXPIRADOS) ---
+
+                String attemptedUser = "Desconocido";
+                try {
+                    attemptedUser = jwtUtil.getUsernameFromToken(token);
+                } catch (Exception ex) {
+                }
+
+                String errorMsg = e.getMessage();
+                if (errorMsg != null && errorMsg.length() > 50) errorMsg = errorMsg.substring(0, 50) + "...";
+
+                AuditService.recordAction(
+                        attemptedUser,
+                        "SESSION_EXPIRED",
+                        "SECURITY",
+                        "Token Error: " + errorMsg,
+                        request.getRequestURI()
+                );
             }
         }
 

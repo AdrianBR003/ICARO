@@ -3,6 +3,7 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 import BackendStatus from "@/components/CAdmin/BackendStatus.astro";
 import LiveLogs from "@/components/CAdmin/LiveLogs.astro"; 
 import DashboardStats from "@/components/CAdmin/DashboardStats.astro";
+import ActivityFeed from "@/components/CAdmin/ActivityFeed.astro";
 ---
 
 <AdminLayout title="Panel de Control">
@@ -25,4 +26,8 @@ import DashboardStats from "@/components/CAdmin/DashboardStats.astro";
 
   </div>
 
-  </AdminLayout>
+  <div class="w-full">
+      <ActivityFeed />
+  </div>
+
+</AdminLayout>

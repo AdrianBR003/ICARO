@@ -3,9 +3,11 @@ package com.icaro.icarobackend.controller.config;
 import com.icaro.icarobackend.config.JwtUtil;
 import com.icaro.icarobackend.model.User;
 import com.icaro.icarobackend.repository.UserRepository;
+import com.icaro.icarobackend.service.admin.AuditService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +27,9 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
+    private AuditService auditService;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
@@ -35,7 +40,27 @@ public class AuthController {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
 
+            // --- REGISTRO DE AUDITORÍA: INTENTO LOGIN ---
+            AuditService.recordAction(
+                    user.getUsername(),
+                    "TRY-LOGIN",
+                    "SECURITY",
+                    "Intentando Inicio de Sesión",
+                    "/api/auth/login"
+            );
+            // ------------------------------------------
+
             if (passwordEncoder.matches(loginRequest.password(), user.getPasswordHash())) {
+
+                // --- REGISTRO DE AUDITORÍA: LOGIN ÉXITO ---
+                AuditService.recordAction(
+                        user.getUsername(),
+                        "LOGIN",
+                        "SECURITY",
+                        "Inicio de sesión exitoso",
+                        "/api/auth/login"
+                );
+                // ------------------------------------------
 
                 // Generar Token
                 String token = jwtUtil.generateToken(user.getUsername());
@@ -76,6 +101,25 @@ public class AuthController {
                 "authenticated", false,
                 "isAdmin", false
         ));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser() {
+        String username = "Anónimo";
+        try {
+            username = SecurityContextHolder.getContext().getAuthentication().getName();
+        } catch (Exception e) {
+        }
+
+        AuditService.recordAction(
+                username,
+                "LOGOUT",
+                "SECURITY",
+                "Cierre de sesión voluntario",
+                "/api/auth/logout"
+        );
+
+        return ResponseEntity.ok().body(java.util.Map.of("message", "Cierre de sesión registrado"));
     }
 
     public record LoginRequest(String username, String password) {}
