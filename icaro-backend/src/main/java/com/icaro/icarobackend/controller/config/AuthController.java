@@ -1,4 +1,4 @@
-package com.icaro.icarobackend.controller;
+package com.icaro.icarobackend.controller.config;
 
 import com.icaro.icarobackend.config.JwtUtil;
 import com.icaro.icarobackend.model.User;

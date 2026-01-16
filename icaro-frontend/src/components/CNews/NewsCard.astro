@@ -16,7 +16,7 @@ const highlightedStr = news.highlighted === true ? "true" : "false";
 
 const imageUrl = news.imageName
   ? `/uploads/news/${news.imageName}`
-  : `/assets/default.png`;
+  : `/assets/defaultPicture.png`;
 
 // Debug en el servidor
 console.log(`[Card ${news.id}] highlighted:`, news.highlighted, '→', highlightedStr);

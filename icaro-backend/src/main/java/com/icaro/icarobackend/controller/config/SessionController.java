@@ -1,4 +1,4 @@
-package com.icaro.icarobackend.controller;
+package com.icaro.icarobackend.controller.config;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;

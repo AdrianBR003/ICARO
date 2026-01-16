@@ -1,11 +1,11 @@
-package com.icaro.icarobackend.controller;
+package com.icaro.icarobackend.controller.pages;
 
 import com.icaro.icarobackend.service.storage.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import com.icaro.icarobackend.model.New;
-import com.icaro.icarobackend.service.NewService;
+import com.icaro.icarobackend.service.page.NewService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

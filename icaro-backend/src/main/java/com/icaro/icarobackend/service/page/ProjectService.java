@@ -1,4 +1,4 @@
-package com.icaro.icarobackend.service;
+package com.icaro.icarobackend.service.page;
 
 import com.icaro.icarobackend.dto.ProjectSelectorDTO;
 import com.icaro.icarobackend.model.Project;
@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

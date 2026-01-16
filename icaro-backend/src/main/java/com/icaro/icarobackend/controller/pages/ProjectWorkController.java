@@ -1,10 +1,9 @@
-package com.icaro.icarobackend.controller;
+package com.icaro.icarobackend.controller.pages;
 
 import com.icaro.icarobackend.model.Project;
 import com.icaro.icarobackend.model.Work;
-import com.icaro.icarobackend.service.ProjectService;
-import com.icaro.icarobackend.service.ProjectWorkService;
-import com.icaro.icarobackend.service.WorkService;
+import com.icaro.icarobackend.service.page.ProjectService;
+import com.icaro.icarobackend.service.page.ProjectWorkService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

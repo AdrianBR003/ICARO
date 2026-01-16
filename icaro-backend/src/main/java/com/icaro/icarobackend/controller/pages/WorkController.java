@@ -1,8 +1,8 @@
-package com.icaro.icarobackend.controller;
+package com.icaro.icarobackend.controller.pages;
 
 
 import com.icaro.icarobackend.model.Work;
-import com.icaro.icarobackend.service.WorkService;
+import com.icaro.icarobackend.service.page.WorkService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

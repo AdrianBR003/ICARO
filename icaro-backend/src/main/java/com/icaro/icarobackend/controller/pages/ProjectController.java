@@ -1,9 +1,8 @@
-package com.icaro.icarobackend.controller;
+package com.icaro.icarobackend.controller.pages;
 
 import com.icaro.icarobackend.dto.ProjectSelectorDTO;
 import com.icaro.icarobackend.model.Project;
-import com.icaro.icarobackend.repository.ProjectRepository;
-import com.icaro.icarobackend.service.ProjectService;
+import com.icaro.icarobackend.service.page.ProjectService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

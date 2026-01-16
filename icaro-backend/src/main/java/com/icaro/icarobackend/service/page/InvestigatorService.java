@@ -1,10 +1,8 @@
-package com.icaro.icarobackend.service;
+package com.icaro.icarobackend.service.page;
 
-import com.icaro.icarobackend.model.Work;
 import com.icaro.icarobackend.model.Investigator;
 import com.icaro.icarobackend.repository.WorkRepository;
 import com.icaro.icarobackend.repository.InvestigatorRepository;
-import com.icaro.icarobackend.service.orcid.OrcidService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.text.Normalizer;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

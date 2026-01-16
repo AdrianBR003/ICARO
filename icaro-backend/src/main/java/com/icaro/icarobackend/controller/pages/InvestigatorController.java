@@ -1,7 +1,7 @@
-package com.icaro.icarobackend.controller;
+package com.icaro.icarobackend.controller.pages;
 
 import com.icaro.icarobackend.model.Investigator;
-import com.icaro.icarobackend.service.InvestigatorService;
+import com.icaro.icarobackend.service.page.InvestigatorService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,11 +15,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

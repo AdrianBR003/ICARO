@@ -1,4 +1,4 @@
-package com.icaro.icarobackend.service;
+package com.icaro.icarobackend.service.page;
 
 import com.icaro.icarobackend.model.Project;
 import com.icaro.icarobackend.model.Work;

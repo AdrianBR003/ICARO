@@ -1,4 +1,4 @@
-package com.icaro.icarobackend.service;
+package com.icaro.icarobackend.service.page;
 import com.icaro.icarobackend.model.New;
 import com.icaro.icarobackend.repository.NewRepository;
 
@@ -9,13 +9,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.support.PageableExecutionUtils;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors; // Import para los logs
