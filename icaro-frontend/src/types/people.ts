@@ -35,7 +35,6 @@ export interface UpdatePersonData {
   role?: string;
   email?: string;
   description?: string;
-  // Añadimos esto para "rebotar" el nombre de la imagen y que no se borre
   imageName?: string | null; 
 }
 

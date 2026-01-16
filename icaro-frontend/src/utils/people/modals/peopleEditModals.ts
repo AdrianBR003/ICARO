@@ -4,10 +4,7 @@ import { uploadEntityImage } from "@/services/general/imageService"; // <--- IMP
 
 export function initPeopleEditModal() {
   const form = document.getElementById("edit-people-form") as HTMLFormElement;
-  const cancelBtn = document.getElementById("cancel-edit-btn");
-  
-  // Referencias a los elementos de imagen
-  const previewImg = document.getElementById("edit-people-preview") as HTMLImageElement;
+  const cancelBtn = document.getElementById("cancel-edit-btn");  
   const fileInput = document.getElementById("edit-people-file") as HTMLInputElement;
   const hiddenImageInput = document.getElementById("edit-imageName") as HTMLInputElement;
 
@@ -23,7 +20,7 @@ export function initPeopleEditModal() {
   // 2. SUSCRIPCIÓN: Rellenar datos al abrir
   modalStore.subscribe(state => {
     if (state.isOpen && state.type === 'edit' && state.data) {
-      populateForm(form, state.data, previewImg, hiddenImageInput, fileInput);
+      populateForm(form, state.data, hiddenImageInput, fileInput);
     }
   });
 
@@ -99,7 +96,6 @@ export function initPeopleEditModal() {
 function populateForm(
     form: HTMLFormElement, 
     data: any, 
-    previewImg: HTMLImageElement, 
     hiddenImageInput: HTMLInputElement,
     fileInput: HTMLInputElement
 ) {
@@ -122,17 +118,6 @@ function populateForm(
   // Nota: data.imageName viene del botón "Editar" en la tarjeta (asegúrate de que PeopleCard lo pase)
   if (hiddenImageInput) {
       hiddenImageInput.value = data.imageName || "";
-  }
-
-  // 3. Previsualización Visual
-  if (previewImg) {
-      if (data.imageName) {
-          // Si tiene imagen, usar ruta de Nginx
-          previewImg.src = `/uploads/people/${data.imageName}`;
-      } else {
-          // Si no, usar default
-          previewImg.src = "/assets/people/default-profile.png";
-      }
   }
 
   // 4. Limpiar input de archivo (por si quedó sucio de la edición anterior)

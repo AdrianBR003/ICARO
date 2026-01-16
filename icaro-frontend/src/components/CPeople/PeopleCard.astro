@@ -8,15 +8,13 @@ interface Props {
 const { person } = Astro.props;
 const fullName = `${person.givenNames} ${person.familyName}`;
 
-console.log(`👤 Persona: ${person.givenNames}, Imagen: ${person.imageName}`);
-
-// 1. Incluimos el imageName en el JSON por si el controlador lo lee de ahí
+// 1. Incluimos el imageName en el JSON
 const personJson = JSON.stringify(person);
 
-// 2. Definimos la ruta local (carpeta public del frontend)
+// 2. Definimos la ruta local
 const DEFAULT_IMAGE = "/assets/defaultPeople.jpg";
 
-// 3. Calculamos la URL final: Nginx o Default
+// 3. Calculamos la URL final
 const imageUrl = person.imageName
   ? `/uploads/people/${person.imageName}`
   : DEFAULT_IMAGE;
@@ -26,13 +24,11 @@ const imageUrl = person.imageName
   class="person-card bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 relative group"
 >
   <div class="absolute top-3 right-3 flex flex-col gap-2 z-20">
-    
     <button
       type="button"
       class="edit-btn admin-control hidden group/edit p-2 rounded-full bg-white/90 shadow-sm border border-gray-200 transition-all duration-300 hover:bg-green-50 hover:ring-[#006D38]/30 transform hover:-translate-y-0.5"
-      data-entity-data={personJson}      
+      data-entity-data={personJson}
       data-person-imagename={person.imageName || ""}
-      
       title="Editar Investigador"
     >
       <svg
@@ -72,7 +68,7 @@ const imageUrl = person.imageName
     <div class="flex items-center gap-4">
       <div class="relative flex-shrink-0">
         <img
-          src={imageUrl} 
+          src={imageUrl}
           alt={`Foto de ${fullName}`}
           class="w-20 h-20 rounded-full object-cover border-2 border-gray-100 shadow-sm"
           loading="lazy"
@@ -80,7 +76,7 @@ const imageUrl = person.imageName
           onerror={`this.onerror=null; this.src='${DEFAULT_IMAGE}'`}
         />
       </div>
-      
+
       <div>
         <h3 class="text-lg font-bold text-gray-900 leading-tight">
           {fullName}
@@ -93,10 +89,9 @@ const imageUrl = person.imageName
       </div>
     </div>
 
-    <div class="space-y-3 ">
+    <div class="space-y-3">
       <div class="space-y-3 text-sm pt-2 border-t border-gray-200 mt-1"></div>
-      
-      {/* Email */}
+
       {
         person.email && (
           <div class="flex items-center gap-3 text-gray-600 group/item">
@@ -116,7 +111,6 @@ const imageUrl = person.imageName
         )
       }
 
-      {/* Telefono */}
       {
         person.phone && (
           <div class="flex items-center gap-3 text-gray-600 group/item">
@@ -130,7 +124,6 @@ const imageUrl = person.imageName
         )
       }
 
-      {/* Oficina */}
       {
         person.office && (
           <div class="flex items-center gap-3 text-gray-600 group/item">
