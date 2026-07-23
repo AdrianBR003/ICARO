@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE } from "@/configAPI";
 
 export async function createPersonService(personData: any): Promise<Response> {
   const token = localStorage.getItem("adminToken");
@@ -12,7 +12,7 @@ export async function createPersonService(personData: any): Promise<Response> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/investigators/save`, {
+    const response = await fetch(`${API_BASE}/investigators/save`, {
       method: "POST",
       headers: headers,
       body: JSON.stringify(personData),

@@ -1,4 +1,5 @@
-const ASSETS_BASE_URL = "http://localhost:8080/assets/people";
+import { API_URL } from "@/configAPI";
+const ASSETS_BASE_URL = `${API_URL}/assets/people`;
 const DEFAULT_IMG = `${ASSETS_BASE_URL}/default.jpg`;
 
 export function initPersonImageLoader() {

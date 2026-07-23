@@ -1,0 +1,69 @@
+<div id="step-2-area" class="hidden opacity-0 transition-opacity duration-500 mt-8">
+    <div class="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        <div class="bg-slate-50 px-8 py-4 border-b border-slate-200 flex justify-between items-center">
+            <h2 class="text-lg font-bold text-[#1D293D]">Revisar Datos Personales</h2>
+            <div class="bg-[#006D38]/10 text-[#006D38] px-3 py-1 rounded-full text-xs font-bold border border-[#006D38]/20">Borrador</div>
+        </div>
+
+        <div class="p-8">
+            <form id="reviewForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="col-span-1 md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">ORCID iD</label>
+                    <input type="text" id="reviewOrcidId" class="w-full bg-slate-100 border border-slate-300 text-slate-500 text-sm rounded-lg p-2.5 font-mono cursor-not-allowed" readonly />
+                </div>
+                <div>
+                    <label for="reviewName" class="block text-sm font-semibold text-[#1D293D] mb-1">Nombre</label>
+                    <input type="text" id="reviewName" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-[#006D38] focus:border-[#006D38]" required />
+                </div>
+                <div>
+                    <label for="reviewLastName" class="block text-sm font-semibold text-[#1D293D] mb-1">Apellidos</label>
+                    <input type="text" id="reviewLastName" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-[#006D38] focus:border-[#006D38]" required />
+                </div>
+                <div>
+                    <label for="reviewRole" class="block text-sm font-semibold text-[#1D293D] mb-1">Cargo / Rol</label>
+                    <input type="text" id="reviewRole" placeholder="Ej: Catedrático, Investigador..." class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-[#006D38] focus:border-[#006D38]" />
+                </div>
+                <div>
+                    <label for="reviewOffice" class="block text-sm font-semibold text-[#1D293D] mb-1">Despacho</label>
+                    <input type="text" id="reviewOffice" placeholder="Ej: A3-120" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-[#006D38] focus:border-[#006D38]" />
+                </div>
+                <div>
+                    <label for="reviewEmail" class="block text-sm font-semibold text-[#1D293D] mb-1">Email</label>
+                    <input type="email" id="reviewEmail" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-[#006D38] focus:border-[#006D38]" />
+                </div>
+                <div>
+                    <label for="reviewPhone" class="block text-sm font-semibold text-[#1D293D] mb-1">Teléfono</label>
+                    <input type="text" id="reviewPhone" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-[#006D38] focus:border-[#006D38]" />
+                </div>
+                <div class="col-span-1 md:col-span-2">
+                    <label for="reviewBio" class="block text-sm font-semibold text-[#1D293D] mb-1">Biografía</label>
+                    <textarea id="reviewBio" rows="3" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-[#006D38] focus:border-[#006D38]"></textarea>
+                </div>
+
+                <div class="col-span-1 md:col-span-2 mt-4 pt-6 border-t border-slate-100">
+                    <h3 class="text-lg font-bold text-[#1D293D] mb-2">Previsualización de Works</h3>
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-4">
+                        <p class="text-sm text-amber-700">
+                            <strong>Nota:</strong> En el siguiente paso verificaremos si estos trabajos ya existen en la base de datos (Duplicados).
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <div><p class="text-sm font-medium text-[#1D293D]">Resumen:</p><p class="text-xs text-slate-500 mt-1" id="worksCountLabel">...</p></div>
+                        <div class="flex items-center gap-2">
+                            <input id="importWorksCheck" type="checkbox" checked class="w-5 h-5 text-[#006D38] rounded focus:ring-[#006D38]">
+                            <label for="importWorksCheck" class="text-sm font-medium text-slate-700">Analizar Investigaciones</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="flex justify-between mt-8 pt-6 border-t border-slate-100">
+                <button id="backBtn" type="button" class="text-slate-500 hover:text-[#1D293D] font-medium text-sm px-4 py-2 flex items-center gap-2">← Volver</button>
+                <button id="saveInvestigatorBtn" type="button" class="px-6 py-3 bg-[#1D293D] hover:bg-[#006D38] text-white font-bold rounded-lg shadow-lg flex items-center gap-2">
+                    <span>Analizar y Ver Resumen</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

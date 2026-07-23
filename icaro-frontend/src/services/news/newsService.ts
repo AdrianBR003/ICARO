@@ -1,6 +1,7 @@
 import { backendStatus } from "@/stores/backendStatusStore";
 import type { News, NewsPage } from "@/types/news";
 import { hideLoader, updateLoaderState } from "../general/loaderService";
+import { API_BASE } from "@/configAPI";
 
 interface ApiNewsItem {
   id?: string;
@@ -9,9 +10,9 @@ interface ApiNewsItem {
   link?: string;
   publicationDate?: string;
   authors?: string;
+  highlighted?: boolean; 
+  imageName?: string; 
 }
-
-const API_BASE = "http://localhost:8080";
 
 function formatNewsItem(item: ApiNewsItem): News {
   if (item.id == null || item.id.length == 0) {
@@ -25,6 +26,8 @@ function formatNewsItem(item: ApiNewsItem): News {
     link: item.link || "Sin link",
     publicationDate: item.publicationDate || "",
     ...(item.authors && { authors: item.authors }),
+    highlighted: Boolean(item.highlighted === true),
+    imageName: item.imageName || null,
   };
 }
 
@@ -35,20 +38,37 @@ export async function fetchNewsPage(
   page: number = 0,
   size: number = 5
 ): Promise<NewsPage> {
-  const url = new URL(`${API_BASE}/api/news/page`);
+  const url = new URL(`${API_BASE}/news/page`);
   url.searchParams.append("page", page.toString());
   url.searchParams.append("size", size.toString());
 
+  if (import.meta.env.SSR) {
+      console.log(`🚀 [SSR-DEBUG] Petición interna a: ${url.toString()}`);
+  }
 
   try {
-    const res = await fetch(url.toString());
+    // CAMBIO: Añadimos headers explícitos
+    const res = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json' // Importante para que Spring sepa qué devolver
+      }
+    });
     
     if (!res.ok) {
-      throw new Error(`NewService - HTTP Error ${res.status}`);
+        // Logueamos el texto de error que devuelve Spring (a veces explica el 400)
+        const errorText = await res.text(); 
+        console.error(`❌ [SSR-ERROR] Status: ${res.status} - Body: ${errorText}`);
+        throw new Error(`NewService - HTTP Error ${res.status}`);
     }
 
+    // Ojo: Si ya leímos el body con res.text() arriba para el error, 
+    // no podemos hacer res.json() abajo directamente sin clonar.
+    // Como el error lanza throw, aquí abajo el body sigue intacto si entra al OK.
     const pageData: NewsPage = (await res.json()) as NewsPage;
     
+    // ... resto del código ...
     pageData.content = pageData.content.map(formatNewsItem);
     return pageData;
 
@@ -62,7 +82,7 @@ export async function fetchNewsPage(
  * Obtiene TODAS las noticias en una sola llamada.
  */
 export async function fetchAllNews(): Promise<News[]> {
-  const url = `${API_BASE}/api/news/all`;  
+  const url = `${API_BASE}/news/all`;  
   try {
     const res = await fetch(url);
     if (!res.ok) {
@@ -88,7 +108,7 @@ export async function searchNews(
   size: number = 5
 ): Promise<NewsPage> {
 
-  const url = new URL(`${API_BASE}/api/news/search`);
+  const url = new URL(`${API_BASE}/news/search`);
 
   url.searchParams.append("query", query);
   url.searchParams.append("page", page.toString());

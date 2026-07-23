@@ -1,12 +1,16 @@
-import { createImageLoader } from "@/utils/general/imageLoaderFactory";
+// /utils/news/modals/newsListUtils.ts
+
+
 import { initializeAdminUI } from "@/utils/general/adminUI";
 import { setupAdvancedSearch } from "@/utils/general/searchFilter";
 import { initializeModalController } from "@/utils/news/newsModalController";
 import { backendStatus } from "@/stores/backendStatusStore";
-import { updateLoaderState, hideLoader } from "@/services/general/loaderService";
+import { updateLoaderState, hideLoader, showLoader } from "@/services/general/loaderService";
+import { API_BASE, API_URL } from "@/configAPI"; 
 
 export function initNewsList() {
   const LOADER_ID = 'news-list-loader';
+  const loaderWrapper = document.getElementById('news-list-loader-wrapper');
   const contentArea = document.getElementById('content-area');
   const listContainer = document.getElementById('news-list-container');
   const hasData = listContainer !== null;
@@ -14,71 +18,64 @@ export function initNewsList() {
   const urlParams = new URLSearchParams(window.location.search);
   const currentQuery = urlParams.get('query');
 
-  // 1. Gestión del Loader y Estado
   const refreshState = () => {
     const status = backendStatus.get();
 
+    // 1. ESTADO: OFFLINE
     if (status === 'offline') {
-      if (contentArea) contentArea.classList.add('opacity-0');
+      if (contentArea) contentArea.classList.add('opacity-50', 'pointer-events-none'); // Deshabilitar visualmente en vez de ocultar total
+      if (loaderWrapper) loaderWrapper.classList.remove('hidden');
       updateLoaderState(LOADER_ID, 'error', 'Sin conexión con el servidor');
       return;
     }
 
+    // 2. ESTADO: ONLINE PERO SIN DATOS (Lista vacía o búsqueda sin resultados)
     if (!hasData) {
-      if (contentArea) contentArea.classList.add('opacity-0');
+      if (contentArea) contentArea.classList.add('hidden');
+      if (loaderWrapper) loaderWrapper.classList.remove('hidden');
       
       const msg = currentQuery 
         ? `Sin resultados para "${currentQuery}"` 
-        : "No hay noticias disponibles"; // Mensaje por defecto si está vacío
+        : "No hay noticias disponibles";
         
       updateLoaderState(LOADER_ID, 'empty', msg);
       return;
     }
 
+    // 3. ESTADO: ONLINE Y CON DATOS (Todo OK)
+    // Ocultamos el loader y nos aseguramos de que el contenido se vea
     hideLoader(LOADER_ID);
-    if (contentArea) contentArea.classList.remove('opacity-0');
+    if (loaderWrapper) loaderWrapper.classList.add('hidden');
+    if (contentArea) {
+        contentArea.classList.remove('opacity-50', 'pointer-events-none', 'hidden');
+    }
   };
 
-  // Suscripción al store
+  // Suscripción al store de estado
   refreshState();
   backendStatus.subscribe(refreshState);
 
-  // 2. Inicialización de UI
+  // Inicializadores
   initializeAdminUI();
   initializeModalController();
 
-  // 3. Configuración del Buscador (SearchFilter)
+  // Restaurar valor del input de búsqueda si venimos de una query
   const searchInput = document.getElementById('news-search') as HTMLInputElement;
   if (currentQuery && searchInput) searchInput.value = currentQuery;
 
+  // Configuración del buscador
   setupAdvancedSearch({
     inputId: "news-search",
-    
-    // IMPORTANTE: ID del botón X para que funcione la limpieza
     clearBtnId: "news-search-clear", 
-    
-    // Asegúrate de que este endpoint sea correcto (search o paged)
-    searchEndpoint: "http://localhost:8080/api/news/search", 
+    // Usamos API_BASE para que en Prod sea /api/news/search y Nginx lo rutee bien
+    searchEndpoint: `${API_BASE}/news/search`, 
     baseUrl: window.location.pathname,
     debounceMs: 300,
-    
-    // Formateador para adaptar el JSON de News al buscador
     formatter: (item) => {
       return {
         title: item.title,
-        // Usa summary, description o body recortado
         description: item.summary || item.description || "" 
       };
     }
   });
-
-  // 4. Carga de Imágenes (Lazy Loading)
-  if (hasData) {
-      const newsImageLoader = createImageLoader({
-        basePath: "http://localhost:8080/assets/news", // Ajusta si tu ruta de assets es diferente
-        dataAttribute: "data-news-image",
-      });
-      newsImageLoader.loadImages();
-      newsImageLoader.setupObserver("news-list-container");
-  }
 }

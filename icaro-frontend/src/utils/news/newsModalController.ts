@@ -1,3 +1,8 @@
+/**
+ * utils/news/modals/newsModalController.ts
+ * Este archivo es el encargado de leer los datos de los botones y pasárselos al Store
+ */
+
 import { modalStore, modalActions, type ModalType } from '@/stores/modalStore';
 
 let scrollPosition = 0;
@@ -53,14 +58,28 @@ function attachCardButtonListeners() {
       e.preventDefault();
       const target = e.currentTarget as HTMLElement;
       
+      // Leer atributos del botón con más debug
+      const highlightedAttr = target.dataset.newsHighlighted;
+      const highlightedBool = highlightedAttr === 'true';
+      
+      console.log('🔍 Leyendo datos del botón:', {
+        rawAttribute: highlightedAttr,
+        typeOf: typeof highlightedAttr,
+        booleanValue: highlightedBool,
+        allDataset: target.dataset
+      });
+      
       const data = {
         id: target.dataset.newsId || '',
         title: target.dataset.newsTitle || '',
         description: target.dataset.newsDescription || '',
         link: target.dataset.newsLink || '',
         publicationDate: target.dataset.newsPublicationdate || '',
+        highlighted: highlightedBool,  // Ya es boolean aquí
+        imageName: target.dataset.newsImagename || null
       };
-
+      
+      console.log('📤 Enviando al store:', data);
       modalActions.open('edit', data);
     });
   });
@@ -91,16 +110,12 @@ function openModalUI(type: ModalType, data: any) {
     case 'add':
       modalElement = document.getElementById('modal-add-news');
       if (modalElement) {
-        // El modal de add maneja su propio reseteo
         resetAddForm();
       }
       break;
       
     case 'edit':
       modalElement = document.getElementById('editModal');
-      if (modalElement) {
-        fillEditForm(data);
-      }
       break;
       
     case 'delete':
@@ -124,7 +139,6 @@ function openModalUI(type: ModalType, data: any) {
   // --- Mostrar modal ---
   modalElement.classList.remove('hidden');
 
-  // --- Enfocar primer input ---
   setTimeout(() => {
     const firstInput = modalElement?.querySelector('input:not([readonly]):not([type="hidden"])') as HTMLElement;
     firstInput?.focus();
@@ -135,7 +149,6 @@ function openModalUI(type: ModalType, data: any) {
  * Cierra todos los modales
  */
 function closeModalUI() {
-  // Cerrar todos los modales
   ['modal-add-news', 'editModal', 'deleteNewsModal'].forEach(id => {
     const modal = document.getElementById(id);
     if (modal && !modal.classList.contains('hidden')) {
@@ -147,23 +160,6 @@ function closeModalUI() {
   document.body.classList.remove('modal-open');
   document.body.style.top = '';
   window.scrollTo(0, scrollPosition);
-}
-
-/**
- * Rellena el formulario de edición con los datos
- */
-function fillEditForm(data: any) {
-  const form = document.getElementById('editForm') as HTMLFormElement;
-  if (!form) return;
-
-  // Rellenar campos
-  (document.getElementById('editId') as HTMLInputElement).value = data.id || '';
-  (document.getElementById('editIdDisplay') as HTMLInputElement).value = data.id || '';
-  (document.getElementById('editTitle') as HTMLInputElement).value = data.title || '';
-  (document.getElementById('editDescription') as HTMLTextAreaElement).value = data.description || '';
-  (document.getElementById('editLink') as HTMLInputElement).value = data.link || '';
-  (document.getElementById('editpublicationDate') as HTMLInputElement).value = data.publicationDate || '';
-  (document.getElementById('editHighlighted') as HTMLInputElement).checked = data.highlighted || false;
 }
 
 /**
@@ -217,11 +213,10 @@ function attachGlobalListeners() {
  * Adjunta listeners a todos los botones de cerrar/cancelar
  */
 function attachCloseButtons() {
-  // Botones específicos de cada modal
   const closeButtons = [
-    'btn-close-modal',      // Add modal
-    'btn-cancel',           // Add modal
-    'cancelNewsDeleteBtn',  // Delete modal
+    'btn-close-modal',
+    'btn-cancel',
+    'cancelNewsDeleteBtn',
   ];
 
   closeButtons.forEach(id => {
@@ -234,7 +229,6 @@ function attachCloseButtons() {
     }
   });
 
-  // Botones que usan onclick="window.hideModal()" (Edit modal)
   document.querySelectorAll('[onclick*="hideModal"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();

@@ -1,56 +1,54 @@
 ---
-
 ---
 
 <div class="bg-slate-800 text-slate-200 text-xs">
   <div class="container mx-auto px-4 flex justify-end gap-4 py-1">
-    <a href="/lang" class="hidden sm:inline hover:text-white transition-colors"
-      >ES</a
-    >
     <button
       id="adminToggle"
-      class="cursor-pointer bg-transparent border-none text-inherit px-2 py-1 rounded hover:bg-slate-700 transition-all duration-200"
+      class="cursor-pointer bg-transparent border-none text-inherit px-2 py-1 rounded hover:bg-slate-700 transition-all duration-200 flex items-center gap-2"
     >
-      Admin
+      <span id="adminText">Cargando...</span>
     </button>
   </div>
 </div>
 
 <script>
-  import { adminState, logoutAdmin } from "@/stores/auth";
+  import { adminState } from "@/stores/auth";
 
   const adminToggle = document.getElementById("adminToggle");
+  const adminText = document.getElementById("adminText");
 
-  // Nos suscribimos a Atom para actualizar el texto del boton
+  // 1. Suscripción para cambiar el TEXTO y ESTILO visual
   adminState.subscribe((state) => {
-    if (adminToggle != null) {
+    if (adminToggle && adminText) {
       if (state.isAdmin) {
-        adminToggle.textContent = state.username
-          ? `${state.username}`
-          : "Admin Activo";
-        adminToggle.classList.add("text-green-400", "font-bold");
+        // MODO ADMIN: Mostrar nombre y ponerlo en verde
+        adminText.textContent = state.username 
+          ? `Ir al Panel (${state.username})` 
+          : "Ir al Panel";
+        
+        adminToggle.classList.add("text-emerald-400", "font-semibold");
+        adminToggle.classList.remove("text-slate-200");
       } else {
-        adminToggle.textContent = "Admin";
-        adminToggle.classList.add("text-green-400", "font-bold");
+        // MODO INVITADO: Mostrar Iniciar Sesión normal
+        adminText.textContent = "Iniciar Sesión";
+        
+        adminToggle.classList.remove("text-emerald-400", "font-semibold");
+        adminToggle.classList.add("text-slate-200");
       }
-    }else{
-      console.error("El boton Admin no se ha actualizado correctamente"); 
     }
   });
 
-  // El click ahora llama a las funciones del store
+  // 2. Evento CLICK para la NAVEGACIÓN
+  adminToggle?.addEventListener('click', () => {
+    const currentState = adminState.get();
 
-  adminToggle?.addEventListener('click', ()=>{
-    const currentState = adminState.get(); 
-
-    if(currentState.isAdmin){
-      // Logout
-      logoutAdmin(); 
-      adminToggle.textContent = 'Sesion cerrada'; 
-      setTimeout(() => window.location.reload(), 1000); 
-    }else{
-      window.location.href = '/admin-login';
+    if (currentState.isAdmin) {
+      // Si ya es admin, lo llevamos al PANEL
+      window.location.href = '/admin/dashboard'; 
+    } else {
+      // Si no es admin, lo llevamos al LOGIN
+      window.location.href = '/admin-login'; // O '/login' según tu ruta
     }
-  })
-
+  });
 </script>

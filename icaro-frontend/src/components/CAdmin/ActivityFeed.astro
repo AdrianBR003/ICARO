@@ -1,0 +1,38 @@
+<div class="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] border border-slate-200 h-full flex flex-col min-h-[400px]">
+  
+  <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-xl">
+    <h3 class="font-bold text-[#1D293D] text-lg flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      Auditoría de Cambios
+    </h3>
+    <div class="flex items-center gap-2 bg-red-50 px-2 py-1 rounded-full border border-red-100">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+        </span>
+        <span class="text-[10px] font-bold text-red-600 uppercase tracking-wider">REC</span>
+    </div>
+  </div>
+
+  <div class="flex-1 p-2 overflow-y-auto max-h-[500px] scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+    <div id="activity-feed-list" class="space-y-1">
+       <div class="animate-pulse p-4 space-y-4">
+           <div class="h-12 bg-slate-50 rounded w-full"></div>
+           <div class="h-12 bg-slate-50 rounded w-full"></div>
+           <div class="h-12 bg-slate-50 rounded w-full"></div>
+       </div>
+    </div>
+  </div>
+
+  <div class="p-3 bg-slate-50 border-t border-slate-100 rounded-b-xl text-center flex justify-between px-6">
+    <span class="text-xs text-slate-400">Archivo: /app/logs/audit/admin-audit.log</span>
+    <span class="text-xs text-slate-400">Persistencia: Docker Volume</span>
+  </div>
+</div>
+
+<script>
+  import { initActivityFeed } from "@/utils/admin/activityFeedUtils";
+  initActivityFeed();
+</script>

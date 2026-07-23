@@ -1,11 +1,9 @@
 import type { News } from "@/types/news";
-
-const API_URL = "http://localhost:8080/api/news/Hnews";
-const DEFAULT_IMAGE = "http://localhost:8080/assets/news/default.png";
+import { API_BASE, API_URL } from "@/configAPI";
+const DEFAULT_IMAGE = `${API_URL}/assets/news/default.png`;
 
 export async function fetchHighlightedNews(): Promise<News[]> {
-  console.log('🌐 [CAROUSEL] Fetching desde:', API_URL);
-  const response = await fetch(API_URL);
+  const response = await fetch(`${API_BASE}/news/Hnews`);
   
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

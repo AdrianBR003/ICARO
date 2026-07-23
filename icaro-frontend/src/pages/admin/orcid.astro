@@ -1,0 +1,41 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+
+// Importación de Componentes
+import OrcidProgress from "@/components/CAdmin/orcid/OrcidProgress.astro";
+import OrcidSearchS1 from "@/components/CAdmin/orcid/OrcidSearchS1.astro";
+import OrcidReviewS2 from "@/components/CAdmin/orcid/OrcidReviewS2.astro";
+import OrcidSumaryS3 from "@/components/CAdmin/orcid/OrcidSumaryS3.astro";
+---
+
+<AdminLayout title="Importar Investigador">
+  
+  <div class="max-w-6xl mx-auto">
+    
+    <div class="mb-8 text-center">
+      <h1 class="text-2xl font-bold text-[#1D293D]">Importar desde ORCID</h1>
+      <p class="text-slate-500 mt-2">Gestión centralizada de investigadores y producción científica.</p>
+      
+      <OrcidProgress />
+    </div>
+
+    <OrcidSearchS1 />
+    <OrcidReviewS2 />
+    <OrcidSumaryS3 />
+
+    <div id="duplicateLoader" class="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center">
+        <div class="w-16 h-16 border-4 border-slate-200 border-t-[#006D38] rounded-full animate-spin mb-4"></div>
+        <h3 class="text-lg font-bold text-[#1D293D]">Analizando duplicados...</h3>
+        <p class="text-slate-500 text-sm">Consultando Base de Datos con algoritmos estrictos</p>
+    </div>
+
+  </div>
+</AdminLayout>
+
+<script>
+    import { initOrcidFlow } from "@/utils/admin/orcid/orcidMain";
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        initOrcidFlow();
+    });
+</script>

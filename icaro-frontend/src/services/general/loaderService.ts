@@ -1,4 +1,3 @@
-// src/services/general/loaderService.ts
 import { backendStatus } from "@/stores/backendStatusStore";
 
 export type LoaderState = "loading" | "error" | "empty" | "hidden";

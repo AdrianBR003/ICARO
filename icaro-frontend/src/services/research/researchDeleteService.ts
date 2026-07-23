@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE } from "@/configAPI";
 
 export async function deleteResearchService(id: string): Promise<Response> {
   const token = localStorage.getItem("adminToken");
@@ -12,7 +12,7 @@ export async function deleteResearchService(id: string): Promise<Response> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/works/delete/${id}`, {
+    const response = await fetch(`${API_BASE}/works/delete/${id}`, {
       method: "DELETE",
       headers: headers,
     });

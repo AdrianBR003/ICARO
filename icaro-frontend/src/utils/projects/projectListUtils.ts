@@ -2,11 +2,11 @@ import { backendStatus } from "@/stores/backendStatusStore";
 import { updateLoaderState, hideLoader } from "@/services/general/loaderService";
 import { initializeAdminUI } from "@/utils/general/adminUI";
 import { setupAdvancedSearch } from "@/utils/general/searchFilter";
-
 import { initializeProjectModalController } from "@/utils/projects/modals/projectModalController";
-
 import { initializeProjectAddModal } from "@/utils/projects/modals/projectsAddModal";
 import { initProjectEditModal } from "@/utils/projects/modals/projectsEditModals";
+import { API_BASE } from "@/configAPI";
+
 
 export function initProjectList() {
   const LOADER_ID = 'project-list-loader';
@@ -64,7 +64,7 @@ export function initProjectList() {
   setupAdvancedSearch({
     inputId: "project-search",
     clearBtnId: "project-search-clear",
-    searchEndpoint: "http://localhost:8080/api/project/paged",
+    searchEndpoint: `${API_BASE}/project/paged`,
     baseUrl: window.location.pathname,
     debounceMs: 300,
   });

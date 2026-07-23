@@ -1,0 +1,145 @@
+---
+// BackendStatus.astro
+// Este componente se monta estático y luego se hidrata (cobra vida) en el cliente
+---
+
+<div class="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] border border-slate-200 overflow-hidden">
+  <div class="p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-bold text-[#1D293D] text-lg">Backend Status</h3>
+      
+      <span id="status-badge" class="flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 text-xs rounded-full font-bold border border-slate-200 transition-colors duration-300">
+        <span class="relative flex h-2.5 w-2.5">
+          <span id="status-ping" class="hidden absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
+          <span id="status-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-400"></span>
+        </span>
+        <span id="status-text">CONNECTING...</span>
+      </span>
+    </div>
+
+    <div class="space-y-4">
+      <div class="flex justify-between text-sm">
+        <span class="text-slate-500">Servicio:</span>
+        <span id="service-name" class="font-medium text-[#1D293D]">Cargando...</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span class="text-slate-500">Versión:</span>
+        <span id="service-version" class="font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600 text-xs">...</span>
+      </div>
+      <div class="flex justify-between text-sm flex-col sm:flex-row gap-1 sm:gap-0">
+        <div class="flex justify-between w-full">
+            <span class="text-slate-500">Memoria:</span>
+            <span id="memory-text" class="text-xs text-slate-400 font-mono ml-auto sm:ml-2">0%</span>
+        </div>
+        <div class="w-full sm:w-24 bg-slate-100 rounded-full h-2 mt-1.5 relative overflow-hidden ml-0 sm:ml-2">
+          <div id="memory-bar" class="bg-slate-300 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-slate-50 border-t border-slate-100 p-4 grid grid-cols-2 gap-3">
+    <button id="btn-restart" class="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:border-amber-300 transition-all text-sm font-semibold group disabled:opacity-50 disabled:cursor-not-allowed" title="Reiniciar Servicio">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+      Reiniciar
+    </button>
+    <button id="btn-stop" class="flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-300 transition-all text-sm font-semibold group disabled:opacity-50 disabled:cursor-not-allowed" title="Detener Servicio">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      Detener
+    </button>
+  </div>
+</div>
+
+<script>
+  import { fetchSystemStatus, restartServerService, stopServerService } from "@/services/admin/backendAdminService";
+
+  // Elementos del DOM
+  const dom = {
+    badge: document.getElementById('status-badge'),
+    ping: document.getElementById('status-ping'),
+    dot: document.getElementById('status-dot'),
+    text: document.getElementById('status-text'),
+    name: document.getElementById('service-name'),
+    version: document.getElementById('service-version'),
+    memBar: document.getElementById('memory-bar'),
+    memText: document.getElementById('memory-text'),
+    btnRestart: document.getElementById('btn-restart') as HTMLButtonElement,
+    btnStop: document.getElementById('btn-stop') as HTMLButtonElement
+  };
+
+  const updateUI = (online: boolean, data: any) => {
+    if (!dom.badge || !dom.text || !dom.dot || !dom.ping) return;
+
+    if (online) {
+      // Estilos ONLINE
+      dom.badge.className = "flex items-center gap-2 px-3 py-1 bg-[#006D38]/10 text-[#006D38] text-xs rounded-full font-bold border border-[#006D38]/20 transition-colors duration-300";
+      dom.dot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-[#006D38]";
+      dom.ping.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006D38] opacity-75";
+      dom.ping.classList.remove('hidden');
+      dom.text.innerText = "ONLINE";
+
+      // Datos
+      if(dom.name) dom.name.innerText = data.serviceName;
+      if(dom.version) dom.version.innerText = data.version;
+      
+      // Memoria
+      const mem = data.memoryUsage || 0;
+      if(dom.memBar) {
+          dom.memBar.style.width = `${mem}%`;
+          dom.memBar.className = `h-full rounded-full transition-all duration-500 ${mem > 80 ? 'bg-red-500' : mem > 50 ? 'bg-amber-500' : 'bg-[#006D38]'}`;
+      }
+      if(dom.memText) dom.memText.innerText = `${mem}%`;
+
+    } else {
+      // Estilos OFFLINE
+      dom.badge.className = "flex items-center gap-2 px-3 py-1 bg-red-100 text-red-600 text-xs rounded-full font-bold border border-red-200 transition-colors duration-300";
+      dom.dot.className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500";
+      dom.ping.classList.add('hidden');
+      dom.text.innerText = "OFFLINE";
+      
+      if(dom.memBar) {
+          dom.memBar.style.width = "0%";
+          dom.memBar.className = "bg-slate-300 h-full rounded-full";
+      }
+    }
+  };
+
+  const loadStatus = async () => {
+    const status = await fetchSystemStatus();
+    updateUI(status.online, status);
+  };
+
+  // 1. Carga inicial
+  loadStatus();
+
+  // 2. Polling cada 10 segundos
+  const interval = setInterval(loadStatus, 10000);
+
+  // 3. Listeners de Botones
+  dom.btnRestart?.addEventListener('click', async () => {
+    if(!confirm("¿Seguro que quieres reiniciar el servidor?")) return;
+    const addNotification = (window as any).addNotification || alert;
+    
+    addNotification("info", "Enviando señal de reinicio...");
+    const success = await restartServerService();
+    if(success) addNotification("success", "El servidor se está reiniciando.");
+    else addNotification("error", "Error al intentar reiniciar.");
+  });
+
+  dom.btnStop?.addEventListener('click', async () => {
+    if(!confirm("PELIGRO: Esto detendrá el backend. ¿Continuar?")) return;
+    const addNotification = (window as any).addNotification || alert;
+    
+    const success = await stopServerService();
+    if(success) {
+        addNotification("warning", "Servidor detenido.");
+        updateUI(false, {}); // Forzar UI offline
+    } else {
+        addNotification("error", "Error al detener.");
+    }
+  });
+
+  // Limpieza al desmontar (por si Astro hiciera transiciones SPA)
+  document.addEventListener('astro:before-swap', () => clearInterval(interval));
+
+</script>

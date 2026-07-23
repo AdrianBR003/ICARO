@@ -7,6 +7,7 @@ export interface InvestigatorDTO {
   phone: string;
   office: string;
   biography: string;
+  imageName?: string | null;
 }
 
 // Respuesta de Paginación de SpringBoot
@@ -26,4 +27,19 @@ export interface PeoplePageData {
   people: InvestigatorDTO[];
   totalPages: number;
   currentPage: number;
+}
+
+export interface UpdatePersonData {
+  id: string;
+  name: string;
+  role?: string;
+  email?: string;
+  description?: string;
+  imageName?: string | null; 
+}
+
+export interface UpdatePersonResponse {
+  success: boolean;
+  message: string;
+  data?: any;
 }

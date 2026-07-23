@@ -1,6 +1,6 @@
 import type { ResearchPageDTO } from "@/types/research";
 
-const API_BASE_URL = "http://localhost:8080";
+import { API_BASE } from "@/configAPI";
 
 /**
  * Obtiene trabajos de investigación paginados y filtrados.
@@ -25,7 +25,7 @@ export async function fetchResearchPaged(
     if (projectFilter) params.append("projectId", projectFilter);
     if (tagFilter) params.append("tag", tagFilter);
 
-    const response = await fetch(`${API_BASE_URL}/api/works/paged?${params.toString()}`);
+    const response = await fetch(`${API_BASE}/works/paged?${params.toString()}`);
 
     if (!response.ok) {
       throw new Error(`HTTP Error: ${response.status}`);
@@ -51,7 +51,7 @@ export async function fetchResearchPaged(
 
 export async function fetchUniqueTags(): Promise<string[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/works/tags`); 
+    const response = await fetch(`${API_BASE}/works/tags`); 
     if (!response.ok) return [];
     return await response.json();
   } catch (error) {

@@ -1,6 +1,4 @@
-// services/news/newsDeleteService.ts
-
-const API_BASE = "http://localhost:8080/api/news";
+import { API_BASE } from "@/configAPI";
 
 export interface DeleteNewsResponse {
   success: boolean;
@@ -15,7 +13,7 @@ export async function deleteNews(
   authHeaders: HeadersInit
 ): Promise<DeleteNewsResponse> {
   try {
-    const response = await fetch(`${API_BASE}/delete/${newsId}`, {
+    const response = await fetch(`${API_BASE}/news/delete/${newsId}`, {
       method: "DELETE",
       headers: authHeaders,
     });
@@ -80,7 +78,7 @@ export async function verifyAdminPermissions(): Promise<boolean> {
     const token = localStorage.getItem("adminToken");
     if (!token) return false;
 
-    const response = await fetch("http://localhost:8080/api/auth/verify", {
+    const response = await fetch(`${API_BASE}/auth/verify`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

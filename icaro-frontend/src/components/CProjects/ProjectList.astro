@@ -18,16 +18,11 @@ const initialLoaderText = projects.length > 0
   : (hasQuery ? "No se encontraron resultados" : "No hay proyectos disponibles");
 ---
 
-<div id="projects-page-wrapper" class="relative min-h-[400px]">
+<div id="projects-page-wrapper" class="flex flex-col gap-4">
   
-  <Loader 
-    id="project-list-loader" 
-    text={initialLoaderText}
-  />
-
   <ProjectAdd />
 
-  <div class="w-full max-w-custom mb-6 relative z-[60]">
+  <div class="w-full max-w-custom relative z-[60]">
     <SearchFilter
       inputId="project-search"
       placeholder="Buscar proyectos por título..."
@@ -35,22 +30,30 @@ const initialLoaderText = projects.length > 0
     />
   </div>
 
-  <div id="content-area" class="transition-opacity duration-500 opacity-0">
-    {
-      projects.length > 0 && (
-        <div id="project-list-container" class="space-y-6">
-          {projects.map((projectItem) => (
-            <article class="project-card-item" data-project-id={projectItem.id}>
-              <ProjectCard Project={projectItem} />
-            </article>
-          ))}
-        </div>
-      )
-    }
-  </div>
+  <div class="relative min-h-[400px]">
+    
+    <Loader 
+      id="project-list-loader" 
+      text={initialLoaderText}
+    />
 
-  <ProjectEdit />
+    <div id="content-area" class="transition-opacity duration-500 opacity-0">
+      {
+        projects.length > 0 && (
+          <div id="project-list-container" class="space-y-6">
+            {projects.map((projectItem) => (
+              <article class="project-card-item" data-project-id={projectItem.id}>
+                <ProjectCard Project={projectItem} />
+              </article>
+            ))}
+          </div>
+        )
+      }
+    </div>
+
+  </div> <ProjectEdit />
   <ProjectDelete />
+
 </div>
 
 <script>

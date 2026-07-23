@@ -1,10 +1,7 @@
 package com.icaro.icarobackend.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Singular;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class Investigator {
     @Id
     private String orcid;
@@ -22,4 +20,5 @@ public class Investigator {
     private String phone;
     private String office;
     private String biography;
+    private String imageName;
 }

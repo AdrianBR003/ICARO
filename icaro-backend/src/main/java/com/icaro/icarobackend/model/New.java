@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Document("news")
 @Data
 @AllArgsConstructor
-@Builder // Se utiliza para crear un constructor cuando hay campos opcionales
+@Builder
 public class New {
 
     @Id
@@ -24,6 +24,8 @@ public class New {
     private boolean highlighted;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate publicationDate;
+    // String del nombre de la imagen para luego identificarla mejor
+    private String imageName;
 
     public New() {}
 }

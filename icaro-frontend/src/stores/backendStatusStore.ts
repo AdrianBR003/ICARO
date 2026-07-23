@@ -1,7 +1,5 @@
 import { atom } from "nanostores";
-
-const API_BASE = "http://localhost:8080";
-
+import { API_BASE } from "@/configAPI";
 
 export const backendStatus = atom<"online" | "offline" | "checking">(
   "checking"
@@ -10,7 +8,7 @@ export const backendStatus = atom<"online" | "offline" | "checking">(
 export async function checkBackend() {
   backendStatus.set("checking");
   try {
-    const res = await fetch(`${API_BASE}/api/health`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/health`, { cache: "no-store" });
     if(res.ok){
         backendStatus.set('online'); 
     }else{

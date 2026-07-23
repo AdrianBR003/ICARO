@@ -1,0 +1,95 @@
+<div id="step-3-area" class="hidden opacity-0 transition-opacity duration-500 mt-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div class="md:col-span-1 space-y-6">
+            <h3 class="font-bold text-[#1D293D] text-lg">Vista Previa Perfil</h3>
+            
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden relative">
+                <div class="p-6 flex flex-col gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="relative flex-shrink-0">
+                            <div class="w-20 h-20 rounded-full bg-slate-100 border-2 border-gray-100 flex items-center justify-center text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">New</div>
+                        </div>
+                        <div>
+                            <h3 id="previewCardName" class="text-lg font-bold text-gray-900 leading-tight"></h3>
+                            <p id="previewCardRole" class="text-sm font-medium text-[#006D38] mt-1"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2 border-t border-gray-50 mt-1">
+                        <div id="previewCardEmailContainer" class="flex items-center gap-3 text-gray-600">
+                            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" /><path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" /></svg>
+                            <span id="previewCardEmail" class="truncate text-sm"></span>
+                        </div>
+                        <div id="previewCardPhoneContainer" class="flex items-center gap-3 text-gray-600">
+                            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
+                            <span id="previewCardPhone" class="text-sm"></span>
+                        </div>
+                        <div id="previewCardOfficeContainer" class="flex items-center gap-3 text-gray-600">
+                            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" /></svg>
+                            <span id="previewCardOffice" class="text-sm"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="md:col-span-2">
+            <h3 class="font-bold text-[#1D293D] text-lg mb-4">Investigaciones Verificadas</h3>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4 rounded-r-lg shadow-sm">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700 font-bold">Detección de Duplicados Estricto</p>
+                        <p class="text-xs text-blue-600 mt-1">
+                            Se han aplicado filtros muy rigurosos para evitar duplicados en la base de datos (ignorando guiones, mayúsculas o pequeñas variaciones). 
+                            <br>
+                            <strong>Por favor, revise la lista:</strong> Algunos trabajos distintos con títulos muy similares podrían haberse desmarcado por precaución. Si desea importarlos, marque el checkbox manualmente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="max-h-[450px] overflow-y-auto relative">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 z-10 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3 text-center w-10">#</th>
+                                <th class="px-6 py-3">ID (PutCode)</th>
+                                <th class="px-6 py-3">Año</th>
+                                <th class="px-6 py-3">Título</th>
+                                <th class="px-6 py-3">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewWorksTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+                <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 text-xs text-slate-500 flex justify-between">
+                    <span id="previewTotalWorks">0 trabajos</span>
+                    <span class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span> Nuevo
+                        <span class="w-2 h-2 rounded-full bg-red-400 ml-2"></span> Duplicado
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8 pt-6 border-t border-slate-200">
+                <button id="backToReviewBtn" type="button" class="text-slate-500 hover:text-[#1D293D] font-medium text-sm px-4 py-2 flex items-center gap-2">← Volver a Editar</button>
+                
+                <button id="finalImportBtn" type="button" class="px-8 py-3 bg-[#006D38] hover:bg-[#005a2e] text-white font-bold rounded-lg shadow-lg hover:shadow-green-900/20 transform hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    <span>FINALIZAR IMPORTACIÓN</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
