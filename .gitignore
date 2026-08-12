@@ -25,9 +25,6 @@ mongo_data/
 mysql_data/
 postgres_data/
 
-# Docker-Compose (Contiene información confidencial)
-docker-compose.yml
-
 # Archivos de override local de docker-compose
 docker-compose.override.yml
 

@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # --- 1. PROXY INVERSO (NGINX) ---
+  nginx:
+    image: nginx:alpine
+    container_name: icaro-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+      - uploads_data:/var/www/uploads
+    depends_on:
+      - frontend
+      - backend
+
+  # --- 2. FRONTEND (ASTRO) ---
+  frontend:
+    build:
+      context: ./icaro-frontend
+    container_name: icaro-frontend
+    restart: unless-stopped
+    environment:
+      - HOST=0.0.0.0
+      - PORT=4321
+      - INTERNAL_API_URL=http://icaro-backend:8080
+
+  # --- 3. BACKEND (SPRING BOOT) ---
+  backend:
+    build:
+      context: ./icaro-backend
+    container_name: icaro-backend
+    restart: unless-stopped
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/icaro
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - mongo
+
+  # --- 4. BASE DE DATOS (MONGODB) ---
+  mongo:
+    image: mongo:8
+    container_name: icaro-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: icaro
+    volumes:
+      - mongo_data:/data/db
+
+  # --- 5. MONGO EXPRESS (OPCIONAL) ---
+  mongo-express:
+    image: mongo-express:latest
+    container_name: icaro-mongo-express
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH: "false"
+
+volumes:
+  mongo_data:
+  uploads_data:
