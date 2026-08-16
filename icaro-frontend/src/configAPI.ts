@@ -1,28 +1,27 @@
-// Detecta si estamos en modo desarrollo (npm run dev)
-const isDev = import.meta.env.DEV;
-// Detecta si el código se está ejecutando en el servidor (Node) o en el navegador
+// Detectamos el entorno
+const isDev = import.meta.env.DEV; // Por defecto en 'false'
 const isServer = import.meta.env.SSR;
+const INTERNAL_BACKEND = process.env.INTERNAL_API_URL || "http://icaro_backend:8080";
 
-// Leemos la variable de entorno que pusimos en el docker-compose o usamos el fallback
-const INTERNAL_BACKEND = process.env.INTERNAL_API_URL;
+// 1. Valores POR DEFECTO (Producción en el Navegador / Cliente)
+let apiBase = "/api";
+let apiUrl = "";
+let wsBase = "/ws-logs";
 
-export const API_BASE = isDev
-    // 1. DESARROLLO (Local)
-    ? "http://localhost:8080/api"
-    : isServer
-        // 2. PRODUCCIÓN (SSR - Servidor)
-        ? `${INTERNAL_BACKEND}/api`
-        // 3. PRODUCCIÓN (Cliente - Navegador)
-        : "/api";
+// 2. Si estamos en DESARROLLO LOCAL (npm run dev)
+if (isDev) {
+  apiBase = "http://localhost:8080/api";
+  apiUrl = "http://localhost:8080";
+  wsBase = "ws://localhost:8080/ws-logs";
+} 
+// 3. Si estamos en PRODUCCIÓN pero ejecutando en SERVIDOR (SSR / Node / Docker)
+else if (isServer) {
+  apiBase = `${INTERNAL_BACKEND}/api`;
+  apiUrl = INTERNAL_BACKEND;
+  wsBase = `ws://icaro_backend:8080/ws-logs`;
+}
 
-export const API_URL = isDev
-    ? "http://localhost:8080"
-    : isServer
-        ? INTERNAL_BACKEND
-        : ""; 
-
-export const WS_BASE = isDev
-    ? "ws://localhost:8080/ws-logs"
-    : isServer
-        ? `ws://icaro_backend:8080/ws-logs`
-        : "/ws-logs";
+// Exportamos las constantes finales
+export const API_BASE = apiBase;
+export const API_URL = apiUrl;
+export const WS_BASE = wsBase;

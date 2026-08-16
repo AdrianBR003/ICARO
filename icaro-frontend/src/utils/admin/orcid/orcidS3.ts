@@ -128,7 +128,7 @@ async function handleFinalImport() {
     try {
         await importOrcidProfile(finalPayload);
         alert("¡Importación completada con éxito!");
-        window.location.href = "/admin/people";
+        window.location.href = "/admin/dashboard";
     } catch (error) {
         console.error(error);
         alert("Hubo un error al guardar los datos.");

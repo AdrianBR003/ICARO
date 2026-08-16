@@ -382,7 +382,7 @@ async function handleFinalImport() {
             alert("¡Importación completada con éxito!");
             
             // Redirigir a la lista de investigadores o al dashboard
-            window.location.href = "/admin/people"; 
+            window.location.href = "/admin/dashboard"; 
 
         } catch (error) {
             console.error("Error importando:", error);
